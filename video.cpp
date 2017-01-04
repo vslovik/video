@@ -15,18 +15,12 @@ int main(int argc, char **argv)
     // Capturing a frame from a video sequence
 
     CvCapture* capture = cvCaptureFromAVI(argv[1]);
-
-    IplImage* img0 = 0;
     if(!cvGrabFrame(capture)){ // capture a frame
         printf("Could not grab a frame\n\7");
         exit(0);
     }
 
-    img0=cvRetrieveFrame(capture); // retrieve the captured frame
-
-
     // Getting/setting frame information
-
     cvQueryFrame(capture); // this call is necessary to get correct capture properties
     int frameH    = (int) cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT);
     int frameW    = (int) cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH);
@@ -38,46 +32,13 @@ int main(int argc, char **argv)
     cout << "fps: " << fps << endl;
     cout << "numFrames: " << numFrames << endl;
 
-    // Get frame information:
-    // Get the position of the captured frame in [msec] with respect to the first frame,
-    // or get its index where the first frame starts with an index of 0. The relative
-    // position (ratio) is 0 in the first frame and 1 in the last frame. This ratio is
-    // valid only for capturing images from a file.
-
-    float posMsec   =       cvGetCaptureProperty(capture, CV_CAP_PROP_POS_MSEC);
-    int posFrames   = (int) cvGetCaptureProperty(capture, CV_CAP_PROP_POS_FRAMES);
-    float posRatio  =       cvGetCaptureProperty(capture, CV_CAP_PROP_POS_AVI_RATIO);
-
-    cout << "posMsec: " << posMsec << endl;
-    cout << "posFrames: " << posFrames << endl;
-    cout << "posRatio: " << posRatio << endl;
-
-
-    // Set the index of the first frame to capture:
-    // start capturing from a relative position of 0.9 of a video file
-    //cvSetCaptureProperty(capture, CV_CAP_PROP_POS_AVI_RATIO, (double)0.9);
-
-    posMsec   =       cvGetCaptureProperty(capture, CV_CAP_PROP_POS_MSEC);
-    posFrames   = (int) cvGetCaptureProperty(capture, CV_CAP_PROP_POS_FRAMES);
-    posRatio  =       cvGetCaptureProperty(capture, CV_CAP_PROP_POS_AVI_RATIO);
-
-    cout << "posMsec: " << posMsec << endl;
-    cout << "posFrames: " << posFrames << endl;
-    cout << "posRatio: " << posRatio << endl;
-
-    // cvReleaseCapture(&capture); // Releasing the capture source:
-
     // Saving a video file
 
     // Initializing a video writer:
-
     CvVideoWriter *writer = 0;
-    int isColor_ = 1;
-    int fps_     = 29;  // or 30
-    int frameW_  = 640; // 744 for firewire cameras
-    int frameH_  = 480; // 480 for firewire cameras
-    writer=cvCreateVideoWriter("out.avi", CV_FOURCC('D', 'I', 'V', '2'),
-                               fps_,cvSize(frameW_,frameH_),isColor_);
+    int isColor = 1;
+    writer=cvCreateVideoWriter("out.avi", CV_FOURCC('D', 'I', 'V', 'X'),
+                               fps,cvSize(frameW,frameH),isColor);
 
     // Other possible codec codes:
     //    CV_FOURCC('P','I','M','1')    = MPEG-1 codec
@@ -94,8 +55,7 @@ int main(int argc, char **argv)
     // Writing the video file:
 
     IplImage* img = 0;
-    int nFrames_ = 5000;
-    for(int i=0;i<nFrames_;i++){
+    for(int i=0;i<numFrames;i++){
         cvGrabFrame(capture);          // capture a frame
         img=cvRetrieveFrame(capture);  // retrieve the captured frame
         cvWriteFrame(writer,img);      // add the frame to the file
@@ -104,6 +64,7 @@ int main(int argc, char **argv)
 //        int key=cvWaitKey(20);           // wait 20 ms
     }
 
+    cvReleaseCapture(&capture); // Releasing the capture source:
     cvReleaseVideoWriter(&writer); // Releasing the video writer
 
     return 0;
