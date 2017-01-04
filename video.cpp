@@ -37,17 +37,18 @@ int main(int argc, char **argv)
 
     // Capturing and Writing the video file:
     IplImage* img = 0;
-    for(int i=0;i < numFrames;i++){
+    for(int i=0;i < numFrames-2;i++){
         cvGrabFrame(capture);          // capture a frame
         img=cvRetrieveFrame(capture);  // retrieve the captured frame
         cvWriteFrame(writer,img);      // add the frame to the file
-//        // To view the captured frames during capture, add the following in the loop:
-//        cvShowImage("mainWin", img);
-//        int key=cvWaitKey(20); // wait 20 ms
+        // To view the captured frames during capture, add the following in the loop:
+        cvShowImage("mainWin", img);
+        int key=cvWaitKey(20); // wait 20 ms
+//        cout << i << endl;
     }
 
-    cvReleaseCapture(&capture); // Releasing the capture source:
     cvReleaseVideoWriter(&writer); // Releasing the video writer
+    cvReleaseCapture(&capture); // Releasing the capture source:
 
     return 0;
 }
