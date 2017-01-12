@@ -22,3 +22,8 @@ http://www.cs.iit.edu/~agam/cs512/lect-notes/opencv-intro/opencv-intro.html#SECT
 To compile
 ---
 g++ -std=c++11 -o video src/video.cpp `pkg-config opencv --cflags --libs`
+
+Documentation
+---
+http://docs.opencv.org/2.4/doc/tutorials/highgui/video-write/video-write.html
+http://docs.opencv.org/2.4/doc/tutorials/highgui/video-write/video-write.html?highlight=show%20frame

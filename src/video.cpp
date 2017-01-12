@@ -1,54 +1,78 @@
-#include <opencv2/opencv.hpp>
+#include <iostream> // for standard I/O
+#include <string>   // for strings
+
+#include <opencv2/core/core.hpp>        // Basic OpenCV structures (cv::Mat)
+#include <opencv2/highgui/highgui.hpp>  // Video write
 
 using namespace cv;
 using namespace std;
 
+static void help()
+{
+    cout
+            << "------------------------------------------------------------------------------" << endl
+            << "This program reads filters and write video files."                              << endl
+            << "Usage:"                                                                         << endl
+            << "./video inputvideoName"                                                         << endl
+            << "------------------------------------------------------------------------------" << endl
+            << endl;
+}
+
 int main(int argc, char **argv)
 {
+    help();
+
     if(argc < 2) {
-        cout << "./video [video.avi]" << endl;
-        return 0;
+        cout << "Not enough parameters" << endl;
+        return -1;
     }
 
-    // Initializing capture source
-    CvCapture* capture = cvCaptureFromAVI(argv[1]);
-    if(!cvGrabFrame(capture)){ // capture a frame
-        printf("Could not grab a frame\n\7");
-        exit(0);
+    const string source = argv[1];
+
+    VideoCapture inputVideo(source);
+    if (!inputVideo.isOpened())
+    {
+        cout  << "Could not open the input video: " << source << endl;
+        return -1;
     }
 
-    // Getting frame information
-    cvQueryFrame(capture); // this call is necessary to get correct capture properties
-    int frameH    = (int) cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT);
-    int frameW    = (int) cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH);
-    int fps       = (int) cvGetCaptureProperty(capture, CV_CAP_PROP_FPS);
-    int numFrames = (int) cvGetCaptureProperty(capture,  CV_CAP_PROP_FRAME_COUNT);
+    Size S = Size((int) inputVideo.get(CV_CAP_PROP_FRAME_WIDTH),
+                  (int) inputVideo.get(CV_CAP_PROP_FRAME_HEIGHT));
 
-    cout << "frameH: " << frameH << endl;
-    cout << "frameW: " << frameW << endl;
-    cout << "fps: " << fps << endl;
-    cout << "numFrames: " << numFrames << endl;
+    VideoWriter outputVideo;
+    outputVideo.open("out.avi", CV_FOURCC('D', 'I', 'V', 'X'), inputVideo.get(CV_CAP_PROP_FPS), S, true);
 
-    // Initializing a video writer:
-    CvVideoWriter *writer = 0;
-    int isColor = 1;
-    writer=cvCreateVideoWriter("out.avi", CV_FOURCC('D', 'I', 'V', 'X'),
-                               fps,cvSize(frameW,frameH),isColor);
-
-    // Capturing and Writing the video file:
-    IplImage* img = 0;
-    for(int i=0;i < numFrames-2;i++){
-        cvGrabFrame(capture);          // capture a frame
-        img=cvRetrieveFrame(capture);  // retrieve the captured frame
-        cvWriteFrame(writer,img);      // add the frame to the file
-        // To view the captured frames during capture, add the following in the loop:
-        cvShowImage("mainWin", img);
-        int key=cvWaitKey(20); // wait 20 ms
-//        cout << i << endl;
+    if (!outputVideo.isOpened())
+    {
+        cout  << "Could not open the output video for write: " << source << endl;
+        return -1;
     }
 
-    cvReleaseVideoWriter(&writer); // Releasing the video writer
-    cvReleaseCapture(&capture); // Releasing the capture source:
+    cout << "Input frame resolution: Width=" << S.width << "  Height=" << S.height
+         << " of nr#: " << inputVideo.get(CV_CAP_PROP_FRAME_COUNT) << endl;
+    cout << "Input codec type: " << ".avi" << endl;
 
+    int channel = 2;
+    Mat src, res;
+    vector<Mat> frames;
+
+    for(;;)
+    {
+        inputVideo >> src;
+        if (src.empty()) break;
+
+        frames.push_back(src);
+
+        imshow("mainWin", src);
+        waitKey(20);
+
+        //outputVideo.write(res); //save or
+        outputVideo << src;
+    }
+
+    cout << "Finished writing" << endl;
+
+    inputVideo.release();
+    outputVideo.release();
     return 0;
 }
