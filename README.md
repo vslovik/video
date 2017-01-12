@@ -21,4 +21,4 @@ http://www.cs.iit.edu/~agam/cs512/lect-notes/opencv-intro/opencv-intro.html#SECT
 
 To compile
 ---
-g++ -o video video.cpp `pkg-config opencv --cflags --libs`
+g++ -std=c++11 -o video src/video.cpp `pkg-config opencv --cflags --libs`
