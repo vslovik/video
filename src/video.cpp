@@ -3,6 +3,9 @@
 
 #include <opencv2/core/core.hpp>        // Basic OpenCV structures (cv::Mat)
 #include <opencv2/highgui/highgui.hpp>  // Video write
+#include <opencv2/imgproc/imgproc.hpp>
+
+#include "carving.hpp"
 
 using namespace cv;
 using namespace std;
@@ -10,16 +13,19 @@ using namespace std;
 pthread_t *workers;
 pthread_mutex_t mutexLock;
 
-int ver = 1;
-int hor = 0;
-int frameIter= 0;
-int numFrames = 0;
-Mat *inFrames;
-Mat *outFrames;
 //vector<Mat> inFrames;
 //vector<Mat> *outFrames;
 
 void *reduce(void *);
+
+struct State {
+    static const int ver = 1;
+    static const int hor = 0;
+    int frameIter, numFrames;
+    Mat *inFrames, *outFrames;
+};
+
+State *process;
 
 static void help()
 {
@@ -32,64 +38,49 @@ static void help()
             << endl;
 }
 
+int get_frame_id(){
+
+    pthread_mutex_lock(&mutexLock);
+
+    if(process->frameIter > process->numFrames - 1) {
+        pthread_mutex_unlock(&mutexLock);
+        return 0;
+    }
+
+    cout << "Frame++ " << process->frameIter + 1 << "/" << process->numFrames << endl;
+
+    pthread_mutex_unlock(&mutexLock);
+
+    return process->frameIter++;
+}
+
 /*
  * Entrance function of the worker thread.
  */
 void *reduce(void *)
 {
-    int frameId;
-    cout << "Frame " << frameIter << "/" << numFrames << endl;
-    Mat frame1, frame2, frame3, frame4, frame5;
+    int id;
+    Mat img;
+
+    vector<Mat> bunch;
+
     while(1) {
 
-        //pthread_mutex_lock(&mutexLock);
-        if(frameIter > numFrames - 1) {
-            //pthread_mutex_unlock(&mutexLock);
-            cout << "Frame-- " << frameIter << "/" << numFrames << endl;
+        id = get_frame_id();
+        if(0 == id) {
             break;
         }
-        frameId = frameIter++;
-        cout << "Frame++ " << frameIter << "/" << numFrames << endl;
 
-        //pthread_mutex_unlock(&mutexLock);
+        for(int i = 0; i < 5; i++) {
+            if(id + i < process->numFrames) {
+                bunch.push_back(process->inFrames[id + i]);
+            } else {
+                bunch.push_back(process->inFrames[process->numFrames - 1]);
+            }
+        }
 
-//
-//
-//        frame1 = inFrames[frameId];
-//
-//        // check if we are close to the end of the video and
-//        // select frames appropriately
-//        if(frameId < numFrames - 4) {
-//            frame2 = inFrames[frameId+1];
-//            frame3 = inFrames[frameId+2];
-//            frame4 = inFrames[frameId+3];
-//            frame5 = inFrames[frameId+4];
-//        }
-//        else if(frameId < numFrames - 3) {
-//            frame2 = inFrames[frameId+1];
-//            frame3 = inFrames[frameId+2];
-//            frame4 = inFrames[frameId+3];
-//            frame5 = frame4;
-//        }
-//        else if(frameId < numFrames - 2) {
-//            frame2 = inFrames[frameId+1];
-//            frame3 = inFrames[frameId+2];
-//            frame4 = frame3;
-//            frame5 = frame3;
-//        }
-//        else if(frameId < numFrames - 1) {
-//            frame2 = inFrames[frameId+1];
-//            frame3 = frame2;
-//            frame4 = frame2;
-//            frame5 = frame2;
-//        }
-//        else {
-//            frame2 = frame1;
-//            frame3 = frame1;
-//            frame4 = frame1;
-//            frame5 = frame1;
-//        }
-        // outFrames[frameId] = reduce_frame(frame1, frame2, frame3, frame4, frame5, ver, hor);
+        cvtColor(bunch.at(0), img, CV_RGB2GRAY);
+        process->outFrames[id] = reduce_frame(bunch, process->ver, process->hor);
     }
 }
 
@@ -116,22 +107,27 @@ int main(int argc, char **argv)
                   (int) inputVideo.get(CV_CAP_PROP_FRAME_HEIGHT));
 
     int fps = inputVideo.get(CV_CAP_PROP_FPS);
-    int numFrames = inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
+    int numFrames = (int) inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
 
     cout << "Input frame resolution: Width=" << S.width << "  Height=" << S.height
          << " of nr#: " << numFrames << endl;
     cout << "Input codec type: " << ".avi" << endl;
 
-    inFrames = new Mat[numFrames];
+    process = new State();
+    process->frameIter= 0;
+    process->numFrames = numFrames;
+
+    process->inFrames = new Mat[numFrames];
     for(int i = 0; i < numFrames; ++i) {
-        inputVideo >> inFrames[i];
+        inputVideo >> process->inFrames[i];
     }
     inputVideo.release();
 
     //--------------------------------------------------------------------------------
 
     // Process video
-    outFrames = new Mat[numFrames];
+
+    process->outFrames = new Mat[numFrames];
     int numWorkers = 4;
     cout << "Using " << numWorkers << " workers." << endl;
 
@@ -164,8 +160,8 @@ int main(int argc, char **argv)
     }
 
     for(int i = 0; i < numFrames; ++i){
-        outputVideo << inFrames[i];
-//        imshow("mainWin", inFrames[i]);
+        outputVideo << process->inFrames[i];
+//        imshow("mainWin", process->inFrames[i]);
 //        waitKey(20);
     }
 
