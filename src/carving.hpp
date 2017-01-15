@@ -1,9 +1,10 @@
 #include <opencv2/core/core.hpp>        // Basic OpenCV structures (cv::Mat)
+#include <opencv2/imgproc/imgproc.hpp>
 
 using namespace cv;
 using namespace std;
 
-Mat reduce_frame(vector<Mat> bunch, int v, int h);
-Mat reduce_vertical(vector<Mat> &reduced, Mat img);
-Mat reduce_horizontal(vector<Mat> &reduced, Mat img);
+Mat reduce_frame(Mat *bunch, int v, int h);
+Mat reduce_vertical(Mat *reduced, Mat img);
+Mat reduce_horizontal(Mat *reduced, Mat img);
 
