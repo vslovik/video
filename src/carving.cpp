@@ -107,7 +107,6 @@ int *find_seam(Mat history)
             }
         }
     }
-    delete g;
 
     return seam;
 }
