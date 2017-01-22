@@ -11,7 +11,7 @@ using namespace cv;
  * v: number of vertical seams to be removed
  * h: number of horizontal seams to be removed
  */
-Mat *reduce_frame(Mat *bunch, int v, int h) {
+Mat *reduce_frame(Mat bunch, int v, int h) {
     Mat *img;
     Mat *history = new Mat[5];
 
@@ -45,7 +45,7 @@ Mat *reduce_frame(Mat *bunch, int v, int h) {
  * history: images used to calculate the seam
  * img: image needed to perform seam-cut
  */
-Mat *reduce_vertical(Mat *history, Mat *img) {
+Mat *reduce_vertical(Mat history, Mat *img) {
     Mat *reduced;
     int *seam = new int[img.rows];
     seam = find_seam(history);
@@ -64,7 +64,7 @@ Mat *reduce_vertical(Mat *history, Mat *img) {
  * history: images used to calculate the seam
  * img: image needed to perform seam-cut
  */
-Mat *reduce_horizontal(Mat *history, Mat *img) {
+Mat *reduce_horizontal(Mat history, Mat *img) {
     Mat *reduced;
     int *seam = new int[img.rows];
 
@@ -91,7 +91,7 @@ Mat *reduce_horizontal(Mat *history, Mat *img) {
  * history.at(0): current image needed to be seam-removed
  * history: used to calculate the look ahead energy
  */
-int *find_seam(Mat *history)
+int *find_seam(Mat history)
 {
     int rows = history.at(0).rows;
     int *seam = new int[rows];
@@ -112,7 +112,7 @@ int *find_seam(Mat *history)
     return seam;
 }
 
-GraphType *build_graph(Mat *history)
+GraphType *build_graph(Mat history)
 {
     typedef Graph<int,int,int> GraphType;
 
