@@ -1,4 +1,5 @@
 #include "carving.hpp"
+#include "graph.h"
 
 using namespace cv;
 
@@ -11,13 +12,13 @@ using namespace cv;
  * v: number of vertical seams to be removed
  * h: number of horizontal seams to be removed
  */
-Mat *reduce_frame(Mat bunch, int v, int h) {
-    Mat *img;
+Mat reduce_frame(Mat *bunch, int v, int h) {
+    Mat img;
     Mat *history = new Mat[5];
 
     for(int i = 0; i < 5; i++) {
-        cvtColor(bunch[i], *img, CV_RGB2GRAY);
-        *history[i] = img;
+        cvtColor(bunch[i], img, CV_RGB2GRAY);
+        history[i] = img;
     }
 
     cvtColor(bunch[0], img, CV_RGB2GRAY);
@@ -45,14 +46,14 @@ Mat *reduce_frame(Mat bunch, int v, int h) {
  * history: images used to calculate the seam
  * img: image needed to perform seam-cut
  */
-Mat *reduce_vertical(Mat history, Mat *img) {
-    Mat *reduced;
+Mat reduce_vertical(Mat *history, Mat img) {
+    Mat reduced;
     int *seam = new int[img.rows];
     seam = find_seam(history);
 
-    reduced = remove_seam(img, seam);
+    reduced = remove_seam(img, seam, CV_8UC3);
     for(int i = 0; i < 5; ++i) {
-        history.at(i) = remove_seam_gray(*history.at(i), seam);
+        history[i] = remove_seam(history[i], seam, CV_8UC1);
     }
 
     return reduced;
@@ -64,22 +65,22 @@ Mat *reduce_vertical(Mat history, Mat *img) {
  * history: images used to calculate the seam
  * img: image needed to perform seam-cut
  */
-Mat *reduce_horizontal(Mat history, Mat *img) {
-    Mat *reduced;
+Mat reduce_horizontal(Mat *history, Mat img) {
+    Mat reduced;
     int *seam = new int[img.rows];
 
     for(int i = 0; i < 5; ++i) {
-        history.at(i) = history.at(i).t();
+        history[i] = history[i].t();
     }
 
     seam = find_seam(history);
     reduced = remove_seam(img, seam, CV_8UC3);
-    for(int i = 0; i < diff; ++i) {
-        history[0] = remove_seam(history, seam, CV_8UC1);
+    for(int i = 0; i < 5; ++i) {
+        history[i] = remove_seam(history[i], seam, CV_8UC1);
     }
 
     for(int i = 0; i < 5; ++i) {
-        history.at(i) = history.at(i).t();
+        history[i] = history[i].t();
     }
 
     return reduced.t();
@@ -91,17 +92,18 @@ Mat *reduce_horizontal(Mat history, Mat *img) {
  * history.at(0): current image needed to be seam-removed
  * history: used to calculate the look ahead energy
  */
-int *find_seam(Mat history)
+int *find_seam(Mat *history)
 {
-    int rows = history.at(0).rows;
+    int rows = history[0].rows;
+    int cols = history[0].cols;
     int *seam = new int[rows];
 
-    GraphType *g = build_graph(*history);
-    g->maxflow();
+    Graph<int,int,int> *g = build_graph(history);
+
     for(int i = 0; i < rows; i++) {
         seam[i] = cols - 1;
         for(int j = 0; j < cols; j++) {
-            if(GraphType::SINK == g->what_segment(i*cols + j)) {
+            if(Graph<int,int,int>::SINK == g->what_segment(i*cols + j)) {
                 seam[i] = j - 1;
                 break;
             }
@@ -111,26 +113,26 @@ int *find_seam(Mat history)
     return seam;
 }
 
-GraphType *build_graph(Mat history)
+Graph<int,int,int> *build_graph(Mat *history)
 {
     typedef Graph<int,int,int> GraphType;
-
     double inf = 100000;
-    float a[5] = {0.2, 0.2, 0.2, 0.2, 0.2};
+    float a[] = {0.2, 0.2, 0.2, 0.2, 0.2};
 
-    int rows = history.at(0).rows;
-    int cols = history.at(0).cols;
+    int rows = history[0].rows;
+    int cols = history[0].cols;
 
     int num_nodes = rows*cols;
     int num_edges = (rows - 1)*cols + (cols - 1)*rows + 2*(rows - 1)*(cols - 1);
 
     GraphType *g = new GraphType(num_nodes, num_edges);
+
     for (int i = 1; i <= num_nodes; i++) {
         g->add_node();
     }
 
-    for(unsigned char i = 0; i < rows; i++) {
-        for(unsigned char j = 0; j < cols; j++) {
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
 
             if(j == 0) {
                 g->add_tweights(i*cols, inf, 0);
@@ -138,25 +140,26 @@ GraphType *build_graph(Mat history)
                 g->add_tweights((i + 1)*cols - 1, 0, inf);
             }
 
-            sum_from = 0;
-            sum_to = inf;
+            int sum_from = 0;
+            int sum_to = inf;
+            int to, from;
             if (i != rows - 1) {
                 sum_to = 0;
                 for (int k = 0; k < 5; k++) {
-                    to = history.at(k).at(i, j);
+                    to = history[k].at<int>(i, j);
                     if (j != 0) {
-                        to -= history.at(k).at(i + 1, j - 1);
+                        to -= history[k].at<int>(i + 1, j - 1);
                     }
-                    to = a.at(k) * abs(to);
+                    to = a[k] * abs(to);
                     sum_to += to;
                 }
             }
             for(int k = 0; k < 5; k++) {
-                from = (i == rows - 1) ? history.at(k).at(i, j + 1) : history.at(k).at(i + 1, j);
+                from = (i == rows - 1) ? history[k].at<int>(i, j + 1) : history[k].at<int>(i + 1, j);
                 if(j != 0) {
-                    from -= history.at(k).at(i, j - 1);
+                    from -= history[k].at<int>(i, j - 1);
                 }
-                from = a.at(k)*abs(from);
+                from = a[k]*abs(from);
                 sum_from += from;
             }
             g->add_edge(i*cols + j, i*cols + j + 1, sum_from, sum_to);
@@ -170,6 +173,8 @@ GraphType *build_graph(Mat history)
         }
     }
 
+    g->maxflow();
+
     return g;
 }
 
@@ -179,7 +184,7 @@ GraphType *build_graph(Mat history)
  * img: gray image to be seam-removed
  * seam: column index of each row
  */
-Mat remove_seam(Mat img, int seam[], int type)
+Mat remove_seam(Mat img, int *seam, int type)
 {
     Mat reduced(img.rows, img.cols - 1, type);
     for(int i = 0; i < img.rows; i++){
@@ -188,9 +193,10 @@ Mat remove_seam(Mat img, int seam[], int type)
             img.row(i).colRange(Range(0, seam[i])).copyTo(reduced.row(i).colRange(Range(0, seam[i])));
         }
 
-        if(seam[i] != ncols - 1) {
-            img.row(i).colRange(Range(seam[i] + 1, ncols)).copyTo(reduced.row(i).colRange(Range(seam[i], ncols - 1)));
+        if(seam[i] != img.cols - 1) {
+            img.row(i).colRange(Range(seam[i] + 1, img.cols)).copyTo(reduced.row(i).colRange(Range(seam[i], img.cols - 1)));
         }
     }
+
     return reduced;
 }

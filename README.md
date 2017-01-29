@@ -28,3 +28,6 @@ Documentation
 http://docs.opencv.org/2.4/doc/tutorials/highgui/video-write/video-write.html
 http://docs.opencv.org/2.4/doc/tutorials/highgui/video-write/video-write.html?highlight=show%20frame
 http://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html
+
+http://www.boost.org/doc/libs/1_60_0/libs/graph/doc/boykov_kolmogorov_max_flow.html
+http://www.boost.org/doc/libs/1_60_0/libs/graph/doc/index.html
