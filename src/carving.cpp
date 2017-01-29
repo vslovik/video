@@ -1,5 +1,6 @@
 #include "carving.hpp"
 #include "graph.h"
+#include <iostream>
 
 using namespace cv;
 
@@ -13,20 +14,18 @@ using namespace cv;
  * h: number of horizontal seams to be removed
  */
 Mat reduce_frame(Mat *bunch, int v, int h) {
-    Mat img;
+    Mat img, tmp;
+    img = bunch[0];
+
     Mat *history = new Mat[5];
 
     for(int i = 0; i < 5; i++) {
-        cvtColor(bunch[i], img, CV_RGB2GRAY);
-        history[i] = img;
+        cvtColor(bunch[i], tmp, CV_RGB2GRAY);
+        history[i] = tmp;
     }
-
-    cvtColor(bunch[0], img, CV_RGB2GRAY);
 
     int diff = h > v ? h - v : v - h;
     int min = h > v ? v : h;
-
-    img.t();
 
     for(int i = 0; i < min; ++i) {
         img = reduce_vertical(history, img);
@@ -34,7 +33,7 @@ Mat reduce_frame(Mat *bunch, int v, int h) {
     }
 
     for(int i = 0; i < diff; ++i) {
-        img = reduce_horizontal(history, h > v ? img.t() : img);
+        img = h > v ? reduce_horizontal(history, img.t()) : reduce_vertical(history, img);
     }
 
     return img;
@@ -103,7 +102,7 @@ int *find_seam(Mat *history)
     for(int i = 0; i < rows; i++) {
         seam[i] = cols - 1;
         for(int j = 0; j < cols; j++) {
-            if(Graph<int,int,int>::SINK == g->what_segment(i*cols + j)) {
+            if(i*cols + j < cols && Graph<int,int,int>::SINK == g->what_segment(i*cols + j)) {
                 seam[i] = j - 1;
                 break;
             }
@@ -142,12 +141,11 @@ Graph<int,int,int> *build_graph(Mat *history)
 
             int sum_from = 0;
             int sum_to = inf;
-            int to, from;
+            int to = 0, from = 0;
             if (i != rows - 1) {
                 sum_to = 0;
                 for (int k = 0; k < 5; k++) {
-                    to = history[k].at<int>(i, j);
-                    if (j != 0) {
+                    if (j != 0 && i + 1 < rows) {
                         to -= history[k].at<int>(i + 1, j - 1);
                     }
                     to = a[k] * abs(to);
@@ -155,14 +153,20 @@ Graph<int,int,int> *build_graph(Mat *history)
                 }
             }
             for(int k = 0; k < 5; k++) {
-                from = (i == rows - 1) ? history[k].at<int>(i, j + 1) : history[k].at<int>(i + 1, j);
+                if(i == rows - 1 && j + 1 < cols)
+                    from = history[k].at<int>(i, j + 1);
+                if (i != rows - 1)
+                    from = history[k].at<int>(i + 1, j);
+
                 if(j != 0) {
                     from -= history[k].at<int>(i, j - 1);
                 }
                 from = a[k]*abs(from);
                 sum_from += from;
             }
-            g->add_edge(i*cols + j, i*cols + j + 1, sum_from, sum_to);
+
+            if( i*cols + j <= rows && i*cols + j + 1 <= cols)
+                g->add_edge(i*cols + j, i*cols + j + 1, sum_from, sum_to);
 
             if(i != 0 && j != 0){
                 g->add_edge(i*cols + j, (i - 1)*cols + j - 1, inf, 0);
@@ -175,6 +179,7 @@ Graph<int,int,int> *build_graph(Mat *history)
 
     g->maxflow();
 
+    delete g;
     return g;
 }
 

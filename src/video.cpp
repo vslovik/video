@@ -13,7 +13,7 @@ void read_video(string source)
         throw source;
     }
 
-    int numFrames = (int) inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
+    int numFrames = 10;
     process = new State(
                 inputVideo.get(CV_CAP_PROP_FPS),
                 numFrames,
@@ -31,7 +31,7 @@ void read_video(string source)
          << " of nr#: " << process->numFrames << endl;
     cout << "Input codec type: " << ".avi" << endl;
 
-    for(int i = 0; i < process->numFrames; ++i) {
+    for(int i = 0; i < process->numFrames; ++i){
         inputVideo >> process->inFrames[i];
     }
 
@@ -42,7 +42,7 @@ void read_video(string source)
 void write_video(string source)
 {
     VideoWriter outputVideo;
-    outputVideo.open(process->output, CV_FOURCC('D', 'I', 'V', 'X'), process->fps, process->size, true);
+    outputVideo.open(process->output, CV_FOURCC('D', 'I', 'V', 'X'), process->fps, Size(process->size.width - process->ver , process->size.height - process->hor), true);
 
     if (!outputVideo.isOpened())
     {
@@ -50,9 +50,9 @@ void write_video(string source)
     }
 
     for(int i = 0; i < process->numFrames; ++i){
-        outputVideo << process->inFrames[i];
-//        imshow("mainWin", process->inFrames[i]);
-//        waitKey(20);
+        outputVideo << process->outFrames[i];
+        imshow("mainWin", process->outFrames[i]);
+        waitKey(20);
     }
 
     outputVideo.release();
@@ -90,7 +90,7 @@ void *process_frame(void *)
 
 void process_video()
 {
-    int numWorkers = 4;
+    int numWorkers = 1;
     cout << "Using " << numWorkers << " workers." << endl;
 
     pthread_t *workers = (pthread_t *)malloc(sizeof(pthread_t)*numWorkers);
