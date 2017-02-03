@@ -7,15 +7,16 @@
 #include "carving.hpp"
 
 struct State {
-    static const int ver = 1;
-    static const int hor = 0;
+    static const int ver = 100;
+    static const int hor = 50;
     Size size;
     string output;
-    int fps, frameIter, numFrames;
+    double fps;
+    int frameIter, numFrames;
     Mat *inFrames, *outFrames;
 
     State(
-            int fps,
+            double fps,
             int numFrames,
             Size size,
             int frameIter = 0,

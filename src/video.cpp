@@ -13,7 +13,7 @@ void read_video(string source)
         throw source;
     }
 
-    int numFrames = 10;
+    int numFrames = (int) inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
     process = new State(
                 inputVideo.get(CV_CAP_PROP_FPS),
                 numFrames,
@@ -90,7 +90,7 @@ void *process_frame(void *)
 
 void process_video()
 {
-    int numWorkers = 1;
+    int numWorkers = 8;
     cout << "Using " << numWorkers << " workers." << endl;
 
     pthread_t *workers = (pthread_t *)malloc(sizeof(pthread_t)*numWorkers);

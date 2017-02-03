@@ -1,6 +1,4 @@
 #include "carving.hpp"
-#include "graph.h"
-#include <iostream>
 
 using namespace cv;
 
@@ -47,7 +45,7 @@ Mat reduce_frame(Mat *bunch, int v, int h) {
  */
 Mat reduce_vertical(Mat *history, Mat img) {
     Mat reduced;
-    int *seam = new int[img.rows];
+    int *seam;
     seam = find_seam(history);
 
     reduced = remove_seam(img, seam, CV_8UC3);
@@ -66,7 +64,7 @@ Mat reduce_vertical(Mat *history, Mat img) {
  */
 Mat reduce_horizontal(Mat *history, Mat img) {
     Mat reduced;
-    int *seam = new int[img.rows];
+    int *seam;
 
     for(int i = 0; i < 5; ++i) {
         history[i] = history[i].t();
@@ -109,13 +107,13 @@ int *find_seam(Mat *history)
         }
     }
 
+    delete g;
     return seam;
 }
 
 Graph<int,int,int> *build_graph(Mat *history)
 {
-    typedef Graph<int,int,int> GraphType;
-    double inf = 100000;
+    int inf = 100000;
     float a[] = {0.2, 0.2, 0.2, 0.2, 0.2};
 
     int rows = history[0].rows;
@@ -124,7 +122,7 @@ Graph<int,int,int> *build_graph(Mat *history)
     int num_nodes = rows*cols;
     int num_edges = (rows - 1)*cols + (cols - 1)*rows + 2*(rows - 1)*(cols - 1);
 
-    GraphType *g = new GraphType(num_nodes, num_edges);
+    Graph<int,int,int> *g = new Graph<int,int,int>(num_nodes, num_edges);
 
     for (int i = 1; i <= num_nodes; i++) {
         g->add_node();
@@ -148,7 +146,7 @@ Graph<int,int,int> *build_graph(Mat *history)
                     if (j != 0 && i + 1 < rows) {
                         to -= history[k].at<int>(i + 1, j - 1);
                     }
-                    to = a[k] * abs(to);
+                    to = (int) a[k] * abs(to);
                     sum_to += to;
                 }
             }
@@ -161,7 +159,7 @@ Graph<int,int,int> *build_graph(Mat *history)
                 if(j != 0) {
                     from -= history[k].at<int>(i, j - 1);
                 }
-                from = a[k]*abs(from);
+                from = (int) a[k]*abs(from);
                 sum_from += from;
             }
 
@@ -179,7 +177,6 @@ Graph<int,int,int> *build_graph(Mat *history)
 
     g->maxflow();
 
-    delete g;
     return g;
 }
 
