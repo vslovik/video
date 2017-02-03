@@ -90,7 +90,7 @@ void *process_frame(void *)
 
 void process_video()
 {
-    int numWorkers = 8;
+    int numWorkers = 1;
     cout << "Using " << numWorkers << " workers." << endl;
 
     pthread_t *workers = (pthread_t *)malloc(sizeof(pthread_t)*numWorkers);

@@ -7,8 +7,8 @@
 #include "carving.hpp"
 
 struct State {
-    static const int ver = 100;
-    static const int hor = 50;
+    static const int ver = 10;
+    static const int hor = 0;
     Size size;
     string output;
     double fps;
