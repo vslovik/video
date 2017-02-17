@@ -145,15 +145,17 @@ Graph<int,int,int> *build_graph(Mat *history)
             if(j == 0) {
                 int lr = 0;
                 for(int k = 0; k < 5; k++) {
-                    lr += a[k]*(history[k].at<char>(i, j + 1));
+                    lr += (int) a[k]*(history[k].at<uchar>(i, j + 1));
                 }
-                g->add_edge(i*cols, i*cols + 1, lr, inf );
+                cout << lr << endl;
+                g->add_edge(i*cols, i*cols + 1, lr, inf);
             }
             else if(j != cols - 1) {
                 int lr = 0;
                 for(int k = 0; k < 5; k++) {
-                    lr += a[k]*abs(history[k].at<char>(i, j + 1) - history[k].at<char>(i, j - 1));
+                    lr += a[k]*abs(history[k].at<uchar>(i, j + 1) - history[k].at<uchar>(i, j - 1));
                 }
+                cout << lr << endl;
                 g->add_edge(i*cols + j, i*cols + j + 1, lr, inf);
             }
 
@@ -162,28 +164,32 @@ Graph<int,int,int> *build_graph(Mat *history)
                     // positive LU
                     int posLU = 0;
                     for(int k = 0; k < 5; k++) {
-                        posLU += a[k]*(history[k].at<char>(i,j));
+                        posLU += a[k]*(history[k].at<uchar>(i, j));
                     }
 
                     // negative LU
                     int negLU = 0;
                     for(int k = 0; k < 5; k++) {
-                        negLU += a[k]*(history[k].at<char>(i+1,j));
+                        negLU += a[k]*(history[k].at<uchar>(i + 1, j));
                     }
+                    cout << posLU << endl;
+                    cout << negLU << endl;
                     g->add_edge(i*cols + j, i*cols + j + 1, negLU, posLU);
                 }
                 else {
                     // positive LU
                     int posLU = 0;
                     for(int k = 0; k < 5; k++) {
-                        posLU += a[k]*abs(history[k].at<char>(i,j) - history[k].at<char>(i + 1,j - 1));
+                        posLU += a[k]*abs(history[k].at<uchar>(i, j) - history[k].at<uchar>(i + 1, j - 1));
                     }
                     // negative LU
                     int negLU = 0;
-                    for(int k=0; k < 5; k++) {
-                        negLU += a[k]*abs(history[k].at<char>(i+1,j) - history[k].at<char>(i, j - 1));
+                    for(int k = 0; k < 5; k++) {
+                        negLU += a[k]*abs(history[k].at<uchar>(i + 1, j) - history[k].at<uchar>(i, j - 1));
                     }
-                    g->add_edge( i*cols + j, i*cols + j + 1, negLU, posLU );
+                    cout << posLU << endl;
+                    cout << negLU << endl;
+                    g->add_edge(i*cols + j, i*cols + j + 1, negLU, posLU);
                 }
             }
             if(i != 0 && j != 0)

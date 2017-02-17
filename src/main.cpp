@@ -1,6 +1,9 @@
 #include <iostream>
 
 #include "video.hpp"
+#include <ff/pipeline.hpp>
+
+using namespace ff;
 
 static void help()
 {
