@@ -12,29 +12,24 @@ struct State {
     Size size;
     string output;
     double fps;
-    int frameIter, numFrames;
-    Mat *inFrames, *outFrames;
+    int numFrames;
+    Mat inFrame, outFrame;
 
     State(
             double fps,
             int numFrames,
             Size size,
-            int frameIter = 0,
-            Mat *inFrames = new Mat[0],
-            Mat *outFrames = new Mat[0],
+            Mat inFrame,
+            Mat outFrame,
             string output = "out.avi"
     ) :
             fps(fps),
             numFrames(numFrames),
             size(size),
-            frameIter(frameIter),
-            inFrames(inFrames),
-            outFrames(outFrames),
+            inFrame(inFrame),
+            outFrame(outFrame),
             output(output)
     {}
 };
 
-void read_video(string source);
-void write_video(string source);
-void *process_frame(void *);
-void process_video();
+void process_video(string source);

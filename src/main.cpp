@@ -28,23 +28,9 @@ int main(int argc, char **argv)
     const string source = argv[1];
 
     try {
-        read_video(source);
-    } catch(string e){
-        cout  << "Could not open the input video: " << e << endl;
-        return -1;
-    }
-
-    try {
-        process_video();
+        process_video(source);
     } catch(string e){
         cout << e << endl;
-        return -1;
-    }
-
-    try {
-        write_video(source);
-    } catch(string e){
-        cout  << "Could not open the output video for write: " << source << endl;
         return -1;
     }
 
