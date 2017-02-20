@@ -83,48 +83,131 @@ int *find_seam(Mat &image){
 
 
 
+//    int s[8] = {8, 7, 1, 67, 6, 9, 4, 3};
+//    int N = sizeof(s)/sizeof(int);
+//    vector<Point> b;
+//    for(int i = 0; i < N; i++){
+//        Point* p = new Point(i, s[i]);
+//        b.push_back(*p);
+//    }
+//
+//
+//    int step = 2;
+//    while(1) {
+//        ff::ParallelFor pfi(nworkers, false);
+//        pfi.parallel_for(0L, N, [N, &b, &step](int c) {
+//            if (c % step == 0) {
+//                std::cout << c << "-" << step << endl;
+//                if (c + step - 1 < N ) {
+//                    int m = min(b[c].y, b[c + step - 1].y);
+//                    if(m == b[c + step - 1].y) {
+//                        b[c] = b[c + step - 1];
+//                    } else {
+//                        b[c + step - 1] = b[c];
+//                    }
+//                    for(int j=0; j < N; j++) {
+//                        std::cout << b[j].x << b[j].y << std::endl;
+//                    }
+//                }
+//            }
+//        });
+//
+//        std::cout << b[0].x << b[0].y << std::endl;
+//
+//        step = step << 1;
+//        if(step > N)
+//            break;
+//    }
+//
+//    std::cout << b[0].x << b[0].y << std::endl;
+//
+//    step = step >> 1;
+//    std::cout << "step" << step << endl;
+//    int res = (step < N && b[0].y > b[step].y) ? b[step].x : b[0].x;
+//    std::cout << res << endl;
+
+    //==================================================================================================================
+
+//    int s[8] = {8, 7, 1, 67, 6, 9, 4, 3};
+//    int N = sizeof(s)/sizeof(int);
+//
+//    vector<Point> from;
+//
+//    for(int i = 0; i < N; i++){
+//        Point* p = new Point(i, s[i]);
+//        from.push_back(*p);
+//    }
+//    for (int j = 0; j < N; j++) {
+//        std::cout << "++++" << from[j].x << "-" <<  from[j].y << std::endl;
+//    }
+//
+//    vector<Point> to;
+//    while(N) {
+//        ff::ParallelFor pfi(nworkers, false);
+//        pfi.parallel_for(0L, N, [N, &from, &to](int c) {
+//            if (c % 2 == 0) {
+//                if (c + 1 < N) {
+//                    from[c + 1].y <= from[c].y ? to.push_back(from[c + 1]) : to.push_back(from[c]);
+//                }
+//            }
+//        });
+//        N = N >> 1;
+//        from = to;
+//        to.clear();
+//    }
+//
+//    std::cout << to[0].x << to[0].y << endl;
+
+
     int s[8] = {8, 7, 1, 67, 6, 9, 4, 3};
     int N = sizeof(s)/sizeof(int);
-    vector<Point> b;
-    for(int i = 0; i < N; i++){
-        Point* p = new Point(i, s[i]);
-        b.push_back(*p);
-    }
 
+    using namespace ff;
 
-    int step = 2;
-    while(1) {
-        ff::ParallelFor pfi(nworkers, false);
-        pfi.parallel_for(0L, N, [N, &b, &step](int c) {
-            if (c % step == 0) {
-                std::cout << c << "-" << step << endl;
-                if (c + step - 1 < N ) {
-                    int m = min(b[c].y, b[c + step - 1].y);
-                    if(m == b[c + step - 1].y) {
-                        b[c] = b[c + step - 1];
-                    } else {
-                        b[c + step - 1] = b[c];
-                    }
-                    for(int j=0; j < N; j++) {
-                        std::cout << b[j].x << b[j].y << std::endl;
-                    }
-                }
+    struct Stage0 : ff_minode_t<long> {
+        long NUMTASKS = 20;
+        int svc_init() {
+            counter = 0;
+            return 0;
+        }
+
+        long *svc(long *task) {
+            if (task == nullptr) {
+                for (long i = 1; i <= NUMTASKS; ++i)
+                    ff_send_out((void *) i);
+                return GO_ON;
             }
-        });
+            printf("Stage0 has got task %ld\n", (long) task);
+            ++counter;
+            if(NUMTASKS < 2)
+                return EOS;
+            if (counter == NUMTASKS) {
+                counter = 0;
+                NUMTASKS = NUMTASKS >> 1;
+                for (long i = 1; i <= NUMTASKS; ++i)
+                    ff_send_out((void *) i);
+            }
+            return GO_ON;
+        }
 
-        std::cout << b[0].x << b[0].y << std::endl;
+        long counter;
+    };
+    struct Stage1 : ff_monode_t<long> {
+        long *svc(long *task) {
+            //if ((long) task & 0x1) // sends odd tasks back
+                ff_send_out_to(task, 0);
+            //else ff_send_out_to(task, 1);
+            return GO_ON;
+        }
+    };
 
-        step = step << 1;
-        if(step > N)
-            break;
-    }
+    Stage0 s0;
+    Stage1 s1;
 
-    std::cout << b[0].x << b[0].y << std::endl;
+    ff_Pipe<long> pipe1(s0, s1);
+    pipe1.wrap_around();
 
-    step = step >> 1;
-    std::cout << "step" << step << endl;
-    int res = (step < N && b[0].y > b[step].y) ? b[step].x : b[0].x;
-    std::cout << res << endl;
+    if (pipe1.run_and_wait_end() < 0) error("running pipe");
 
 
 
