@@ -159,7 +159,7 @@ int *find_seam(Mat &image){
 //    std::cout << to[0].x << to[0].y << endl;
 
 
-    int s[8] = {8, 7, 1, 67, 6, 9, 4, 3};
+    int s[11] = {8, 7, 1, 67, 6, 9, 4, 3, 88, 0, 7};
     int N = sizeof(s)/sizeof(int);
     vector<Point> results;
 
@@ -175,33 +175,46 @@ int *find_seam(Mat &image){
 
         int svc_init() {
             counter = 0;
+            step = 2;
             return 0;
         }
 
         long *svc(long *task) {
             std::cout << n << endl;
             if (task == nullptr) {
-                for (long i = 1; i <= n; ++i)
+                for (long i = 1; i < n; i += step) {
                     ff_send_out((void *) i);
+                }
                 return GO_ON;
             }
-            printf("Stage0 has got task %ld\n", (long) task);
-            if ((long) task + step - 1 < n) {
-                std::cout << points.at(0).x << endl;
-//                int m = min(points.at((ulong)*task).y, points.at((ulong)*task + step - 1).y);
-//                if (m == points.at((ulong)*task + step - 1).y) {
-//                    points.at((ulong)*task) = points.at((ulong)*task + step - 1);
-//                } else {
-//                    points.at((ulong)*task + step - 1) = points.at((ulong)*task);
-//                }
+            printf("Stage0 has got task %ld\n", (ulong) task);
+
+            ulong left = (ulong) task - 1;
+            ulong right =  min((ulong) n - 1, (ulong)task - 1 + step - 1);
+            int m = min(points.at(left).y, points.at(right).y);
+            if (m == points.at(right).y) {
+                points.at(left) = points.at(right);
+                std::cout << task << points.at(left) << points.at(right) << endl;
+            } else {
+                points.at(right) = points.at(left);
+                std::cout << task << points.at(right) << points.at(left) << endl;
             }
+
+            for (std::vector<int>::size_type ii = 0; ii != points.size(); ii++) {
+                std::cout << points[ii] << endl;
+            }
+
             ++counter;
-            if(n < 2)
+            std::cout << counter << std::endl;
+            if (step > n) {
+                std::cout << points.at(0).x << points.at(0).y << std::endl;
                 return EOS;
-            if (counter == n) {
+            }
+            if (counter == (n - 1) / step) {
+                std::cout << "blabla" << std::endl;
                 counter = 0;
-                n = n >> 1;
-                for (long i = 1; i <= n; ++i)
+                step = step << 1;
+                for (long i = 1; i <= n; i += step)
                     ff_send_out((void *) i);
             }
             return GO_ON;
@@ -209,7 +222,7 @@ int *find_seam(Mat &image){
 
         long counter;
         int n;
-        int step = 2;
+        int step;
         vector<Point> points;
     };
     struct Stage1 : ff_monode_t<long> {
@@ -229,7 +242,7 @@ int *find_seam(Mat &image){
 
     if (pipe1.run_and_wait_end() < 0) error("running pipe");
 
-    std::cout << results.at(0).x << results.at(0).y << std::endl;
+    std::cout << s0.points.at(0).x << s0.points.at(0).y << std::endl;
 
     int dp[H][W];
     for(int c = 0; c < W; c++){
