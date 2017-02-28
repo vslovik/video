@@ -6,10 +6,10 @@ using namespace std;
 using namespace ff;
 
 struct PMinState {
-    PMinState(const ulong n, ulong step, vector<Point> points):
-            n(n), step(step), points(points) {};
+    PMinState(const ulong n, vector<Point> points):
+            n(n), points(points) {};
     const ulong n;
-    ulong step;
+    ulong step = 2;
     vector<Point> points;
 };
 
@@ -66,12 +66,12 @@ template <unsigned N, typename T>
 Point pmin(T (&s)[N], int nw) { // instead of Point pmin(long* s, int nw)
 
     vector<Point> points;
-    for (int i = 0; i < 11; i++) {
+    for (int i = 0; i < N; i++) {
         Point *p = new Point(i, s[i]);
         points.push_back(*p);
     }
 
-    st = new PMinState(N, 2, points);
+    st = new PMinState(N, points);
 
     ff_Farm<long> farm(FF, nw);
     farm.remove_collector();
@@ -83,13 +83,18 @@ Point pmin(T (&s)[N], int nw) { // instead of Point pmin(long* s, int nw)
     return st->points.at(0);
 };
 
-int main() {
-    int nw = 2;
-    long s[] = {8, 7, 1, 67, 6, 9, 4, 3, 88, 0, 7};
+int main(int argc, char *argv[]) {
+//    assert(argc>1);
+//    int nworkers = atoi(argv[1]);
+//    assert(nworkers>=2);
 
-    Point p = pmin(s, nw);
+    int nworkers = 4;
 
-    std::cout << "min: " << p.x << std::endl;
+    long s[] = {8, 7, 1, 67, 6, 9, 4, 3, 99, 8, 88, 2, 7};
+
+    Point p = pmin(s, nworkers);
+
+    std::cout << "min: " << p.y << std::endl;
 
     return 0;
 }
