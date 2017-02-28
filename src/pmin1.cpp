@@ -6,7 +6,8 @@ using namespace std;
 using namespace ff;
 
 struct PMinState {
-    PMinState(const ulong n, ulong step, vector<Point> points): n(n), step(step), points(points) {};
+    PMinState(const ulong n, ulong step, vector<Point> points):
+            n(n), step(step), points(points) {};
     const ulong n;
     ulong step;
     vector<Point> points;
@@ -14,18 +15,14 @@ struct PMinState {
 
 PMinState* st;
 
-ulong n = 11;
-int step = 2;
-vector<Point> points;
-
 long *FF(long *task,ff_node*const) {
     ulong left = (ulong) *task - 1;
-    ulong right = min(n - 1, (ulong) *task - 1 + step - 1);
+    ulong right = min(st->n - 1, (ulong) *task - 1 + st->step - 1);
 
-    if (points.at(left).y > points.at(right).y) {
-        points.at(left) = points.at(right);
+    if (st->points.at(left).y > st->points.at(right).y) {
+        st->points.at(left) = st->points.at(right);
     } else {
-        points.at(right) = points.at(left);
+        st->points.at(right) = st->points.at(left);
     }
 
     return task;
@@ -39,7 +36,7 @@ struct Scheduler: ff_node_t<long> {
 
     long *svc(long *task) {
         if (task == nullptr) {
-            for (long i = 1; i < st->n; i += step) {
+            for (long i = 1; i < st->n; i += st->step) {
                 ff_send_out(new long(i));
             }
             return GO_ON;
@@ -48,14 +45,14 @@ struct Scheduler: ff_node_t<long> {
         delete task;
 
         ++counter;
-        if (counter == 1 + (st->n - 1)/step) {
+        if (counter == 1 + (st->n - 1)/st->step) {
             counter = 0;
-            step = step << 1;
-            for (long i = 1; i <= st->n; i += step)
+            st->step = st->step << 1;
+            for (long i = 1; i <= st->n; i += st->step)
                 ff_send_out(new long(i));
         }
 
-        if (step > st->n) {
+        if (st->step > st->n) {
             return EOS;
         }
 
@@ -65,29 +62,34 @@ struct Scheduler: ff_node_t<long> {
     long counter;
 };
 
-void pmin() {
-    int nw = 2;
+template <unsigned N, typename T>
+Point pmin(T (&s)[N], int nw) { // instead of Point pmin(long* s, int nw)
+
+    vector<Point> points;
+    for (int i = 0; i < 11; i++) {
+        Point *p = new Point(i, s[i]);
+        points.push_back(*p);
+    }
+
+    st = new PMinState(N, 2, points);
+
     ff_Farm<long> farm(FF, nw);
     farm.remove_collector();
     Scheduler S;
     farm.add_emitter(S);
     farm.wrap_around();
     if (farm.run_and_wait_end()<0) error("running farm");
+
+    return st->points.at(0);
 };
 
 int main() {
+    int nw = 2;
+    long s[] = {8, 7, 1, 67, 6, 9, 4, 3, 88, 0, 7};
 
-    int s[11] = {8, 7, 1, 67, 6, 9, 4, 3, 88, 0, 7};
-    for (int i = 0; i < n; i++) {
-        Point *p = new Point(i, s[i]);
-        points.push_back(*p);
-    }
+    Point p = pmin(s, nw);
 
-    st = new PMinState(11, 2, points);
-
-    pmin();
-
-    std::cout << points.at(0).x << points.at(0).y << std::endl;
+    std::cout << "min: " << p.x << std::endl;
 
     return 0;
 }
