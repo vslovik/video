@@ -17,7 +17,8 @@ set(SOURCE_FILES
 		src/video.cpp
 		src/main.cpp
 		src/min.cpp
-		src/pmin.cpp
+#		src/pmin.cpp
+		src/pmin1.cpp
     )
 
 add_executable(video ${SOURCE_FILES})
