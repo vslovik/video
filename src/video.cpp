@@ -6,6 +6,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
+#include <limits>
 
 using namespace cv;
 using namespace std;
@@ -13,10 +14,10 @@ using namespace ff;
 
 const long N=10;
 const long streamlength=20;
+int maxint = std::numeric_limits<int>::max();
+
 
 State *process;
-
-
 
 void energy_function(Mat &image, Mat &output){
     Mat dx, dy;
@@ -31,218 +32,143 @@ void energy_function(Mat &image, Mat &output){
     output.convertTo(output, CV_8U);
 }
 
+struct PMinState {
+    PMinState(const int n, vector<Point> points):
+            n(n), points(points) {};
+    const int n;
+    int step = 2;
+    vector<Point> points;
+};
+
+PMinState* st;
+
+int *FF(int *task,ff_node*const) {
+    ulong left = (ulong) *task - 1;
+    ulong right = (ulong) min(st->n - 1, *task - 1 + st->step - 1);
+
+    if (st->points.at(left).y > st->points.at(right).y) {
+        st->points.at(left) = st->points.at(right);
+    } else {
+        st->points.at(right) = st->points.at(left);
+    }
+
+    return task;
+}
+
+struct Scheduler: ff_node_t<int> {
+    int svc_init() {
+        counter = 1;
+        return 0;
+    }
+
+    int *svc(int *task) {
+        if (task == nullptr) {
+            for (int i = 1; i < st->n; i += st->step) {
+                ff_send_out(new int(i));
+            }
+            return GO_ON;
+        }
+
+        delete task;
+
+        ++counter;
+        if (counter == 1 + (st->n - 1)/st->step) {
+            counter = 0;
+            st->step = st->step << 1;
+            for (int i = 1; i <= st->n; i += st->step)
+                ff_send_out(new int(i));
+        }
+
+        if (st->step > st->n) {
+            return EOS;
+        }
+
+        return GO_ON;
+    }
+
+    int counter;
+};
+
+Point pmin(int* s, const int N, int nw){
+
+    vector<Point> points;
+    for (int i = 0; i < N; i++) {
+        Point *p = new Point(i, s[i]);
+        points.push_back(*p);
+    }
+
+    st = new PMinState(N, points);
+
+    ff_Farm<int> farm(FF, nw);
+    farm.remove_collector();
+    Scheduler S;
+    farm.add_emitter(S);
+    farm.wrap_around();
+    if (farm.run_and_wait_end()<0) error("running farm");
+
+    return st->points.at(0);
+};
+
 int *find_seam(Mat &image){
     int H = image.rows;
     int W = image.cols;
     int *seams;
     int *scores;
-    int *buffer;
     int* prev = new int[W];
-    long nworkers = 1;
+    int nworkers = 1;
     int* row = new int[W];
 
     seams = (int *)malloc(W*H*sizeof(int));
     scores = (int *)malloc(W*sizeof(int));
 
-
-
     // Calculate row values
     ff::ParallelFor pf(nworkers, false);
-//    for(int r = 0; r < H; r++){
-//
-//
-//        pf.parallel_for(0L,W,[row, r, W, prev, &image](int c) {
-//            row[c] = (int)image.at<uchar>(r,c);
-//            if(r > 0) {
-//                int left = c > 0 ? prev[c - 1] : 0;
-//                int right = c < W - 1 ? prev[c + 1] : 0;
-//                row[c] += min({left, prev[c], right});
-//            }
-//        });
-//
-//        // Advance seams
-//        pf.parallel_for(0L,W,[&row, r, W, H, &seams, &scores](int c) {
-//            if(r > 0) {
-//                int left = c > 0 ? row[c - 1] : 0;
-//                int right = c < W - 1 ? row[c + 1] : 0;
-//                int middle = row[c];
-//                int m = min({left, middle, right});
-//                scores[c] = m;
-//                if(m == left)
-//                    seams[r * H + c] = c - 1;
-//                else if(m == right)
-//                    seams[r * H + c] = c + 1;
-//                else
-//                    seams[r*H + c] = c;
-//            } else
-//                seams[r*H + c] = row[c];
-//        });
-//
-//        prev = row;
-//    }
+    for(int r = 0; r < W; r++){
 
+        pf.parallel_for(0L,W,[&row, r, W, prev, &image](int c) {
+            row[c] = (int)image.at<uchar>(r,c);
+            if(r > 0) {
+                int left = c > 0 ? prev[c - 1] : maxint;
+                int right = c < W - 1 ? prev[c + 1] : maxint;
+                row[c] += min({left, prev[c], right});
+            }
+        });
 
+        // Advance seams
+        pf.parallel_for(0L,W,[&row, r, W, H, &seams, &scores](int c) {
+            if(r > 0) {
+                int left = c > 0 ? row[c - 1] : maxint;
+                int right = c < W - 1 ? row[c + 1] : maxint;
+                int middle = row[c];
+                int m = min({left, middle, right});
+                scores[c] = m;
+                if(m == left)
+                    seams[r * H + c] = c - 1;
+                else if(m == right)
+                    seams[r * H + c] = c + 1;
+                else
+                    seams[r*H + c] = c;
+            } else
+                seams[r*H + c] = row[c];
+        });
 
-//    int s[8] = {8, 7, 1, 67, 6, 9, 4, 3};
-//    int N = sizeof(s)/sizeof(int);
-//    vector<Point> b;
-//    for(int i = 0; i < N; i++){
-//        Point* p = new Point(i, s[i]);
-//        b.push_back(*p);
-//    }
-//
-//
-//    int step = 2;
-//    while(1) {
-//        ff::ParallelFor pfi(nworkers, false);
-//        pfi.parallel_for(0L, N, [N, &b, &step](int c) {
-//            if (c % step == 0) {
-//                std::cout << c << "-" << step << endl;
-//                if (c + step - 1 < N ) {
-//                    int m = min(b[c].y, b[c + step - 1].y);
-//                    if(m == b[c + step - 1].y) {
-//                        b[c] = b[c + step - 1];
-//                    } else {
-//                        b[c + step - 1] = b[c];
-//                    }
-//                    for(int j=0; j < N; j++) {
-//                        std::cout << b[j].x << b[j].y << std::endl;
-//                    }
-//                }
-//            }
-//        });
-//
-//        std::cout << b[0].x << b[0].y << std::endl;
-//
-//        step = step << 1;
-//        if(step > N)
-//            break;
-//    }
-//
-//    std::cout << b[0].x << b[0].y << std::endl;
-//
-//    step = step >> 1;
-//    std::cout << "step" << step << endl;
-//    int res = (step < N && b[0].y > b[step].y) ? b[step].x : b[0].x;
-//    std::cout << res << endl;
-
-    //==================================================================================================================
-
-//    int s[8] = {8, 7, 1, 67, 6, 9, 4, 3};
-//    int N = sizeof(s)/sizeof(int);
-//
-//    vector<Point> from;
-//
-//    for(int i = 0; i < N; i++){
-//        Point* p = new Point(i, s[i]);
-//        from.push_back(*p);
-//    }
-//    for (int j = 0; j < N; j++) {
-//        std::cout << "++++" << from[j].x << "-" <<  from[j].y << std::endl;
-//    }
-//
-//    vector<Point> to;
-//    while(N) {
-//        ff::ParallelFor pfi(nworkers, false);
-//        pfi.parallel_for(0L, N, [N, &from, &to](int c) {
-//            if (c % 2 == 0) {
-//                if (c + 1 < N) {
-//                    from[c + 1].y <= from[c].y ? to.push_back(from[c + 1]) : to.push_back(from[c]);
-//                }
-//            }
-//        });
-//        N = N >> 1;
-//        from = to;
-//        to.clear();
-//    }
-//
-//    std::cout << to[0].x << to[0].y << endl;
-
-
-    int s[11] = {8, 7, 1, 67, 6, 9, 4, 3, 88, 0, 7};
-    int N = sizeof(s)/sizeof(int);
-    vector<Point> results;
-
-    for(int i = 0; i < N; i++){
-        Point* p = new Point(i, s[i]);
-        results.push_back(*p);
+        prev = row;
     }
 
-    using namespace ff;
+    int fin[W] {0};
+    for(int c = 0; c < W; c++){
+        fin[c] = seams[(W-1)*H + c];
+    }
 
-    struct Stage0 : ff_minode_t<long> {
-        Stage0(vector<Point> points, int n): points(points), n(n) {}
+    Point p = pmin(fin, W, nworkers);
 
-        int svc_init() {
-            counter = 0;
-            step = 2;
-            return 0;
-        }
+    std::cout << "min: " << p.x << p.y << std::endl;
 
-        long *svc(long *task) {
-            std::cout << n << endl;
-            if (task == nullptr) {
-                for (long i = 1; i < n; i += step) {
-                    ff_send_out((void *) i);
-                }
-                return GO_ON;
-            }
-            printf("Stage0 has got task %ld\n", (ulong) task);
+    int found[W] {0};
+    for(int r = 0; r < H; r++){
+        found[r] = seams[r*H + p.x];
+    }
 
-            ulong left = (ulong) task - 1;
-            ulong right =  min((ulong) n - 1, (ulong)task - 1 + step - 1);
-            int m = min(points.at(left).y, points.at(right).y);
-            if (m == points.at(right).y) {
-                points.at(left) = points.at(right);
-                std::cout << task << points.at(left) << points.at(right) << endl;
-            } else {
-                points.at(right) = points.at(left);
-                std::cout << task << points.at(right) << points.at(left) << endl;
-            }
-
-            for (std::vector<int>::size_type ii = 0; ii != points.size(); ii++) {
-                std::cout << points[ii] << endl;
-            }
-
-            ++counter;
-            std::cout << counter << std::endl;
-            if (step > n) {
-                std::cout << points.at(0).x << points.at(0).y << std::endl;
-                return EOS;
-            }
-            if (counter == (n - 1) / step) {
-                std::cout << "blabla" << std::endl;
-                counter = 0;
-                step = step << 1;
-                for (long i = 1; i <= n; i += step)
-                    ff_send_out((void *) i);
-            }
-            return GO_ON;
-        }
-
-        long counter;
-        int n;
-        int step;
-        vector<Point> points;
-    };
-    struct Stage1 : ff_monode_t<long> {
-        long *svc(long *task) {
-            //if ((long) task & 0x1) // sends odd tasks back
-                ff_send_out_to(task, 0);
-            //else ff_send_out_to(task, 1);
-            return GO_ON;
-        }
-    };
-
-    Stage0 s0(results, N);
-    Stage1 s1;
-
-    ff_Pipe<long> pipe1(s0, s1);
-    pipe1.wrap_around();
-
-    if (pipe1.run_and_wait_end() < 0) error("running pipe");
-
-    std::cout << s0.points.at(0).x << s0.points.at(0).y << std::endl;
 
     int dp[H][W];
     for(int c = 0; c < W; c++){
@@ -261,7 +187,7 @@ int *find_seam(Mat &image){
         }
     }
 
-    int min_value = 2147483647; //infinity
+    int min_value = maxint; //infinity
     int min_index = -1;
     for(int c = 0; c < W; c++)
         if (dp[H-1][c] < min_value) {

@@ -7,18 +7,18 @@ project(video)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -I /usr/local/include/ff -lpthread -pthread")
 
 set(SOURCE_FILES
-		src/block.h
-		src/graph.h
-		src/graph.cpp
-		src/maxflow.cpp
+#		src/block.h
+#		src/graph.h
+#		src/graph.cpp
+#		src/maxflow.cpp
 		src/carving.hpp
 		src/carving.cpp
 		src/video.hpp
 		src/video.cpp
 		src/main.cpp
-		src/min.cpp
+#		src/min.cpp
 #		src/pmin.cpp
-		src/pmin1.cpp
+#		src/pmin1.cpp
     )
 
 add_executable(video ${SOURCE_FILES})
