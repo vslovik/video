@@ -123,16 +123,18 @@ int *find_seam(Mat &image){
 
     // Calculate row values
     ff::ParallelFor pf(nworkers, false);
-    for(int r = 0; r < W; r++){
+    for(int r = 0; r < H; r++){
 
-        pf.parallel_for(0L,W,[&row, r, W, prev, &image](int c) {
-            row[c] = (int)image.at<uchar>(r,c);
+        pf.parallel_for(0L,W,[&row, r, W, &image](int c) {
+            int next = (int)image.at<uchar>(r,c);
             if(r > 0) {
-                int left = c > 0 ? prev[c - 1] : maxint;
-                int right = c < W - 1 ? prev[c + 1] : maxint;
-                row[c] += min({left, prev[c], right});
+                int left = c > 0 ? row[c - 1] : maxint;
+                int right = c < W - 1 ? row[c + 1] : maxint;
+                next += min({left, row[c], right});
             }
+            row[c] = next;
         });
+
 
         // Advance seams
         pf.parallel_for(0L,W,[&row, r, W, H, &seams, &scores](int c) {
@@ -143,31 +145,23 @@ int *find_seam(Mat &image){
                 int m = min({left, middle, right});
                 scores[c] = m;
                 if(m == left)
-                    seams[r * H + c] = c - 1;
+                    seams[r * W + c] = c - 1;
                 else if(m == right)
-                    seams[r * H + c] = c + 1;
+                    seams[r * W + c] = c + 1;
                 else
-                    seams[r*H + c] = c;
+                    seams[r*W + c] = c;
             } else
-                seams[r*H + c] = row[c];
+                seams[r*W + c] = row[c];
         });
 
-        prev = row;
+
     }
 
-    int fin[W] {0};
-    for(int c = 0; c < W; c++){
-        fin[c] = seams[(W-1)*H + c];
-    }
 
-    Point p = pmin(fin, W, nworkers);
+    Point p = pmin(scores, W, nworkers);
 
-    std::cout << "min: " << p.x << p.y << std::endl;
+    std::cout << "min: " << p.x << "---" << p.y << scores[885] << scores[886] << scores[887] << std::endl;
 
-    int found[W] {0};
-    for(int r = 0; r < H; r++){
-        found[r] = seams[r*H + p.x];
-    }
 
 
     int dp[H][W];
@@ -189,11 +183,28 @@ int *find_seam(Mat &image){
 
     int min_value = maxint; //infinity
     int min_index = -1;
+
+    for(int c = 0; c < W; c++)
+        if (row[c] < min_value) {
+            min_value = row[c];
+            min_index = c;
+        }
+
+    cout << min_value << endl;
+    cout << min_index << endl;
+
+    min_value = maxint; //infinity
+    min_index = -1;
+
     for(int c = 0; c < W; c++)
         if (dp[H-1][c] < min_value) {
             min_value = dp[H - 1][c];
             min_index = c;
         }
+
+    cout << min_value << endl;
+    cout << min_index << endl;
+
 
     int *path = new int[H];
     Point pos(H-1,min_index);
@@ -224,6 +235,8 @@ int *find_seam(Mat &image){
         }
         path[pos.x] = pos.y;
     }
+
+    *path = seams[(H-1) * W + p.x];
 
     return path;
 }
