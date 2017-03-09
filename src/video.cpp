@@ -1,21 +1,42 @@
-#include "video.hpp"
-#include <ff/parallel_for.hpp>
-#include <ff/farm.hpp>
-#include <ff/pipeline.hpp>
+/*
+* File: video.cpp
+* ---------------
+* ToDo File description
+*/
+#include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include <iostream>
-#include <limits>
+#include "pcarving.h"
 
 using namespace cv;
 using namespace std;
-using namespace ff;
 
-const long N=10;
-const long streamlength=20;
-int maxint = std::numeric_limits<int>::max();
+struct State {
+    static const int ver = 10;
+    static const int hor = 0;
+    Size size;
+    string output;
+    double fps;
+    int numFrames;
+    Mat inFrame, outFrame;
 
+    State(
+            double fps,
+            int numFrames,
+            Size size,
+            Mat inFrame,
+            Mat outFrame,
+            string output = "out.avi"
+    ) :
+            fps(fps),
+            numFrames(numFrames),
+            size(size),
+            inFrame(inFrame),
+            outFrame(outFrame),
+            output(output)
+    {}
+};
 
 State *process;
 
@@ -28,280 +49,9 @@ void energy_function(Mat &image, Mat &output){
     double min_value, max_value, Z;
     minMaxLoc(output, &min_value, &max_value);
     Z = 1/max_value * 255;
-    output = output * Z;                    //normalize
+    output = output * Z;
     output.convertTo(output, CV_8U);
 }
-
-struct PMinState {
-    PMinState(const int n, vector<Point> points):
-            n(n), points(points) {};
-    const int n;
-    int step = 2;
-    vector<Point> points;
-};
-
-PMinState* st;
-
-int *FF(int *task,ff_node*const) {
-    ulong left = (ulong) *task - 1;
-    ulong right = (ulong) min(st->n - 1, *task - 1 + st->step - 1);
-
-    if (st->points.at(left).y > st->points.at(right).y) {
-        st->points.at(left) = st->points.at(right);
-    } else {
-        st->points.at(right) = st->points.at(left);
-    }
-
-    return task;
-}
-
-struct Scheduler: ff_node_t<int> {
-    int svc_init() {
-        counter = 1;
-        return 0;
-    }
-
-    int *svc(int *task) {
-        if (task == nullptr) {
-            for (int i = 1; i < st->n; i += st->step) {
-                ff_send_out(new int(i));
-            }
-            return GO_ON;
-        }
-
-        delete task;
-
-        ++counter;
-        if (counter == 1 + (st->n - 1)/st->step) {
-            counter = 0;
-            st->step = st->step << 1;
-            for (int i = 1; i <= st->n; i += st->step)
-                ff_send_out(new int(i));
-        }
-
-        if (st->step > st->n) {
-            return EOS;
-        }
-
-        return GO_ON;
-    }
-
-    int counter;
-};
-
-Point pmin(int* s, const int N, int nw){
-
-    vector<Point> points;
-    for (int i = 0; i < N; i++) {
-        Point *p = new Point(i, s[i]);
-        points.push_back(*p);
-    }
-
-    st = new PMinState(N, points);
-
-    ff_Farm<int> farm(FF, nw);
-    farm.remove_collector();
-    Scheduler S;
-    farm.add_emitter(S);
-    farm.wrap_around();
-    if (farm.run_and_wait_end()<0) error("running farm");
-
-    return st->points.at(0);
-};
-
-int *find_seam(Mat &image){
-    int H = image.rows;
-    int W = image.cols;
-    int *seams;
-    int *scores;
-    int* prev = new int[W];
-    int nworkers = 1;
-    int* row = new int[W];
-
-    seams = (int *)malloc(W*H*sizeof(int));
-    scores = (int *)malloc(W*sizeof(int));
-
-    // Calculate row values
-    ff::ParallelFor pf(nworkers, false);
-    for(int r = 0; r < H; r++){
-
-        pf.parallel_for(0L,W,[&row, r, W, &image](int c) {
-            int next = (int)image.at<uchar>(r,c);
-            if(r > 0) {
-                int left = c > 0 ? row[c - 1] : maxint;
-                int right = c < W - 1 ? row[c + 1] : maxint;
-                next += min({left, row[c], right});
-            }
-            row[c] = next;
-        });
-
-
-        // Advance seams
-        pf.parallel_for(0L,W,[&row, r, W, H, &seams, &scores](int c) {
-            if(r > 0) {
-                int left = c > 0 ? row[c - 1] : maxint;
-                int right = c < W - 1 ? row[c + 1] : maxint;
-                int middle = row[c];
-                int m = min({left, middle, right});
-                scores[c] = m;
-                if(m == left)
-                    seams[r * W + c] = c - 1;
-                else if(m == right)
-                    seams[r * W + c] = c + 1;
-                else
-                    seams[r*W + c] = c;
-            } else
-                seams[r*W + c] = row[c];
-        });
-
-
-    }
-
-
-    Point p = pmin(scores, W, nworkers);
-
-    std::cout << "min: " << p.x << "---" << p.y << scores[885] << scores[886] << scores[887] << std::endl;
-
-
-
-    int dp[H][W];
-    for(int c = 0; c < W; c++){
-        dp[0][c] = (int)image.at<uchar>(0,c);
-    }
-
-    for(int r = 1; r < H; r++){
-        for(int c = 0; c < W; c++){
-            if (c == 0)
-                dp[r][c] = min(dp[r-1][c+1], dp[r-1][c]);
-            else if (c == W-1)
-                dp[r][c] = min(dp[r-1][c-1], dp[r-1][c]);
-            else
-                dp[r][c] = min({dp[r-1][c-1], dp[r-1][c], dp[r-1][c+1]});
-            dp[r][c] += (int)image.at<uchar>(r,c);
-        }
-    }
-
-    int min_value = maxint; //infinity
-    int min_index = -1;
-
-    for(int c = 0; c < W; c++)
-        if (row[c] < min_value) {
-            min_value = row[c];
-            min_index = c;
-        }
-
-    cout << min_value << endl;
-    cout << min_index << endl;
-
-    min_value = maxint; //infinity
-    min_index = -1;
-
-    for(int c = 0; c < W; c++)
-        if (dp[H-1][c] < min_value) {
-            min_value = dp[H - 1][c];
-            min_index = c;
-        }
-
-    cout << min_value << endl;
-    cout << min_index << endl;
-
-
-    int *path = new int[H];
-    Point pos(H-1,min_index);
-    path[pos.x] = pos.y;
-
-    while (pos.x != 0){
-        int value = dp[pos.x][pos.y] - (int)image.at<uchar>(pos.x,pos.y);
-        int r = pos.x, c = pos.y;
-        if (c == 0){
-            if (value == dp[r-1][c+1])
-                pos = Point(r-1,c+1);
-            else
-                pos = Point(r-1,c);
-        }
-        else if (c == W-1){
-            if (value == dp[r-1][c-1])
-                pos = Point(r-1,c-1);
-            else
-                pos = Point(r-1,c);
-        }
-        else{
-            if (value == dp[r-1][c-1])
-                pos = Point(r-1,c-1);
-            else if (value == dp[r-1][c+1])
-                pos = Point(r-1,c+1);
-            else
-                pos = Point(r-1,c);
-        }
-        path[pos.x] = pos.y;
-    }
-
-    *path = seams[(H-1) * W + p.x];
-
-    return path;
-}
-
-int *find_seam_(Mat &image){
-    int H = image.rows, W = image.cols;
-
-    int dp[H][W];
-    for(int c = 0; c < W; c++){
-        dp[0][c] = (int)image.at<uchar>(0,c);
-    }
-
-    for(int r = 1; r < H; r++){
-        for(int c = 0; c < W; c++){
-            if (c == 0)
-                dp[r][c] = min(dp[r-1][c+1], dp[r-1][c]);
-            else if (c == W-1)
-                dp[r][c] = min(dp[r-1][c-1], dp[r-1][c]);
-            else
-                dp[r][c] = min({dp[r-1][c-1], dp[r-1][c], dp[r-1][c+1]});
-            dp[r][c] += (int)image.at<uchar>(r,c);
-        }
-    }
-
-    int min_value = 2147483647; //infinity
-    int min_index = -1;
-    for(int c = 0; c < W; c++)
-        if (dp[H-1][c] < min_value) {
-            min_value = dp[H - 1][c];
-            min_index = c;
-        }
-
-    int *path = new int[H];
-    Point pos(H-1,min_index);
-    path[pos.x] = pos.y;
-
-    while (pos.x != 0){
-        int value = dp[pos.x][pos.y] - (int)image.at<uchar>(pos.x,pos.y);
-        int r = pos.x, c = pos.y;
-        if (c == 0){
-            if (value == dp[r-1][c+1])
-                pos = Point(r-1,c+1);
-            else
-                pos = Point(r-1,c);
-        }
-        else if (c == W-1){
-            if (value == dp[r-1][c-1])
-                pos = Point(r-1,c-1);
-            else
-                pos = Point(r-1,c);
-        }
-        else{
-            if (value == dp[r-1][c-1])
-                pos = Point(r-1,c-1);
-            else if (value == dp[r-1][c+1])
-                pos = Point(r-1,c+1);
-            else
-                pos = Point(r-1,c);
-        }
-        path[pos.x] = pos.y;
-    }
-
-    return path;
-}
-
 
 void remove_pixels(Mat& image, Mat& output, int *seam){
     for(int r = 0; r < image.rows; r++ ) {
