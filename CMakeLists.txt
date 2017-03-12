@@ -12,6 +12,7 @@ set(SOURCE_FILES
 		src/video.h
 		src/video.cpp
 		src/main.cpp
+		src/ffsobel.cpp
     )
 
 add_executable(video ${SOURCE_FILES})
