@@ -66,3 +66,14 @@ int *find_seam(Mat &image){
 
     return path;
 }
+
+void remove_pixels(Mat& image, Mat& output, int *seam){
+    for(int r = 0; r < image.rows; r++ ) {
+        for (int c = 0; c < image.cols; c++){
+            if (c >= seam[r])
+                output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c+1);
+            else
+                output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c);
+        }
+    }
+}

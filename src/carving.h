@@ -21,4 +21,12 @@ using namespace cv;
 */
 int *find_seam(Mat &image);
 
+/*
+* Function: remove_pixels
+* Usage: remove_pixels();
+* -------------------
+* Removes found seam
+*/
+void remove_pixels(Mat& image, Mat& output, int *seam);
+
 #endif

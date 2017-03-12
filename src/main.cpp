@@ -23,10 +23,12 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    int num_workers = 6;
+
     const string source = argv[1];
 
     try {
-        process_video(source);
+        process_video(source, num_workers);
     } catch(string e){
         cout << e << endl;
         return -1;

@@ -85,8 +85,7 @@ Point parallel_min(int* s, const int N, int nw){
     return st->points.at(0);
 };
 
-int *find_seam(Mat &image){
-    int num_workers = 6;
+int *find_seam(Mat &image, int num_workers = 1){
     int H = image.rows;
     int W = image.cols;
     int *seams;
@@ -100,7 +99,7 @@ int *find_seam(Mat &image){
     for(int r = 0; r < H; r++){
 
         // Calculate row values
-        pf.parallel_for(0L,W,[&row, r, W, &image](int c) {
+        pf.parallel_for(0L, W, [&row, r, W, &image](int c) {
             int next = (int)image.at<uchar>(r,c);
             if(r > 0) {
                 int left = c > 0 ? row[c - 1] : max_int;
@@ -135,4 +134,19 @@ int *find_seam(Mat &image){
         path[r] = seams[r * W + p.x];
 
     return path;
+}
+
+void remove_pixels(Mat& image, Mat& output, int *seam, int num_workers = 1){
+    int W = image.cols;
+
+    ff::ParallelFor pf(num_workers, false);
+
+    for(int r = 0; r < image.rows; r++ ) {
+        pf.parallel_for(0L, W, [r, W, &image, &seam, &output](int c) {
+            if (c >= seam[r])
+                output.at<Vec3b>(r,c) = image.at<Vec3b>(r, c + 1);
+            else
+                output.at<Vec3b>(r,c) = image.at<Vec3b>(r, c);
+        });
+    }
 }

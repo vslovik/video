@@ -1,12 +1,12 @@
 /*
 * File: video.cpp
 * ---------------
-* ToDo File description
 */
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <ff/parallel_for.hpp>
 #include "pcarving.h"
 
 using namespace cv;
@@ -53,17 +53,6 @@ void energy_function(Mat &image, Mat &output){
     output.convertTo(output, CV_8U);
 }
 
-void remove_pixels(Mat& image, Mat& output, int *seam){
-    for(int r = 0; r < image.rows; r++ ) {
-        for (int c = 0; c < image.cols; c++){
-            if (c >= seam[r])
-                output.at<Vec3b>(r,c) = image.at<Vec3b>(r,c+1);
-            else
-                output.at<Vec3b>(r,c) = image.at<Vec3b>(r,c);
-        }
-    }
-}
-
 void rot90(Mat &matImage, int rotflag){
     //1=CW, 2=CCW, 3=180
     if (rotflag == 1){
@@ -79,7 +68,7 @@ void rot90(Mat &matImage, int rotflag){
     }
 }
 
-void remove_seam(Mat& image, char orientation = 'v'){
+void remove_seam(Mat& image, char orientation = 'v', int nw = 1){
     if (orientation == 'h')
         rot90(image,1);
     int H = image.rows, W = image.cols;
@@ -90,16 +79,16 @@ void remove_seam(Mat& image, char orientation = 'v'){
     Mat eimage;
     energy_function(gray, eimage);
 
-    int* seam = find_seam(eimage);
+    int* seam = find_seam(eimage, nw);
 
     Mat output(H,W-1, CV_8UC3);
-    remove_pixels(image, output, seam);
+    remove_pixels(image, output, seam, nw);
     if (orientation == 'h')
         rot90(output,2);
     image = output;
 }
 
-void realTime(Mat& image){
+void realTime(Mat& image, int num_workers = 1){
     cout << "UP ARROW: Shrink horizontally" << endl;
     cout << "LEFT ARROW: Shrink vertically" << endl;
     cout << "q: Quit" << endl;
@@ -112,24 +101,24 @@ void realTime(Mat& image){
         if (key == 'q')
             break;
         else if (key == 'v')
-            remove_seam(image, 'v');
+            remove_seam(image, 'v', num_workers);
         else if (key == 'h')
-            remove_seam(image, 'h');
+            remove_seam(image, 'h', num_workers);
     }
 }
 
-void shrink_image(Mat& image, int new_cols, int new_rows, int width, int height){
+void shrink_image(Mat& image, int new_cols, int new_rows, int width, int height, int num_workers = 1){
     cout << endl << "Processing image..." << endl;
     for(int i = 0; i < width - new_cols; i++){
-        remove_seam(image, 'v');
+        remove_seam(image, 'v', num_workers);
     }
     for(int i = 0; i < height - new_rows; i++){
-        remove_seam(image, 'h');
+        remove_seam(image, 'h', num_workers);
     }
 }
 
 
-void process_video(string source)
+void process_video(string source, int num_workers = 1)
 {
 //    VideoCapture inputVideo(source);
 //    if (!inputVideo.isOpened())
@@ -180,7 +169,7 @@ void process_video(string source)
 
         Mat image;
         image = imread("data/monteverdi_ritratto.jpg", 1);
-        realTime(image);
+        realTime(image, num_workers);
 
 
 //        outputVideo << process->inFrame;

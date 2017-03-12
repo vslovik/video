@@ -19,6 +19,14 @@ using namespace cv;
 * with minimal image distortion
 * as parallel computing task
 */
-int *find_seam(Mat &image);
+int *find_seam(Mat &image, int num_workers = 1);
+
+/*
+* Function: remove_pixels
+* Usage: remove_pixels();
+* -------------------
+* Removes found seam
+*/
+void remove_pixels(Mat& image, Mat& output, int *seam, int num_workers = 1);
 
 #endif
