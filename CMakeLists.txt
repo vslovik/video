@@ -9,10 +9,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -I /usr/local/include/ff -lpt
 set(SOURCE_FILES
 		src/pcarving.cpp
 		src/pcarving.h
+		src/psobel.cpp
+		src/psobel.h
 		src/video.h
 		src/video.cpp
 		src/main.cpp
-		src/ffsobel.cpp
     )
 
 add_executable(video ${SOURCE_FILES})

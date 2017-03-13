@@ -40,32 +40,6 @@ struct State {
 
 State *process;
 
-void energy_function(Mat &image, Mat &output){
-    Mat dx, dy;
-    Sobel(image, dx, CV_64F, 1, 0);
-    Sobel(image, dy, CV_64F, 0, 1);
-    magnitude(dx,dy, output);
-
-    double min_value, max_value, Z;
-    minMaxLoc(output, &min_value, &max_value);
-    Z = 1/max_value * 255;
-    output = output * Z;
-    output.convertTo(output, CV_8U);
-}
-
-void energy_function__(Mat &image, Mat &output){
-    Mat dx, dy;
-    Sobel(image, dx, CV_64F, 1, 0);
-    Sobel(image, dy, CV_64F, 0, 1);
-    magnitude(dx,dy, output);
-
-    double min_value, max_value, Z;
-    minMaxLoc(output, &min_value, &max_value);
-    Z = 1/max_value * 255;
-    output = output * Z;
-    output.convertTo(output, CV_8U);
-}
-
 void rot90(Mat &matImage, int rotflag){
     //1=CW, 2=CCW, 3=180
     if (rotflag == 1){
@@ -81,7 +55,7 @@ void rot90(Mat &matImage, int rotflag){
     }
 }
 
-void remove_seam(Mat& image, char orientation = 'v', int nw = 1){
+void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
     if (orientation == 'h')
         rot90(image,1);
     int H = image.rows, W = image.cols;
@@ -92,10 +66,10 @@ void remove_seam(Mat& image, char orientation = 'v', int nw = 1){
     Mat eimage;
     energy_function(gray, eimage);
 
-    int* seam = find_seam(eimage, nw);
+    int* seam = find_seam(eimage, num_workers);
 
-    Mat output(H,W-1, CV_8UC3);
-    remove_pixels(image, output, seam, nw);
+    Mat output(H, W-1, CV_8UC3);
+    remove_pixels(image, output, seam, num_workers);
     if (orientation == 'h')
         rot90(output,2);
     image = output;

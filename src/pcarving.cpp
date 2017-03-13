@@ -1,6 +1,7 @@
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <ff/parallel_for.hpp>
+#include "psobel.h"
 
 using namespace cv;
 using namespace std;
@@ -149,4 +150,10 @@ void remove_pixels(Mat& image, Mat& output, int *seam, int num_workers = 1){
                 output.at<Vec3b>(r,c) = image.at<Vec3b>(r, c);
         });
     }
+}
+
+void energy_function(Mat &image, Mat &output){
+
+    int num_workers = 6;
+    sobel(image, output, num_workers);
 }

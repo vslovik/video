@@ -29,4 +29,12 @@ int *find_seam(Mat &image, int num_workers = 1);
 */
 void remove_pixels(Mat& image, Mat& output, int *seam, int num_workers = 1);
 
+/*
+* Function: energy_function
+* Usage: energy_function();
+* -------------------
+* Calculates energy map
+*/
+void energy_function(Mat &image, Mat &output);
+
 #endif
