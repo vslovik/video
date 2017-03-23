@@ -6,7 +6,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include <ff/parallel_for.hpp>
 #include "pcarving.h"
 
 using namespace cv;
@@ -40,6 +39,7 @@ struct State {
 
 State *process;
 
+//http://stackoverflow.com/questions/16865730/how-to-to-parallelize-the-matrix-transpose
 void rot90(Mat &matImage, int rotflag){
     //1=CW, 2=CCW, 3=180
     if (rotflag == 1){
@@ -107,65 +107,71 @@ void shrink_image(Mat& image, int new_cols, int new_rows, int width, int height,
 
 void process_video(string source, int num_workers = 1)
 {
-//    VideoCapture inputVideo(source);
-//    if (!inputVideo.isOpened())
-//    {
-//        throw source;
-//    }
-//
-//    int numFrames = (int) inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
-//    Mat inFrame, outFrame;
-//    process = new State(
-//            inputVideo.get(CV_CAP_PROP_FPS),
-//            numFrames,
-//            Size(
-//             (int) inputVideo.get(CV_CAP_PROP_FRAME_WIDTH),
-//             (int) inputVideo.get(CV_CAP_PROP_FRAME_HEIGHT)
-//            ),
-//            inFrame,
-//            outFrame,
-//            "out.avi"
-//    );
-//
-//    cout << "Input frame resolution: Width=" << process->size.width << "  Height=" << process->size.height
-//         << " of nr#: " << process->numFrames << endl;
-//    cout << "Input codec type: " << ".avi" << endl;
-//
-//    VideoWriter outputVideo;
-//    outputVideo.open(
-//            process->output,
-//            CV_FOURCC('D', 'I', 'V', 'X'),
-//            process->fps,
-//            Size(
-//                    process->size.width - process->ver,
-//                    process->size.height - process->hor
-//            ),
-//            true
-//    );
-//
-//    if (!outputVideo.isOpened()) {
-//        throw source;
-//    }
+    VideoCapture inputVideo(source);
+    if (!inputVideo.isOpened())
+    {
+        throw source;
+    }
 
+    int numFrames = (int) inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
+    Mat inFrame, outFrame;
+    process = new State(
+            inputVideo.get(CV_CAP_PROP_FPS),
+            numFrames,
+            Size(
+             (int) inputVideo.get(CV_CAP_PROP_FRAME_WIDTH),
+             (int) inputVideo.get(CV_CAP_PROP_FRAME_HEIGHT)
+            ),
+            inFrame,
+            outFrame,
+            "out.avi"
+    );
+
+    cout << "Input frame resolution: Width=" << process->size.width << "  Height=" << process->size.height
+         << " of nr#: " << process->numFrames << endl;
+    cout << "Input codec type: " << ".avi" << endl;
+
+    VideoWriter outputVideo;
+    outputVideo.open(
+            process->output,
+            CV_FOURCC('D', 'I', 'V', 'X'),
+            process->fps,
+            Size(
+                    process->size.width - process->ver,
+                    process->size.height - process->hor
+            ),
+            true
+    );
+
+    if (!outputVideo.isOpened()) {
+        throw source;
+    }
+
+    int k = 0;
 //    for(int i = 0; i < process->numFrames; ++i) {
-//        inputVideo >> process->inFrame;
-
+    for(int i = 103; i < 106; ++i) {
+        inputVideo >> process->inFrame;
         cout << "UP ARROW: Shrink horizontally" << endl;
         cout << "LEFT ARROW: Shrink vertically" << endl;
         cout << "q: Quit" << endl;
 
-        Mat image;
-        image = imread("data/monteverdi_ritratto.jpg", 1);
-        realTime(image, num_workers);
+//        Mat image;
+//        image = imread("data/monteverdi_ritratto.jpg", 1);
 
+        if (k > 0)
+            realTime(process->inFrame, num_workers);
 
-//        outputVideo << process->inFrame;
-//        imshow("mainWin", process->inFrame);
-//        waitKey(20);
+        outputVideo << process->inFrame;
 
-//        break;
-//    }
+//        if (k > 0)
+//            imshow("mainWin", process->inFrame);
+//
+//        waitKey(5000);
+        k += 1;
+    }
 
-//    inputVideo.release();
-//    outputVideo.release();
+    inputVideo.release();
+    outputVideo.release();
 }
+
+//http://stackoverflow.com/questions/13494499/why-does-qdebug-work-in-release-builds
