@@ -78,7 +78,7 @@ void remove_pixels(Mat& image, Mat& output, int *seam){
     }
 }
 
-void energy_function_(Mat &image, Mat &output){
+void energy_function(Mat &image, Mat &output){
     Mat dx, dy;
     Sobel(image, dx, CV_64F, 1, 0);
     Sobel(image, dy, CV_64F, 0, 1);

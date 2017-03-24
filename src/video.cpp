@@ -12,13 +12,15 @@ using namespace cv;
 using namespace std;
 
 struct State {
-    static const int ver = 10;
+    static const int ver = 1;
     static const int hor = 0;
     Size size;
     string output;
     double fps;
     int numFrames;
     Mat inFrame, outFrame;
+    int* v_seams;
+    int* h_seams;
 
     State(
             double fps,
@@ -34,7 +36,12 @@ struct State {
             inFrame(inFrame),
             outFrame(outFrame),
             output(output)
-    {}
+    {
+        v_seams = (int *)malloc(ver*size.height*sizeof(int));
+        h_seams = (int *)malloc(hor*size.width*sizeof(int));
+        v_seams = {0};
+        h_seams = {0};
+    }
 };
 
 State *process;
@@ -55,7 +62,7 @@ void rot90(Mat &matImage, int rotflag){
     }
 }
 
-void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
+void remove_seam(int i, Mat& image, char orientation = 'v', int num_workers = 1){
     if (orientation == 'h')
         rot90(image,1);
     int H = image.rows, W = image.cols;
@@ -67,6 +74,10 @@ void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
     energy_function(gray, eimage);
 
     int* seam = find_seam(eimage, num_workers);
+    if (orientation == 'v')
+        process->v_seams[i] = *seam;
+    else
+        process->h_seams[i] = *seam;
 
     Mat output(H, W-1, CV_8UC3);
     remove_pixels(image, output, seam, num_workers);
@@ -81,26 +92,29 @@ void realTime(Mat& image, int num_workers = 1){
     cout << "q: Quit" << endl;
 
     int key;
+    int iv = 0, ih = 0;
     while(1) {
         namedWindow("Display window", WINDOW_AUTOSIZE);
         imshow("Display window", image);
         key = waitKey(0);
         if (key == 'q')
             break;
-        else if (key == 'v')
-            remove_seam(image, 'v', num_workers);
-        else if (key == 'h')
-            remove_seam(image, 'h', num_workers);
+        else if (key == 'v') {
+            remove_seam(iv++, image, 'v', num_workers);
+        }
+        else if (key == 'h') {
+            remove_seam(ih++, image, 'h', num_workers);
+        }
     }
 }
 
-void shrink_image(Mat& image, int new_cols, int new_rows, int width, int height, int num_workers = 1){
+void shrink_image(Mat& image, int ver, int hor, int num_workers = 1){
     cout << endl << "Processing image..." << endl;
-    for(int i = 0; i < width - new_cols; i++){
-        remove_seam(image, 'v', num_workers);
+    for(int i = 0; i < ver; i++){
+        remove_seam(i, image, 'v', num_workers);
     }
-    for(int i = 0; i < height - new_rows; i++){
-        remove_seam(image, 'h', num_workers);
+    for(int i = 0; i < hor; i++){
+        remove_seam(i, image, 'h', num_workers);
     }
 }
 
@@ -155,18 +169,28 @@ void process_video(string source, int num_workers = 1)
         cout << "LEFT ARROW: Shrink vertically" << endl;
         cout << "q: Quit" << endl;
 
-//        Mat image;
+        Mat image;
 //        image = imread("data/monteverdi_ritratto.jpg", 1);
 
-        if (k > 0)
-            realTime(process->inFrame, num_workers);
-
-        outputVideo << process->inFrame;
-
 //        if (k > 0)
-//            imshow("mainWin", process->inFrame);
+//            realTime(process->inFrame, num_workers);
 //
-//        waitKey(5000);
+//        outputVideo << process->inFrame;
+
+        image = process->inFrame;
+
+        if (k > 0) {
+            cout << image.cols << endl;
+            //remove_seam(0, image, 'v', num_workers);
+
+            shrink_image(image, process->ver, process->hor, num_workers);
+
+            cout << image.cols << endl;
+            imshow("mainWin", image);
+        }
+
+
+        waitKey(5000);
         k += 1;
     }
 
