@@ -72,37 +72,25 @@ void coherence(Mat &image, int* seam, int num_workers) {
     uchar * dst = new uchar[rows * cols];
     uchar * src = Mat2uchar<uchar>(image);
 
+    int Il[cols];
+    int Ir[cols];
 
-    int i, j; int sum;
     for (int r = 0; r < rows; r++) {
-        cout << seam[r] << endl;
-        for (int c = 0; c < cols; c++) {
-            sum = 0;
-
-
-            if(c != seam[r]) {
-                int start = min(c, seam[r]);
-                int end = max(c, seam[r]);
-                i = start;
-                j = start;
-                for (int k = start; k <= end; k++) {
-
-
-                    if (i == c) i++;
-                    if (j == seam[r]) j++;
-                    if (i != j)
-                        sum += abs(src[r * cols + i] - src[r * cols + j]);
-                    i++;
-                    j++;
-                }
+        for (int c = 1; c < cols; c++) {
+            if (seam[r] <= c) {
+                Il[c] = Il[c - 1] + abs(src[r * cols + c - 1] - src[r * cols + c]);
             }
-
-            sum += src[r*cols+c];
+        }
+        for (int c = cols - 2; c >= 0; c--) {
+            if (seam[r] >= c) {
+                Ir[c] = Ir[c + 1] + abs(src[r * cols + c + 1] - src[r * cols + c]);
+            }
+        }
+        for (int c = 1; c < cols; c++) {
+            int sum = Il[c] + Ir[c] + src[r*cols+c];
             if (sum > 255) sum = 255;
             else if (sum < 0) sum = 0;
-
             dst[r*cols+c] = (uchar) sum;
-
         }
     }
 
