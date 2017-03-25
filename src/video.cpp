@@ -21,6 +21,7 @@ struct State {
     Mat inFrame, outFrame;
     int* v_seams;
     int* h_seams;
+    bool firstFrame = true;
 
     State(
             double fps,
@@ -35,12 +36,12 @@ struct State {
             size(size),
             inFrame(inFrame),
             outFrame(outFrame),
-            output(output)
+            output(output),
+            v_seams(v_seams),
+            h_seams(h_seams)
     {
         v_seams = (int *)malloc(ver*size.height*sizeof(int));
         h_seams = (int *)malloc(hor*size.width*sizeof(int));
-        v_seams = {0};
-        h_seams = {0};
     }
 };
 
@@ -64,7 +65,7 @@ void rot90(Mat &matImage, int rotflag){
 
 void remove_seam(int i, Mat& image, char orientation = 'v', int num_workers = 1){
     if (orientation == 'h')
-        rot90(image,1);
+        rot90(image, 1);
     int H = image.rows, W = image.cols;
 
     Mat gray;
@@ -73,11 +74,29 @@ void remove_seam(int i, Mat& image, char orientation = 'v', int num_workers = 1)
     Mat eimage;
     energy_function(gray, eimage);
 
+    if(!process->firstFrame){
+        int* prev_seam = new int[H];
+        for (int r = 0; r < H; r++) {
+            if (orientation == 'v') {
+                prev_seam[r] = process->v_seams[r * process->ver + i];
+            } else {
+                prev_seam[r] = process->h_seams[r * process->hor + i];
+            }
+        }
+        coherence_function(eimage, prev_seam);
+    }
+
     int* seam = find_seam(eimage, num_workers);
-    if (orientation == 'v')
-        process->v_seams[i] = *seam;
-    else
-        process->h_seams[i] = *seam;
+
+    if (orientation == 'v') {
+        for (int r = 0; r < H; r++) {
+            process->v_seams[r * process->ver + i] = seam[r];
+        }
+    } else {
+        for (int r = 0; r < H; r++) {
+            process->h_seams[r * process->hor + i] = seam[r];
+        }
+    }
 
     Mat output(H, W-1, CV_8UC3);
     remove_pixels(image, output, seam, num_workers);
@@ -180,12 +199,14 @@ void process_video(string source, int num_workers = 1)
         image = process->inFrame;
 
         if (k > 0) {
-            cout << image.cols << endl;
+
+//            cout << image.cols << endl;
             //remove_seam(0, image, 'v', num_workers);
 
             shrink_image(image, process->ver, process->hor, num_workers);
+            process->firstFrame = false;
 
-            cout << image.cols << endl;
+//            cout << image.cols << endl;
             imshow("mainWin", image);
         }
 

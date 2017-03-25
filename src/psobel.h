@@ -16,4 +16,11 @@ using namespace cv;
 */
 void sobel(Mat &image, Mat &output, int num_workers);
 
+/*
+* Function: coherence
+* Usage: coherence();
+* -------------------
+*/
+void coherence(Mat &image, int* seam, int num_workers);
+
 #endif

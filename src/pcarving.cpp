@@ -157,3 +157,9 @@ void energy_function(Mat &image, Mat &output){
     int num_workers = 6;
     sobel(image, output, num_workers);
 }
+
+
+void coherence_function(Mat &image, int* seam) {
+    int num_workers = 6;
+    coherence(image, seam, num_workers);
+}

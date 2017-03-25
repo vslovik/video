@@ -90,3 +90,9 @@ void energy_function(Mat &image, Mat &output){
     output = output * Z;
     output.convertTo(output, CV_8U);
 }
+
+void coherence_function(Mat &image, int* seam) {
+    for(int r = 0; r < image.rows; r++ ) {
+
+    }
+}

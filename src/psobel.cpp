@@ -57,9 +57,54 @@ void sobel(Mat &image, Mat &output, int num_workers) {
             if (sum > 255) sum = 255;
             else if (sum < 0) sum = 0;
 
-            dst[y*cols+x] = sum;
+            dst[y*cols+x] = (uchar) sum;
         }
     });
 
     output = Mat(rows, cols, CV_8U, dst, Mat::AUTO_STEP);
+}
+
+void coherence(Mat &image, int* seam, int num_workers) {
+
+    int rows = image.rows;
+    int cols = image.cols;
+
+    uchar * dst = new uchar[rows * cols];
+    uchar * src = Mat2uchar<uchar>(image);
+
+
+    int i, j; int sum;
+    for (int r = 0; r < rows; r++) {
+        cout << seam[r] << endl;
+        for (int c = 0; c < cols; c++) {
+            sum = 0;
+
+
+            if(c != seam[r]) {
+                int start = min(c, seam[r]);
+                int end = max(c, seam[r]);
+                i = start;
+                j = start;
+                for (int k = start; k <= end; k++) {
+
+
+                    if (i == c) i++;
+                    if (j == seam[r]) j++;
+                    if (i != j)
+                        sum += abs(src[r * cols + i] - src[r * cols + j]);
+                    i++;
+                    j++;
+                }
+            }
+
+            sum += src[r*cols+c];
+            if (sum > 255) sum = 255;
+            else if (sum < 0) sum = 0;
+
+            dst[r*cols+c] = (uchar) sum;
+
+        }
+    }
+
+    image = Mat(rows, cols, CV_8U, dst, Mat::AUTO_STEP);
 }
