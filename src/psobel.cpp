@@ -72,27 +72,27 @@ void coherence(Mat &image, int* seam, int num_workers) {
     uchar * dst = new uchar[rows * cols];
     uchar * src = Mat2uchar<uchar>(image);
 
-    int Il[cols];
-    int Ir[cols];
+    int Il[cols], Ir[cols];
 
-    for (int r = 0; r < rows; r++) {
-        for (int c = 1; c < cols; c++) {
-            if (seam[r] <= c) {
-                Il[c] = Il[c - 1] + abs(src[r * cols + c - 1] - src[r * cols + c]);
-            }
+    ff::ParallelFor pf(num_workers, false);
+    pf.parallel_for(0, rows, [src, cols, &src, &dst, &seam, &Il, &Ir](const long r) {
+        int sum;
+        for (int c = 0; c < cols - 1; c++) {
+            Il[c] = 0; Ir[c] = 0;
         }
-        for (int c = cols - 2; c >= 0; c--) {
-            if (seam[r] >= c) {
-                Ir[c] = Ir[c + 1] + abs(src[r * cols + c + 1] - src[r * cols + c]);
-            }
+        for (int c = seam[r]; c < cols; c++) {
+            Il[c] = Il[c - 1] + abs(src[r * cols + c - 1] - src[r * cols + c]);
+        }
+        for (int c = min(cols - 2, seam[r]); c >= 0; c--) {
+            Ir[c] = Ir[c + 1] + abs(src[r * cols + c + 1] - src[r * cols + c]);
         }
         for (int c = 1; c < cols; c++) {
-            int sum = Il[c] + Ir[c] + src[r*cols+c];
+            sum = Il[c] + Ir[c] + src[r*cols+c];
             if (sum > 255) sum = 255;
             else if (sum < 0) sum = 0;
             dst[r*cols+c] = (uchar) sum;
         }
-    }
+    });
 
     image = Mat(rows, cols, CV_8U, dst, Mat::AUTO_STEP);
 }

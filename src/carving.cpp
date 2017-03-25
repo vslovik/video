@@ -3,6 +3,16 @@
 using namespace cv;
 using namespace std;
 
+/* ----- utility function ------- */
+template<typename T>
+T *Mat2uchar(cv::Mat &in) {
+    T *out = new T[in.rows * in.cols];
+    for (int i = 0; i < in.rows; ++i)
+        for (int j = 0; j < in.cols; ++j)
+            out[i * (in.cols) + j] = in.at<T>(i, j);
+    return out;
+}
+
 int *find_seam(Mat &image){
 
     int max_int = numeric_limits<int>::max();
@@ -92,7 +102,32 @@ void energy_function(Mat &image, Mat &output){
 }
 
 void coherence_function(Mat &image, int* seam) {
-    for(int r = 0; r < image.rows; r++ ) {
+    int rows = image.rows;
+    int cols = image.cols;
 
+    uchar * dst = new uchar[rows * cols];
+    uchar * src = Mat2uchar<uchar>(image);
+
+    int Il[cols], Ir[cols];
+
+    for (int r = 0; r < rows; r++) {
+        int sum;
+        for (int c = 0; c < cols - 1; c++) {
+            Il[c] = 0; Ir[c] = 0;
+        }
+        for (int c = seam[r]; c < cols; c++) {
+            Il[c] = Il[c - 1] + abs(src[r * cols + c - 1] - src[r * cols + c]);
+        }
+        for (int c = min(cols - 2, seam[r]); c >= 0; c--) {
+            Ir[c] = Ir[c + 1] + abs(src[r * cols + c + 1] - src[r * cols + c]);
+        }
+        for (int c = 1; c < cols; c++) {
+            sum = Il[c] + Ir[c] + src[r*cols+c];
+            if (sum > 255) sum = 255;
+            else if (sum < 0) sum = 0;
+            dst[r*cols+c] = (uchar) sum;
+        }
     }
+
+    image = Mat(rows, cols, CV_8U, dst, Mat::AUTO_STEP);
 }
