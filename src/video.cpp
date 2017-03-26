@@ -12,8 +12,8 @@ using namespace cv;
 using namespace std;
 
 struct State {
-    static const int ver = 1;
-    static const int hor = 0;
+    static const int ver = 20;
+    static const int hor = 20;
     Size size;
     string output;
     double fps;
@@ -128,7 +128,7 @@ void realTime(Mat& image, int num_workers = 1){
 }
 
 void shrink_image(Mat& image, int ver, int hor, int num_workers = 1){
-    cout << endl << "Processing image..." << endl;
+//    cout << endl << "Processing image..." << endl;
     for(int i = 0; i < ver; i++){
         remove_seam(i, image, 'v', num_workers);
     }
@@ -180,39 +180,29 @@ void process_video(string source, int num_workers = 1)
         throw source;
     }
 
-    int k = 0;
-//    for(int i = 0; i < process->numFrames; ++i) {
-    for(int i = 103; i < 106; ++i) {
+
+    for(int i = 0; i < process->numFrames; ++i) {
         inputVideo >> process->inFrame;
-        cout << "UP ARROW: Shrink horizontally" << endl;
-        cout << "LEFT ARROW: Shrink vertically" << endl;
-        cout << "q: Quit" << endl;
+        cout << i << "/" << process->numFrames << endl;
+//        cout << "UP ARROW: Shrink horizontally" << endl;
+//        cout << "LEFT ARROW: Shrink vertically" << endl;
+//        cout << "q: Quit" << endl;
 
         Mat image;
 //        image = imread("data/monteverdi_ritratto.jpg", 1);
+//        realTime(process->inFrame, num_workers);
+//        remove_seam(0, image, 'v', num_workers);
 
-//        if (k > 0)
-//            realTime(process->inFrame, num_workers);
-//
-//        outputVideo << process->inFrame;
 
         image = process->inFrame;
+        shrink_image(image, process->ver, process->hor, num_workers);
+        process->firstFrame = false;
 
-        if (k > 0) {
+//        cout << image.rows << "---" << image.cols << endl;
+//        imshow("mainWin", image);
+//        waitKey(5000);
 
-//            cout << image.cols << endl;
-            //remove_seam(0, image, 'v', num_workers);
-
-            shrink_image(image, process->ver, process->hor, num_workers);
-            process->firstFrame = false;
-
-//            cout << image.cols << endl;
-            imshow("mainWin", image);
-        }
-
-
-        waitKey(5000);
-        k += 1;
+        outputVideo << image;
     }
 
     inputVideo.release();
