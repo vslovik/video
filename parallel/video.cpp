@@ -8,8 +8,6 @@
 #include <opencv2/imgproc.hpp>
 #include "pcarving.h"
 
-using namespace cv;
-
 struct State {
     static const int ver = 20;
     static const int hor = 20;

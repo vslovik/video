@@ -1,0 +1,38 @@
+This program reads filters and write video files.
+Usage:
+./video inputvideoName
+------------------------------------------------------------------------------
+
+warning: GStreamer: unable to query position of stream (/builddir/build/BUILD/opencv-2.4.5/modules/highgui/src/cap_gstreamer.cpp:660)
+Input frame resolution: Width=0  Height=0 of nr#: 0
+Input codec type: .avi
+video: /builddir/build/BUILD/opencv-2.4.5/modules/highgui/src/cap_gstreamer.cpp:500: virtual bool CvVideoWriter_GStreamer::open(const char*, int, double, CvSize, bool): Проверочное утверждение «fps > 0» не выполнено.
+Аварийный останов (core dumped)
+[spm1622@ninja parallel]$ ./video /home/spm1622/video/data/videoplayback.mp4
+------------------------------------------------------------------------------
+This program reads filters and write video files.
+Usage:
+./video inputvideoName
+------------------------------------------------------------------------------
+
+warning: GStreamer: unable to query position of stream (/builddir/build/BUILD/opencv-2.4.5/modules/highgui/src/cap_gstreamer.cpp:660)
+Input frame resolution: Width=0  Height=0 of nr#: 0
+Input codec type: .avi
+video: /builddir/build/BUILD/opencv-2.4.5/modules/highgui/src/cap_gstreamer.cpp:500: virtual bool CvVideoWriter_GStreamer::open(const char*, int, double, CvSize, bool): Проверочное утверждение «fps > 0» не выполнено.
+Аварийный останов (core dumped)
+[spm1622@ninja parallel]$
+
+
+
+
+This program reads filters and write video files.
+Usage:
+./video inputvideoName
+------------------------------------------------------------------------------
+
+warning: GStreamer: Error opening bin
+ (/builddir/build/BUILD/opencv-2.4.5/modules/highgui/src/cap_gstreamer.cpp:354)
+data/Megamind.avi
+[spm1622@ninja parallel]$ ls ../data/Megamind.avi
+../data/Megamind.avi
+[spm1622@ninja parallel]$ ./video ../data/Megamind.avi

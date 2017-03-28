@@ -2,8 +2,6 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 
-using namespace cv;
-
 /* ----- utility function ------- */
 template<typename T>
 T *Mat2uchar(cv::Mat &in) {
@@ -14,7 +12,7 @@ T *Mat2uchar(cv::Mat &in) {
     return out;
 }
 
-int *find_seam(Mat &image){
+int *find_seam(cv::Mat &image){
 
     int max_int = std::numeric_limits<int>::max();
 
@@ -28,11 +26,11 @@ int *find_seam(Mat &image){
     for(int r = 1; r < H; r++){
         for(int c = 0; c < W; c++){
             if (c == 0)
-                dp[r][c] = min(dp[r-1][c+1], dp[r-1][c]);
+                dp[r][c] = cv::min(dp[r-1][c+1], dp[r-1][c]);
             else if (c == W-1)
-                dp[r][c] = min(dp[r-1][c-1], dp[r-1][c]);
+                dp[r][c] = cv::min(dp[r-1][c-1], dp[r-1][c]);
             else
-                dp[r][c] = min({dp[r-1][c-1], dp[r-1][c], dp[r-1][c+1]});
+                dp[r][c] = cv::min({dp[r-1][c-1], dp[r-1][c], dp[r-1][c+1]});
             dp[r][c] += (int)image.at<uchar>(r,c);
         }
     }
@@ -46,7 +44,7 @@ int *find_seam(Mat &image){
         }
 
     int *path = new int[H];
-    Point pos(H-1,min_index);
+    cv::Point pos(H-1,min_index);
     path[pos.x] = pos.y;
 
     while (pos.x != 0){
@@ -54,23 +52,23 @@ int *find_seam(Mat &image){
         int r = pos.x, c = pos.y;
         if (c == 0){
             if (value == dp[r-1][c+1])
-                pos = Point(r-1,c+1);
+                pos = cv::Point(r-1,c+1);
             else
-                pos = Point(r-1,c);
+                pos = cv::Point(r-1,c);
         }
         else if (c == W-1){
             if (value == dp[r-1][c-1])
-                pos = Point(r-1,c-1);
+                pos = cv::Point(r-1,c-1);
             else
-                pos = Point(r-1,c);
+                pos = cv::Point(r-1,c);
         }
         else {
             if (value == dp[r-1][c-1])
-                pos = Point(r-1,c-1);
+                pos = cv::Point(r-1,c-1);
             else if (value == dp[r-1][c+1])
-                pos = Point(r-1,c+1);
+                pos = cv::Point(r-1,c+1);
             else
-                pos = Point(r-1,c);
+                pos = cv::Point(r-1,c);
         }
         path[pos.x] = pos.y;
     }
@@ -78,19 +76,19 @@ int *find_seam(Mat &image){
     return path;
 }
 
-void remove_pixels(Mat& image, Mat& output, int *seam){
+void remove_pixels(cv::Mat& image, cv::Mat& output, int *seam){
     for(int r = 0; r < image.rows; r++ ) {
         for (int c = 0; c < image.cols; c++){
             if (c >= seam[r])
-                output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c+1);
+                output.at<cv::Vec3b>(r, c) = image.at<cv::Vec3b>(r, c+1);
             else
-                output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c);
+                output.at<cv::Vec3b>(r, c) = image.at<cv::Vec3b>(r, c);
         }
     }
 }
 
-void energy_function(Mat &image, Mat &output){
-    Mat dx, dy;
+void energy_function(cv::Mat &image, cv::Mat &output){
+    cv::Mat dx, dy;
     Sobel(image, dx, CV_64F, 1, 0);
     Sobel(image, dy, CV_64F, 0, 1);
     magnitude(dx,dy, output);
@@ -102,7 +100,7 @@ void energy_function(Mat &image, Mat &output){
     output.convertTo(output, CV_8U);
 }
 
-void coherence_function(Mat &image, int* seam) {
+void coherence_function(cv::Mat &image, int* seam) {
     int rows = image.rows;
     int cols = image.cols;
 
@@ -119,7 +117,7 @@ void coherence_function(Mat &image, int* seam) {
         for (int c = seam[r]; c < cols; c++) {
             Il[c] = Il[c - 1] + abs(src[r * cols + c - 1] - src[r * cols + c]);
         }
-        for (int c = min(cols - 2, seam[r]); c >= 0; c--) {
+        for (int c = cv::min(cols - 2, seam[r]); c >= 0; c--) {
             Ir[c] = Ir[c + 1] + abs(src[r * cols + c + 1] - src[r * cols + c]);
         }
         for (int c = 1; c < cols; c++) {
@@ -130,5 +128,5 @@ void coherence_function(Mat &image, int* seam) {
         }
     }
 
-    image = Mat(rows, cols, CV_8U, dst, Mat::AUTO_STEP);
+    image = cv::Mat(rows, cols, CV_8U, dst, cv::Mat::AUTO_STEP);
 }

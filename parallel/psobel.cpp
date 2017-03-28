@@ -2,9 +2,6 @@
 #include <opencv2/core/core.hpp>
 #include <ff/parallel_for.hpp>
 
-using namespace cv;
-using namespace ff;
-
 /* ----- utility function ------- */
 template<typename T>
 T *Mat2uchar(cv::Mat &in) {
@@ -38,7 +35,7 @@ static inline long yGradient(uchar * image, long cols, long x, long y) {
            image[XY2I(y+1, x+1, cols)];
 }
 
-void sobel(Mat &image, Mat &output, int num_workers) {
+void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 
     int rows = image.rows;
     int cols = image.cols;
@@ -52,7 +49,7 @@ void sobel(Mat &image, Mat &output, int num_workers) {
             const long gx = xGradient(src, cols, x, y);
             const long gy = yGradient(src, cols, x, y);
             // approximation of sqrt(gx*gx+gy*gy)
-            long sum = abs(gx) + abs(gy);
+            int sum = abs((int)gx) + abs((int)gy);
             if (sum > 255) sum = 255;
             else if (sum < 0) sum = 0;
 
@@ -60,10 +57,10 @@ void sobel(Mat &image, Mat &output, int num_workers) {
         }
     });
 
-    output = Mat(rows, cols, CV_8U, dst, Mat::AUTO_STEP);
+    output = cv::Mat(rows, cols, CV_8U, dst, cv::Mat::AUTO_STEP);
 }
 
-void coherence(Mat &image, int* seam, int num_workers) {
+void coherence(cv::Mat &image, int* seam, int num_workers) {
 
     int rows = image.rows;
     int cols = image.cols;
@@ -82,7 +79,7 @@ void coherence(Mat &image, int* seam, int num_workers) {
         for (int c = seam[r]; c < cols; c++) {
             Il[c] = Il[c - 1] + abs(src[r * cols + c - 1] - src[r * cols + c]);
         }
-        for (int c = min(cols - 2, seam[r]); c >= 0; c--) {
+        for (int c = cv::min(cols - 2, seam[r]); c >= 0; c--) {
             Ir[c] = Ir[c + 1] + abs(src[r * cols + c + 1] - src[r * cols + c]);
         }
         for (int c = 1; c < cols; c++) {
@@ -93,5 +90,5 @@ void coherence(Mat &image, int* seam, int num_workers) {
         }
     });
 
-    image = Mat(rows, cols, CV_8U, dst, Mat::AUTO_STEP);
+    image = cv::Mat(rows, cols, CV_8U, dst, cv::Mat::AUTO_STEP);
 }

@@ -3,9 +3,6 @@
 #include <ff/parallel_for.hpp>
 #include "psobel.h"
 
-using namespace cv;
-using namespace ff;
-
 struct PMinState {
     PMinState(const int n, std::vector<Point> points):
             n(n), points(points) {};
@@ -18,7 +15,7 @@ int max_int = std::numeric_limits<int>::max();
 
 PMinState* st;
 
-int *FF(int *task,ff_node*const) {
+int *FF(int *task,ff::ff_node*const) {
     ulong left = (ulong) *task - 1;
     ulong right = (ulong) min(st->n - 1, *task - 1 + st->step - 1);
 
@@ -31,7 +28,7 @@ int *FF(int *task,ff_node*const) {
     return task;
 }
 
-struct Scheduler: ff_node_t<int> {
+struct Scheduler: ff::ff_node_t<int> {
     int svc_init() {
         counter = 1;
         return 0;
@@ -75,12 +72,12 @@ Point parallel_min(int* s, const int N, int nw){
 
     st = new PMinState(N, points);
 
-    ff_Farm<int> farm(FF, nw);
+    ff::ff_Farm<int> farm(FF, nw);
     farm.remove_collector();
     Scheduler S;
     farm.add_emitter(S);
     farm.wrap_around();
-    if (farm.run_and_wait_end()<0) error("running farm");
+    if (farm.run_and_wait_end()<0) ff::error("running farm");
 
     return st->points.at(0);
 };

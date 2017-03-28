@@ -1,8 +1,6 @@
 #include <iostream>
 #include "svideo.h"
 
-using namespace std;
-
 static void help()
 {
     cout
