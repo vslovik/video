@@ -42,7 +42,7 @@ struct State {
     }
 };
 
-State *process;
+State *s;
 
 void rot90(Mat &matImage, int rotflag){
     if (rotflag == 1){
@@ -69,13 +69,13 @@ void remove_seam(int i, Mat& image, char orientation = 'v'){
     Mat eimage;
     energy_function(gray, eimage);
 
-    if(!process->firstFrame){
+    if(!s->firstFrame){
         int* prev_seam = new int[H];
         for (int r = 0; r < H; r++) {
             if (orientation == 'v') {
-                prev_seam[r] = process->v_seams[r * process->ver + i];
+                prev_seam[r] = s->v_seams[r * s->ver + i];
             } else {
-                prev_seam[r] = process->h_seams[r * process->hor + i];
+                prev_seam[r] = s->h_seams[r * s->hor + i];
             }
         }
         coherence_function(eimage, prev_seam);
@@ -85,11 +85,11 @@ void remove_seam(int i, Mat& image, char orientation = 'v'){
 
     if (orientation == 'v') {
         for (int r = 0; r < H; r++) {
-            process->v_seams[r * process->ver + i] = seam[r];
+            s->v_seams[r * s->ver + i] = seam[r];
         }
     } else {
         for (int r = 0; r < H; r++) {
-            process->h_seams[r * process->hor + i] = seam[r];
+            s->h_seams[r * s->hor + i] = seam[r];
         }
     }
 
@@ -141,7 +141,7 @@ void process_video(std::string source)
 
     int numFrames = (int) inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
     Mat inFrame, outFrame;
-    process = new State(
+    s = new State(
             inputVideo.get(CV_CAP_PROP_FPS),
             numFrames,
             Size(
@@ -153,18 +153,18 @@ void process_video(std::string source)
             "out.avi"
     );
 
-    std::cout << "Input frame resolution: Width=" << process->size.width << "  Height=" << process->size.height
-         << " of nr#: " << process->numFrames << std::endl;
+    std::cout << "Input frame resolution: Width=" << s->size.width << "  Height=" << s->size.height
+         << " of nr#: " << s->numFrames << std::endl;
     std::cout << "Input codec type: " << ".avi" << std::endl;
 
     VideoWriter outputVideo;
     outputVideo.open(
-            process->output,
+            s->output,
             CV_FOURCC('D', 'I', 'V', 'X'),
-            process->fps,
+            s->fps,
             Size(
-                    process->size.width - process->ver,
-                    process->size.height - process->hor
+                    s->size.width - s->ver,
+                    s->size.height - s->hor
             ),
             true
     );
@@ -173,13 +173,13 @@ void process_video(std::string source)
         throw source;
     }
 
-    for(int i = 0; i < process->numFrames; ++i) {
-        inputVideo >> process->inFrame;
-        std::cout << i << "/" << process->numFrames << std::endl;
+    for(int i = 0; i < s->numFrames; ++i) {
+        inputVideo >> s->inFrame;
+        std::cout << i << "/" << s->numFrames << std::endl;
 
-        Mat image = process->inFrame;
-        shrink_image(image, process->ver, process->hor);
-        process->firstFrame = false;
+        Mat image = s->inFrame;
+        shrink_image(image, s->ver, s->hor);
+        s->firstFrame = false;
 
         outputVideo << image;
     }
