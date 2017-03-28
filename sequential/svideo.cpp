@@ -9,13 +9,12 @@
 #include "carving.h"
 
 using namespace cv;
-using namespace std;
 
 struct State {
     static const int ver = 20;
     static const int hor = 20;
     Size size;
-    string output;
+    std::string output;
     double fps;
     int numFrames;
     Mat inFrame, outFrame;
@@ -29,7 +28,7 @@ struct State {
             Size size,
             Mat inFrame,
             Mat outFrame,
-            string output = "out.avi"
+            std::string output = "out.avi"
     ) :
             fps(fps),
             numFrames(numFrames),
@@ -57,7 +56,7 @@ void rot90(Mat &matImage, int rotflag){
     } else if (rotflag ==3){
         flip(matImage, matImage,-1);
     } else if (rotflag != 0){
-        cout  << "Unknown rotation flag(" << rotflag << ")" << endl;
+        std::cout  << "Unknown rotation flag(" << rotflag << ")" << std::endl;
     }
 }
 
@@ -104,9 +103,9 @@ void remove_seam(int i, Mat& image, char orientation = 'v'){
 }
 
 void realTime(Mat& image){
-    cout << "UP ARROW: Shrink horizontally" << endl;
-    cout << "LEFT ARROW: Shrink vertically" << endl;
-    cout << "q: Quit" << endl;
+    std::cout << "UP ARROW: Shrink horizontally" << std::endl;
+    std::cout << "LEFT ARROW: Shrink vertically" << std::endl;
+    std::cout << "q: Quit" << std::endl;
 
     int key;
     int iv = 0, ih = 0;
@@ -134,7 +133,7 @@ void shrink_image(Mat& image, int ver, int hor){
     }
 }
 
-void process_video(string source)
+void process_video(std::string source)
 {
     VideoCapture inputVideo(source);
     if (!inputVideo.isOpened())
@@ -156,9 +155,9 @@ void process_video(string source)
             "out.avi"
     );
 
-    cout << "Input frame resolution: Width=" << process->size.width << "  Height=" << process->size.height
-         << " of nr#: " << process->numFrames << endl;
-    cout << "Input codec type: " << ".avi" << endl;
+    std::cout << "Input frame resolution: Width=" << process->size.width << "  Height=" << process->size.height
+         << " of nr#: " << process->numFrames << std::endl;
+    std::cout << "Input codec type: " << ".avi" << std::endl;
 
     VideoWriter outputVideo;
     outputVideo.open(
@@ -178,7 +177,7 @@ void process_video(string source)
 
     for(int i = 0; i < process->numFrames; ++i) {
         inputVideo >> process->inFrame;
-        cout << i << "/" << process->numFrames << endl;
+        std::cout << i << "/" << process->numFrames << std::endl;
 
         Mat image = process->inFrame;
         shrink_image(image, process->ver, process->hor);

@@ -4,18 +4,17 @@
 #include "psobel.h"
 
 using namespace cv;
-using namespace std;
 using namespace ff;
 
 struct PMinState {
-    PMinState(const int n, vector<Point> points):
+    PMinState(const int n, std::vector<Point> points):
             n(n), points(points) {};
     const int n;
     int step = 2;
-    vector<Point> points;
+    std::vector<Point> points;
 };
 
-int max_int = numeric_limits<int>::max();
+int max_int = std::numeric_limits<int>::max();
 
 PMinState* st;
 
@@ -68,7 +67,7 @@ struct Scheduler: ff_node_t<int> {
 
 Point parallel_min(int* s, const int N, int nw){
 
-    vector<Point> points;
+    std::vector<Point> points;
     for (int i = 0; i < N; i++) {
         Point *p = new Point(i, s[i]);
         points.push_back(*p);

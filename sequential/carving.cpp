@@ -3,7 +3,6 @@
 #include "opencv2/imgproc/imgproc.hpp"
 
 using namespace cv;
-using namespace std;
 
 /* ----- utility function ------- */
 template<typename T>
@@ -17,7 +16,7 @@ T *Mat2uchar(cv::Mat &in) {
 
 int *find_seam(Mat &image){
 
-    int max_int = numeric_limits<int>::max();
+    int max_int = std::numeric_limits<int>::max();
 
     int H = image.rows, W = image.cols;
 

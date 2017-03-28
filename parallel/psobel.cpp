@@ -3,7 +3,6 @@
 #include <ff/parallel_for.hpp>
 
 using namespace cv;
-using namespace std;
 using namespace ff;
 
 /* ----- utility function ------- */
