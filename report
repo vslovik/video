@@ -36,3 +36,16 @@ data/Megamind.avi
 [spm1622@ninja parallel]$ ls ../data/Megamind.avi
 ../data/Megamind.avi
 [spm1622@ninja parallel]$ ./video ../data/Megamind.avi
+
+
+==================================================================================================================================
+valeriya@valeriya-MS-7817:~/project/video/tests$ ./video ../data/Megamind.avi
+------------------------------------------------------------------------------
+This program just tests openCV installation.
+Usage:
+./svideo inputvideoName
+------------------------------------------------------------------------------
+
+Input frame resolution: Width=720  Height=528 of nr#: 270
+Input codec type: .avi
+====================================================================================================================================
