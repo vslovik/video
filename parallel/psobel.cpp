@@ -75,7 +75,7 @@ void coherence(Mat &image, int* seam, int num_workers) {
     int Il[cols], Ir[cols];
 
     ff::ParallelFor pf(num_workers, false);
-    pf.parallel_for(0, rows, [src, cols, &src, &dst, &seam, &Il, &Ir](const long r) {
+    pf.parallel_for(0, rows, [src, cols, &dst, &seam, &Il, &Ir](const long r) {
         int sum;
         for (int c = 0; c < cols - 1; c++) {
             Il[c] = 0; Ir[c] = 0;

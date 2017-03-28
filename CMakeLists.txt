@@ -7,14 +7,22 @@ project(video)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -I /usr/local/include/ff -lpthread -pthread")
 
 set(SOURCE_FILES
-		src/pcarving.cpp
-		src/pcarving.h
-		src/psobel.cpp
-		src/psobel.h
-		src/video.h
-		src/video.cpp
-		src/main.cpp
+		parallel/pcarving.cpp
+		parallel/pcarving.h
+		parallel/psobel.cpp
+		parallel/psobel.h
+		parallel/video.h
+		parallel/video.cpp
+		parallel/main.cpp
     )
 
+set(SEQ_SOURCE_FILES
+		sequential/carving.cpp
+		sequential/carving.h
+		sequential/svideo.h
+		sequential/svideo.cpp
+		sequential/main.cpp
+		)
+
 add_executable(video ${SOURCE_FILES})
-add_executable(fancy ${SOURCE_FILES})
+add_executable(svideo ${SEQ_SOURCE_FILES})
