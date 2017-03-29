@@ -9,8 +9,8 @@
 #include "pcarving.h"
 
 struct State {
-    static const int ver = 20;
-    static const int hor = 20;
+    static const int ver = 1;
+    static const int hor = 0;
     Size size;
 	std::string output;
     double fps;
@@ -69,7 +69,7 @@ void remove_seam(int i, Mat& image, char orientation = 'v', int num_workers = 1)
     cvtColor(image, gray, CV_BGR2GRAY);
 
     Mat eimage;
-    energy_function(gray, eimage);
+    energy_function(gray, eimage, num_workers);
 
     if(!s->firstFrame){
         int* prev_seam = new int[H];
@@ -80,7 +80,7 @@ void remove_seam(int i, Mat& image, char orientation = 'v', int num_workers = 1)
                 prev_seam[r] = s->h_seams[r * s->hor + i];
             }
         }
-        coherence_function(eimage, prev_seam);
+        coherence_function(eimage, prev_seam, num_workers);
     }
 
     int* seam = find_seam(eimage, num_workers);
@@ -178,7 +178,7 @@ void process_video(std::string source, int num_workers = 1)
     }
 
 
-    for(int i = 0; i < s->numFrames; ++i) {
+    for(int i = 0; i < 2; ++i) {
         inputVideo >> s->inFrame;
 	    std::cout << i << "/" << s->numFrames << std::endl;
 //        cout << "UP ARROW: Shrink horizontally" << endl;

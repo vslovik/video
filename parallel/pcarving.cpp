@@ -62,8 +62,7 @@ struct Scheduler: ff::ff_node_t<int> {
     int counter;
 };
 
-Point parallel_min(int* s, const int N, int nw){
-
+Point parallel_min(int* s, const int N, int num_workers = 1){
     std::vector<Point> points;
     for (int i = 0; i < N; i++) {
         Point *p = new Point(i, s[i]);
@@ -72,7 +71,7 @@ Point parallel_min(int* s, const int N, int nw){
 
     st = new PMinState(N, points);
 
-    ff::ff_Farm<int> farm(FF, nw);
+    ff::ff_Farm<int> farm(FF, num_workers);
     farm.remove_collector();
     Scheduler S;
     farm.add_emitter(S);
@@ -83,6 +82,7 @@ Point parallel_min(int* s, const int N, int nw){
 };
 
 int *find_seam(Mat &image, int num_workers = 1){
+	num_workers = 1;
     int H = image.rows;
     int W = image.cols;
     int *seams;
@@ -92,11 +92,12 @@ int *find_seam(Mat &image, int num_workers = 1){
     seams = (int *)malloc(W*H*sizeof(int));
     scores = (int *)malloc(W*sizeof(int));
 
-    ff::ParallelFor pf(num_workers, false);
+	ff::ParallelFor pf_row(num_workers, false);
+	ff::ParallelFor pf_seams(num_workers, false);
     for(int r = 0; r < H; r++){
 
         // Calculate row values
-        pf.parallel_for(0L, W, [&row, r, W, &image](int c) {
+        pf_row.parallel_for(0L, W, [&row, r, W, &image](int c) {
             int next = (int)image.at<uchar>(r,c);
             if(r > 0) {
                 int left = c > 0 ? row[c - 1] : max_int;
@@ -107,7 +108,7 @@ int *find_seam(Mat &image, int num_workers = 1){
         });
 
         // Advance seams
-        pf.parallel_for(0L,W,[&row, r, W, H, &seams, &scores](int c) {
+        pf_seams.parallel_for(0L,W,[&row, r, W, H, &seams, &scores](int c) {
             if(r > 0) {
                 int left = c > 0 ? row[c - 1] : max_int;
                 int right = c < W - 1 ? row[c + 1] : max_int;
@@ -125,7 +126,7 @@ int *find_seam(Mat &image, int num_workers = 1){
         });
     }
 
-    Point p = parallel_min(scores, W, num_workers);
+	Point p = parallel_min(scores, W, 1);
     int *path = new int[H];
     for(int r = 0; r < H; r++)
         path[r] = seams[r * W + p.x];
@@ -134,7 +135,7 @@ int *find_seam(Mat &image, int num_workers = 1){
 }
 
 void remove_pixels(Mat& image, Mat& output, int *seam, int num_workers = 1){
-    int W = image.cols;
+	int W = image.cols;
 
     ff::ParallelFor pf(num_workers, false);
 
@@ -148,14 +149,11 @@ void remove_pixels(Mat& image, Mat& output, int *seam, int num_workers = 1){
     }
 }
 
-void energy_function(Mat &image, Mat &output){
-
-    int num_workers = 6;
+void energy_function(Mat &image, Mat &output, int num_workers = 1){
     sobel(image, output, num_workers);
 }
 
 
-void coherence_function(Mat &image, int* seam) {
-    int num_workers = 6;
+void coherence_function(Mat &image, int* seam, int num_workers = 1) {
     coherence(image, seam, num_workers);
 }

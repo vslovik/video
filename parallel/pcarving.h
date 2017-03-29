@@ -35,7 +35,7 @@ void remove_pixels(Mat& image, Mat& output, int *seam, int num_workers = 1);
 * -------------------
 * Calculates energy map
 */
-void energy_function(Mat &image, Mat &output);
+void energy_function(Mat &image, Mat &output, int num_workers = 1);
 
 /*
 * Function: coherence_function
@@ -43,6 +43,6 @@ void energy_function(Mat &image, Mat &output);
 * -------------------
 * Calculates coherence-aware energy map
 */
-void coherence_function(Mat &image, int* seam);
+void coherence_function(Mat &image, int* seam, int num_workers = 1);
 
 #endif
