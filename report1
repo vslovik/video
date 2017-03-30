@@ -190,6 +190,10 @@ sys	0m0.488s
 
 ============================= 1 2 frames
 
+real	0m0.214s
+user	0m0.232s
+sys	    0m0.496s
+
 1 sobel 1 coh 1 remove_pixels 1 min 1 pf_row 8 pf_seams - pf_seams
 real	0m0.264s
 user	0m0.260s

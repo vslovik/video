@@ -21,7 +21,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    int num_workers = 8;
+    int num_workers = 4;
 
     const string source = argv[1];
 

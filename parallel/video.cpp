@@ -2,6 +2,7 @@
 * File: video.cpp
 * ---------------
 */
+#include <ctime>
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -9,8 +10,8 @@
 #include "pcarving.h"
 
 struct State {
-    static const int ver = 1;
-    static const int hor = 0;
+    static const int ver = 20;
+    static const int hor = 20;
     Size size;
 	std::string output;
     double fps;
@@ -178,14 +179,17 @@ void process_video(std::string source, int num_workers = 1)
     }
 
 
-    for(int i = 0; i < 2; ++i) {
+    for(int i = 0; i < s->numFrames; ++i) {
+
         inputVideo >> s->inFrame;
-	    std::cout << i << "/" << s->numFrames << std::endl;
+	    std::time_t t = std::time(0);
+
 //        cout << "UP ARROW: Shrink horizontally" << endl;
 //        cout << "LEFT ARROW: Shrink vertically" << endl;
 //        cout << "q: Quit" << endl;
 
         Mat image;
+
 //        image = imread("data/monteverdi_ritratto.jpg", 1);
 //        realTime(s->inFrame, num_workers);
 //        remove_seam(0, image, 'v', num_workers);
@@ -199,6 +203,7 @@ void process_video(std::string source, int num_workers = 1)
 //        imshow("mainWin", image);
 //        waitKey(5000);
 
+	    std::cout << i << "/" << s->numFrames << " " << std::time(0) - t << std::endl;
         outputVideo << image;
     }
 

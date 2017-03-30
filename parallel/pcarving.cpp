@@ -82,7 +82,6 @@ Point parallel_min(int* s, const int N, int num_workers = 1){
 };
 
 int *find_seam(Mat &image, int num_workers = 1){
-	num_workers = 1;
     int H = image.rows;
     int W = image.cols;
     int *seams;
@@ -150,10 +149,10 @@ void remove_pixels(Mat& image, Mat& output, int *seam, int num_workers = 1){
 }
 
 void energy_function(Mat &image, Mat &output, int num_workers = 1){
-    sobel(image, output, num_workers);
+    sobel(image, output, 8);
 }
 
 
 void coherence_function(Mat &image, int* seam, int num_workers = 1) {
-    coherence(image, seam, num_workers);
+    coherence(image, seam, 8);
 }
