@@ -72,29 +72,29 @@ void remove_seam(int i, Mat& image, char orientation = 'v', int num_workers = 1)
     Mat eimage;
     energy_function(gray, eimage, num_workers);
 
-    if(!s->firstFrame){
-        int* prev_seam = new int[H];
-        for (int r = 0; r < H; r++) {
-            if (orientation == 'v') {
-                prev_seam[r] = s->v_seams[r * s->ver + i];
-            } else {
-                prev_seam[r] = s->h_seams[r * s->hor + i];
-            }
-        }
-        coherence_function(eimage, prev_seam, num_workers);
-    }
+//    if(!s->firstFrame){
+//        int* prev_seam = new int[H];
+//        for (int r = 0; r < H; r++) {
+//            if (orientation == 'v') {
+//                prev_seam[r] = s->v_seams[r * s->ver + i];
+//            } else {
+//                prev_seam[r] = s->h_seams[r * s->hor + i];
+//            }
+//        }
+//        coherence_function(eimage, prev_seam, num_workers);
+//    }
 
     int* seam = find_seam(eimage, num_workers);
 
-    if (orientation == 'v') {
-        for (int r = 0; r < H; r++) {
-            s->v_seams[r * s->ver + i] = seam[r];
-        }
-    } else {
-        for (int r = 0; r < H; r++) {
-            s->h_seams[r * s->hor + i] = seam[r];
-        }
-    }
+//    if (orientation == 'v') {
+//        for (int r = 0; r < H; r++) {
+//            s->v_seams[r * s->ver + i] = seam[r];
+//        }
+//    } else {vvvvvvvvvvvvvvvvv
+//        for (int r = 0; r < H; r++) {
+//            s->h_seams[r * s->hor + i] = seam[r];
+//        }
+//    }
 
     Mat output(H, W-1, CV_8UC3);
     remove_pixels(image, output, seam, num_workers);
@@ -113,54 +113,75 @@ void shrink_image(Mat& image, int ver, int hor, int num_workers = 1){
     }
 }
 
+void realTime(Mat& image, int num_workers){
+    std::cout << "UP ARROW: Shrink horizontally" << std::endl;
+    std::cout << "LEFT ARROW: Shrink vertically" << std::endl;
+    std::cout << "q: Quit" << std::endl;
+
+    int key;
+    int iv = 0, ih = 0;
+    while(1) {
+        namedWindow("Display window", WINDOW_AUTOSIZE);
+        imshow("Display window", image);
+        key = waitKey(0);
+        if (key == 'q')
+            break;
+        else if (key == 'v') {
+            remove_seam(iv++, image, 'v', num_workers);
+        }
+        else if (key == 'h') {
+            remove_seam(ih++, image, 'h', num_workers);
+        }
+    }
+}
 
 void process_video(std::string source, int num_workers = 1)
 {
-    VideoCapture inputVideo(source);
-    if (!inputVideo.isOpened())
-    {
-        throw source;
-    }
+//    VideoCapture inputVideo(source);
+//    if (!inputVideo.isOpened())
+//    {
+//        throw source;
+//    }
+//
+//    int numFrames = (int) inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
+//    Mat inFrame, outFrame;
+//    s = new State(
+//            inputVideo.get(CV_CAP_PROP_FPS),
+//            numFrames,
+//            Size(
+//             (int) inputVideo.get(CV_CAP_PROP_FRAME_WIDTH),
+//             (int) inputVideo.get(CV_CAP_PROP_FRAME_HEIGHT)
+//            ),
+//            inFrame,
+//            outFrame,
+//            "out.avi"
+//    );
+//
+//	std::cout << "Input frame resolution: Width=" << s->size.width << "  Height=" << s->size.height
+//         << " of nr#: " << s->numFrames << std::endl;
+//	std::cout << "Input codec type: " << ".avi" << std::endl;
+//
+//    VideoWriter outputVideo;
+//    outputVideo.open(
+//            s->output,
+//            CV_FOURCC('D', 'I', 'V', 'X'),
+//            s->fps,
+//            Size(
+//                    s->size.width - s->ver,
+//                    s->size.height - s->hor
+//            ),
+//            true
+//    );
+//
+//    if (!outputVideo.isOpened()) {
+//        throw source;
+//    }
 
-    int numFrames = (int) inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
-    Mat inFrame, outFrame;
-    s = new State(
-            inputVideo.get(CV_CAP_PROP_FPS),
-            numFrames,
-            Size(
-             (int) inputVideo.get(CV_CAP_PROP_FRAME_WIDTH),
-             (int) inputVideo.get(CV_CAP_PROP_FRAME_HEIGHT)
-            ),
-            inFrame,
-            outFrame,
-            "out.avi"
-    );
+//
+//    for(int i = 0; i < s->numFrames; ++i) {
 
-	std::cout << "Input frame resolution: Width=" << s->size.width << "  Height=" << s->size.height
-         << " of nr#: " << s->numFrames << std::endl;
-	std::cout << "Input codec type: " << ".avi" << std::endl;
-
-    VideoWriter outputVideo;
-    outputVideo.open(
-            s->output,
-            CV_FOURCC('D', 'I', 'V', 'X'),
-            s->fps,
-            Size(
-                    s->size.width - s->ver,
-                    s->size.height - s->hor
-            ),
-            true
-    );
-
-    if (!outputVideo.isOpened()) {
-        throw source;
-    }
-
-
-    for(int i = 0; i < s->numFrames; ++i) {
-
-        inputVideo >> s->inFrame;
-	    std::time_t t = std::time(0);
+//        inputVideo >> s->inFrame;
+//	    std::time_t t = std::time(0);
 
 //        cout << "UP ARROW: Shrink horizontally" << endl;
 //        cout << "LEFT ARROW: Shrink vertically" << endl;
@@ -168,23 +189,23 @@ void process_video(std::string source, int num_workers = 1)
 
         Mat image;
 
-//        image = imread("data/monteverdi_ritratto.jpg", 1);
-//        realTime(s->inFrame, num_workers);
+        image = imread("../data_/monteverdi_ritratto.jpg", 1);
+        realTime(image, num_workers);
 //        remove_seam(0, image, 'v', num_workers);
 
 
-        image = s->inFrame;
-        shrink_image(image, s->ver, s->hor, num_workers);
-        s->firstFrame = false;
+//        image = s->inFrame;
+//        shrink_image(image, s->ver, s->hor, num_workers);
+//        s->firstFrame = false;
 
 //        cout << image.rows << "---" << image.cols << endl;
 //        imshow("mainWin", image);
 //        waitKey(5000);
 
-	    std::cout << i << "/" << s->numFrames << " " << std::time(0) - t << std::endl;
-        outputVideo << image;
-    }
+//	    std::cout << i << "/" << s->numFrames << " " << std::time(0) - t << std::endl;
+//        outputVideo << image;
+//    }
 
-    inputVideo.release();
-    outputVideo.release();
+//    inputVideo.release();
+//    outputVideo.release();
 }

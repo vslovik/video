@@ -5,10 +5,10 @@
 #include <opencv2/highgui/highgui.hpp>
 
 struct PMinState {
-	PMinState(const ulong n, std::vector<cv::Point> points):
+	PMinState(const int n, std::vector<cv::Point> points):
 			n(n), points(points) {};
-	const ulong n;
-	ulong step = 2;
+	const int n;
+	int step = 2;
 	std::vector<cv::Point> points;
 };
 
@@ -21,7 +21,7 @@ cv::Point parallel_min(uchar* s, const int N, int num_workers = 1){
 		points.push_back(cv::Point(i, s[i]));
 	}
 
-	PMinState* st = new PMinState((ulong) N, points);
+	PMinState* st = new PMinState(N, points);
 	ff::ParallelFor pf(num_workers, false);
 
 	while (true) {
@@ -29,9 +29,9 @@ cv::Point parallel_min(uchar* s, const int N, int num_workers = 1){
 			break;
 		}
 
-		pf.parallel_for(1, st->n, st->step, [&st](int i) {
+		pf.parallel_for(1, (long) st->n, (long) st->step, [&st](int i) {
 			ulong left = (ulong) i - 1;
-			ulong right = (ulong) cv::min(st->n - 1, (ulong) i - 1 + st->step - 1);
+			ulong right = (ulong) cv::min(st->n - 1, i - 1 + st->step - 1);
 
 			if (st->points.at(left).y > st->points.at(right).y) {
 				st->points.at(left) = st->points.at(right);
@@ -78,7 +78,8 @@ int *find_seam(Mat &image, int num_workers = 1){
 	            uchar right = c < W - 1 ? row[c + 1] : max_int;
 	            uchar middle = row[c];
 	            uchar m = std::min({left, middle, right});
-                scores[c] = m;
+                if(r == H - 1)
+	                scores[c] = m;
                 if(m == left)
                     seams[r * W + c] = c - 1;
                 else if(m == right)
@@ -123,31 +124,31 @@ void coherence_function(Mat &image, int* seam, int num_workers = 1) {
     coherence(image, seam, 8);
 }
 
-int main(int argc, char **argv)
-{
-	std::cout << "find seam" << std::endl;
-	try {
-		Mat image;
-
-
-        image = imread("../data_/monteverdi_ritratto.jpg", 1);
-
-		std::time_t t0 = std::time(0);
-
-		for(int k = 0; k < 100; k++) {
-			int *seam = find_seam(image, 4);
-
-//		for(int r = 0; r < image.rows; r++) {
-//			std::cout << seam[r] << std::endl;
+//int main(int argc, char **argv)
+//{
+//	std::cout << "find seam" << std::endl;
+//	try {
+//		Mat image;
+//
+//
+//        image = imread("../data_/monteverdi_ritratto.jpg", 1);
+//
+//		std::time_t t0 = std::time(0);
+//
+//		for(int k = 0; k < 100; k++) {
+//			int *seam = find_seam(image, 4);
+//
+////		for(int r = 0; r < image.rows; r++) {
+////			std::cout << seam[r] << std::endl;
+////		}
 //		}
-		}
-
-		std::cout <<  std::time(0) - t0 << std::endl;
-
-	} catch(std::string e){
-		std::cout << e << std::endl;
-		return -1;
-	}
-
-	return 0;
-}
+//
+//		std::cout <<  std::time(0) - t0 << std::endl;
+//
+//	} catch(std::string e){
+//		std::cout << e << std::endl;
+//		return -1;
+//	}
+//
+//	return 0;
+//}
