@@ -75,12 +75,34 @@ Point pmin(T (&s)[N], int nw) { // instead of Point pmin(long* s, int nw)
 
     st = new PMinState(N, points);
 
-    ff_Farm<long> farm(FF, nw);
-    farm.remove_collector();
-    Scheduler S;
-    farm.add_emitter(S);
-    farm.wrap_around();
-    if (farm.run_and_wait_end()<0) error("running farm");
+    for (long i = 1; i < st->n; i += st->step) {
+        ulong left = (ulong) i - 1;
+        ulong right = min(st->n - 1, (ulong) i - 1 + st->step - 1);
+
+        if (st->points.at(left).y > st->points.at(right).y) {
+            st->points.at(left) = st->points.at(right);
+        } else {
+            st->points.at(right) = st->points.at(left);
+        }
+    }
+    while (true) {
+
+        st->step = st->step << 1;
+        for (long i = 1; i < st->n; i += st->step) {
+            ulong left = (ulong) i - 1;
+            ulong right = min(st->n - 1, (ulong) i - 1 + st->step - 1);
+
+            if (st->points.at(left).y > st->points.at(right).y) {
+                st->points.at(left) = st->points.at(right);
+            } else {
+                st->points.at(right) = st->points.at(left);
+            }
+        }
+
+        if (st->step > st->n) {
+            break;
+        }
+    }
 
     return st->points.at(0);
 };
