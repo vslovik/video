@@ -91,7 +91,32 @@ int *find_seam(Mat &image, int num_workers = 1){
         });
     }
 
-	Point p = parallel_min(points, W, num_workers);
+//	Point p = parallel_min(points, W, num_workers);
+
+	PMinState* st = new PMinState(W, points);
+
+	while (true) {
+		if (st->step > st->n) {
+			break;
+		}
+
+		pf.parallel_for(1, (long) st->n, (long) st->step, [&st](int i) {
+			ulong left = (ulong) i - 1;
+			ulong right = (ulong) cv::min(st->n - 1, i - 1 + st->step - 1);
+
+			if (st->points[left].y > st->points[right].y) {
+				st->points[left] = st->points[right];
+			} else {
+				st->points[right] = st->points[left];
+			}
+		});
+
+		st->step = st->step << 1;
+	}
+
+	Point p = st->points[0];
+
+	delete st;
 
 	int *path = new int[H];
     for(int r = 0; r < H; r++)
