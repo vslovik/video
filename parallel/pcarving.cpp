@@ -12,14 +12,13 @@ struct PMinState {
 	std::vector<cv::Point> points;
 };
 
-int max_int = std::numeric_limits<int>::max();
+uchar max_int = std::numeric_limits<uchar>::max();
 
-cv::Point parallel_min(int* s, const int N, int num_workers = 1){
+cv::Point parallel_min(uchar* s, const int N, int num_workers = 1){
 
 	std::vector<cv::Point> points;
 	for (int i = 0; i < N; i++) {
-		cv::Point *p = new cv::Point(i, s[i]);
-		points.push_back(*p);
+		points.push_back(cv::Point(i, s[i]));
 	}
 
 	PMinState* st = new PMinState((ulong) N, points);
@@ -51,22 +50,23 @@ int *find_seam(Mat &image, int num_workers = 1){
     int H = image.rows;
     int W = image.cols;
     int *seams;
-    int *scores;
-    int* row = new int[W];
+	uchar *scores;
+	uchar *row;
 
+	row = (uchar *)malloc(W*sizeof(uchar));
     seams = (int *)malloc(W*H*sizeof(int));
-    scores = (int *)malloc(W*sizeof(int));
+    scores = (uchar *)malloc(W*sizeof(uchar));
 
 	ff::ParallelFor pf(num_workers, false);
     for(int r = 0; r < H; r++){
 
         // Calculate row values
         pf.parallel_for(0L, W, [&row, r, W, &image](int c) {
-            int next = (int)image.at<uchar>(r,c);
+	        uchar next = image.at<uchar>(r,c);
             if(r > 0) {
-                int left = c > 0 ? row[c - 1] : max_int;
-                int right = c < W - 1 ? row[c + 1] : max_int;
-                next += min({left, row[c], right});
+                uchar left = c > 0 ? row[c - 1] : max_int;
+                uchar right = c < W - 1 ? row[c + 1] : max_int;
+                next += std::min({left, row[c], right});
             }
             row[c] = next;
         });
@@ -74,10 +74,10 @@ int *find_seam(Mat &image, int num_workers = 1){
         // Advance seams
         pf.parallel_for(0L,W,[&row, r, W, H, &seams, &scores](int c) {
             if(r > 0) {
-                int left = c > 0 ? row[c - 1] : max_int;
-                int right = c < W - 1 ? row[c + 1] : max_int;
-                int middle = row[c];
-                int m = min({left, middle, right});
+	            uchar left = c > 0 ? row[c - 1] : max_int;
+	            uchar right = c < W - 1 ? row[c + 1] : max_int;
+	            uchar middle = row[c];
+	            uchar m = std::min({left, middle, right});
                 scores[c] = m;
                 if(m == left)
                     seams[r * W + c] = c - 1;
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
 		std::time_t t0 = std::time(0);
 
 		for(int k = 0; k < 100; k++) {
-			int *seam = find_seam(image, 8);
+			int *seam = find_seam(image, 4);
 
 //		for(int r = 0; r < image.rows; r++) {
 //			std::cout << seam[r] << std::endl;

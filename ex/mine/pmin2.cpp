@@ -16,8 +16,7 @@ cv::Point pmin(T (&s)[N], int nw) { // instead of Point pmin(long* s, int nw)
 
 	std::vector<cv::Point> points;
     for (int i = 0; i < N; i++) {
-        cv::Point *p = new cv::Point(i, s[i]);
-        points.push_back(*p);
+	    points.push_back(cv::Point(i, s[i]));
     }
 
 	PMinState* st = new PMinState(N, points);
