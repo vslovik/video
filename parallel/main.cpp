@@ -3,13 +3,13 @@
 
 static void help()
 {
-    cout
-            << "------------------------------------------------------------------------------" << endl
-            << "This program reads filters and write video files."                              << endl
-            << "Usage:"                                                                         << endl
-            << "./video inputvideoName"                                                         << endl
-            << "------------------------------------------------------------------------------" << endl
-            << endl;
+	std::cout
+            << "------------------------------------------------------------------------------" << std::endl
+            << "This program reads filters and write video files."                              << std::endl
+            << "Usage:"                                                                         << std::endl
+            << "./video inputvideoName"                                                         << std::endl
+            << "------------------------------------------------------------------------------" << std::endl
+            << std::endl;
 }
 
 int main(int argc, char **argv)
@@ -17,18 +17,18 @@ int main(int argc, char **argv)
     help();
 
     if(argc < 2) {
-        cout << "Not enough parameters" << endl;
+	    std::cout << "Not enough parameters" << std::endl;
         return -1;
     }
 
-    int num_workers = 4;
+    int num_workers = 1;
 
-    const string source = argv[1];
+    const std::string source = argv[1];
 
     try {
         process_video(source, num_workers);
     } catch(string e){
-        cout << e << endl;
+	    std::cout << e << std::endl;
         return -1;
     }
 

@@ -103,28 +103,6 @@ void remove_seam(int i, Mat& image, char orientation = 'v', int num_workers = 1)
     image = output;
 }
 
-void realTime(Mat& image, int num_workers = 1){
-	std::cout << "UP ARROW: Shrink horizontally" << std::endl;
-	std::cout << "LEFT ARROW: Shrink vertically" << std::endl;
-	std::cout << "q: Quit" << std::endl;
-
-    int key;
-    int iv = 0, ih = 0;
-    while(1) {
-        namedWindow("Display window", WINDOW_AUTOSIZE);
-        imshow("Display window", image);
-        key = waitKey(0);
-        if (key == 'q')
-            break;
-        else if (key == 'v') {
-            remove_seam(iv++, image, 'v', num_workers);
-        }
-        else if (key == 'h') {
-            remove_seam(ih++, image, 'h', num_workers);
-        }
-    }
-}
-
 void shrink_image(Mat& image, int ver, int hor, int num_workers = 1){
 //    cout << endl << "Processing image..." << endl;
     for(int i = 0; i < ver; i++){

@@ -177,7 +177,6 @@ void process_video(std::string source)
     for(int i = 0; i < s->numFrames; ++i) {
         inputVideo >> s->inFrame;
 	    std::time_t t = std::time(0);
-        std::cout << i << "/" << s->numFrames << std::endl;
 
         Mat image = s->inFrame;
         shrink_image(image, s->ver, s->hor);

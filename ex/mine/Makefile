@@ -11,19 +11,14 @@ FF_ROOT	= /home/valeriya/project/fastflow-2.1.0
 
 INCS = -I $(FF_ROOT)
 
-OBJS = main.o video.o pcarving.o psobel.o
-
 CXX	= g++ -std=c++11 $(INCS)
 #CXX	= icc -std=c++11 $(INCS)
 CFLAGS 	= -Wall `pkg-config --cflags opencv` #-DTRACE_FASTFLOW  -pg
 OPT     = -O3 -finline-functions -DNDEBUG
 LIBS 	= `pkg-config --libs opencv` -pthread
 
-video :	$(OBJS)
-	$(CXX) $(CFLAGS) $(OBJS) $(OPT) -o video $(LIBS)
-
-seam: pcarving.o psobel.o
-	$(CXX) $(CFLAGS) $(OPT) pcarving.o psobel.o -o seam $(LIBS)
+min: pmin2.o
+	$(CXX) $(CFLAGS) $(OPT) pmin2.o -o min $(LIBS)
 
 clean:
-	-rm *.o video
+	-rm *.o min

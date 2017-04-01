@@ -2,83 +2,49 @@
 #include <opencv2/core/core.hpp>
 #include <ff/parallel_for.hpp>
 #include "psobel.h"
+#include <opencv2/highgui/highgui.hpp>
 
 struct PMinState {
-    PMinState(const int n, std::vector<Point> points):
-            n(n), points(points) {};
-    const int n;
-    int step = 2;
-    std::vector<Point> points;
+	PMinState(const ulong n, std::vector<cv::Point> points):
+			n(n), points(points) {};
+	const ulong n;
+	ulong step = 2;
+	std::vector<cv::Point> points;
 };
 
 int max_int = std::numeric_limits<int>::max();
 
-PMinState* st;
+cv::Point parallel_min(int* s, const int N, int num_workers = 1){
 
-int *FF(int *task,ff::ff_node*const) {
-    ulong left = (ulong) *task - 1;
-    ulong right = (ulong) min(st->n - 1, *task - 1 + st->step - 1);
+	std::vector<cv::Point> points;
+	for (int i = 0; i < N; i++) {
+		cv::Point *p = new cv::Point(i, s[i]);
+		points.push_back(*p);
+	}
 
-    if (st->points.at(left).y > st->points.at(right).y) {
-        st->points.at(left) = st->points.at(right);
-    } else {
-        st->points.at(right) = st->points.at(left);
-    }
+	PMinState* st = new PMinState((ulong) N, points);
+	ff::ParallelFor pf(num_workers, false);
 
-    return task;
-}
+	while (true) {
+		if (st->step > st->n) {
+			break;
+		}
 
-struct Scheduler: ff::ff_node_t<int> {
-    int svc_init() {
-        counter = 1;
-        return 0;
-    }
+		pf.parallel_for(1, st->n, st->step, [&st](int i) {
+			ulong left = (ulong) i - 1;
+			ulong right = (ulong) cv::min(st->n - 1, (ulong) i - 1 + st->step - 1);
 
-    int *svc(int *task) {
-        if (task == nullptr) {
-            for (int i = 1; i < st->n; i += st->step) {
-                ff_send_out(new int(i));
-            }
-            return GO_ON;
-        }
+			if (st->points.at(left).y > st->points.at(right).y) {
+				st->points.at(left) = st->points.at(right);
+			} else {
+				st->points.at(right) = st->points.at(left);
+			}
+		});
 
-        delete task;
+		st->step = st->step << 1;
+	}
 
-        ++counter;
-        if (counter == 1 + (st->n - 1)/st->step) {
-            counter = 0;
-            st->step = st->step << 1;
-            for (int i = 1; i <= st->n; i += st->step)
-                ff_send_out(new int(i));
-        }
-
-        if (st->step > st->n) {
-            return EOS;
-        }
-
-        return GO_ON;
-    }
-
-    int counter;
-};
-
-Point parallel_min(int* s, const int N, int num_workers = 1){
-    std::vector<Point> points;
-    for (int i = 0; i < N; i++) {
-        Point *p = new Point(i, s[i]);
-        points.push_back(*p);
-    }
-
-    st = new PMinState(N, points);
-
-    ff::ff_Farm<int> farm(FF, num_workers);
-    farm.remove_collector();
-    Scheduler S;
-    farm.add_emitter(S);
-    farm.wrap_around();
-    if (farm.run_and_wait_end()<0) ff::error("running farm");
-
-    return st->points.at(0);
+	return st->points.at(0);
 };
 
 int *find_seam(Mat &image, int num_workers = 1){
@@ -91,12 +57,11 @@ int *find_seam(Mat &image, int num_workers = 1){
     seams = (int *)malloc(W*H*sizeof(int));
     scores = (int *)malloc(W*sizeof(int));
 
-	ff::ParallelFor pf_row(num_workers, false);
-	ff::ParallelFor pf_seams(num_workers, false);
+	ff::ParallelFor pf(num_workers, false);
     for(int r = 0; r < H; r++){
 
         // Calculate row values
-        pf_row.parallel_for(0L, W, [&row, r, W, &image](int c) {
+        pf.parallel_for(0L, W, [&row, r, W, &image](int c) {
             int next = (int)image.at<uchar>(r,c);
             if(r > 0) {
                 int left = c > 0 ? row[c - 1] : max_int;
@@ -107,7 +72,7 @@ int *find_seam(Mat &image, int num_workers = 1){
         });
 
         // Advance seams
-        pf_seams.parallel_for(0L,W,[&row, r, W, H, &seams, &scores](int c) {
+        pf.parallel_for(0L,W,[&row, r, W, H, &seams, &scores](int c) {
             if(r > 0) {
                 int left = c > 0 ? row[c - 1] : max_int;
                 int right = c < W - 1 ? row[c + 1] : max_int;
@@ -125,8 +90,9 @@ int *find_seam(Mat &image, int num_workers = 1){
         });
     }
 
-	Point p = parallel_min(scores, W, 1);
-    int *path = new int[H];
+	Point p = parallel_min(scores, W, num_workers);
+
+	int *path = new int[H];
     for(int r = 0; r < H; r++)
         path[r] = seams[r * W + p.x];
 
@@ -155,4 +121,33 @@ void energy_function(Mat &image, Mat &output, int num_workers = 1){
 
 void coherence_function(Mat &image, int* seam, int num_workers = 1) {
     coherence(image, seam, 8);
+}
+
+int main(int argc, char **argv)
+{
+	std::cout << "find seam" << std::endl;
+	try {
+		Mat image;
+
+
+        image = imread("../data_/monteverdi_ritratto.jpg", 1);
+
+		std::time_t t0 = std::time(0);
+
+		for(int k = 0; k < 100; k++) {
+			int *seam = find_seam(image, 8);
+
+//		for(int r = 0; r < image.rows; r++) {
+//			std::cout << seam[r] << std::endl;
+//		}
+		}
+
+		std::cout <<  std::time(0) - t0 << std::endl;
+
+	} catch(std::string e){
+		std::cout << e << std::endl;
+		return -1;
+	}
+
+	return 0;
 }

@@ -1,4 +1,3 @@
-#include "video.hpp"
 #include <ff/farm.hpp>
 
 using namespace cv;
