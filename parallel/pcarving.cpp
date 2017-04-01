@@ -44,17 +44,13 @@ cv::Point parallel_min(cv::Point *points, const int N, int num_workers = 1){
 };
 
 
-
 int *find_seam(Mat &image, int num_workers = 1){
     int H = image.rows;
     int W = image.cols;
-    int *seams;
-	uchar *row;
-	cv::Point *points;
 
-	points = (cv::Point *) malloc(W * sizeof(cv::Point));
-	row = (uchar *) malloc(W * sizeof(uchar));
-	seams = (int *) malloc(W * H * sizeof(int));
+	cv::Point *points = (cv::Point *) malloc(W * sizeof(cv::Point));
+	uchar *row = (uchar *) malloc(W * sizeof(uchar));
+	int *seams = (int *) malloc(W * H * sizeof(int));
 
 	ff::ParallelFor pf(num_workers, false);
     for(int r = 0; r < H; r++){
@@ -91,36 +87,37 @@ int *find_seam(Mat &image, int num_workers = 1){
         });
     }
 
-//	Point p = parallel_min(points, W, num_workers);
+	delete row;
 
-	PMinState* st = new PMinState(W, points);
+	int step = 2;
 
 	while (true) {
-		if (st->step > st->n) {
+		if (step > W) {
 			break;
 		}
 
-		pf.parallel_for(1, (long) st->n, (long) st->step, [&st](int i) {
+		pf.parallel_for(1, (long) W, (long) step, [W, step, &points](int i) {
 			ulong left = (ulong) i - 1;
-			ulong right = (ulong) cv::min(st->n - 1, i - 1 + st->step - 1);
+			ulong right = (ulong) cv::min(W - 1, i - 1 + step - 1);
 
-			if (st->points[left].y > st->points[right].y) {
-				st->points[left] = st->points[right];
+			if (points[left].y > points[right].y) {
+				points[left] = points[right];
 			} else {
-				st->points[right] = st->points[left];
+				points[right] = points[left];
 			}
 		});
 
-		st->step = st->step << 1;
+		step = step << 1;
 	}
 
-	Point p = st->points[0];
+	Point p = points[0];
 
-	delete st;
+	delete points;
 
-	int *path = new int[H];
-    for(int r = 0; r < H; r++)
-        path[r] = seams[r * W + p.x];
+	int *path = (int *) malloc(H * sizeof(int));
+	pf.parallel_for(0, (long)H, [W, &path, &p, &seams](int r) {
+		path[r] = seams[r * W + p.x];
+	});
 
     return path;
 }
@@ -141,7 +138,7 @@ void remove_pixels(Mat& image, Mat& output, int *seam, int num_workers = 1){
 }
 
 void energy_function(Mat &image, Mat &output, int num_workers = 1){
-    sobel(image, output, 8);
+    sobel(image, output, num_workers);
 }
 
 
@@ -155,6 +152,7 @@ int main(int argc, char **argv)
 	try {
 		Mat image;
 
+		int num_workers = 4;
 
         image = imread("../data_/monteverdi_ritratto.jpg", 1);
 
@@ -162,12 +160,12 @@ int main(int argc, char **argv)
 		cvtColor(image, gray, CV_BGR2GRAY);
 
 		Mat eimage;
-		energy_function(gray, eimage, 4);
+		energy_function(gray, eimage, num_workers);
 
 		std::time_t t0 = std::time(0);
 
 		for(int k = 0; k < 100; k++) {
-			int *seam = find_seam(image, 4);
+			int *seam = find_seam(image, num_workers);
 
 //		for(int r = 0; r < image.rows; r++) {
 //			std::cout << seam[r] << std::endl;
