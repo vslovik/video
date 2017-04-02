@@ -24,5 +24,13 @@ set(SEQ_SOURCE_FILES
 		sequential/main.cpp
 		)
 
+set(SEAM_SOURCE_FILES
+		parallel/pcarving.cpp
+		parallel/pcarving.h
+		parallel/psobel.cpp
+		parallel/psobel.h
+		)
+
 add_executable(video ${SOURCE_FILES})
 add_executable(svideo ${SEQ_SOURCE_FILES})
+add_executable(seam ${SEAM_SOURCE_FILES})

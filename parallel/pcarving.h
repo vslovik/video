@@ -12,6 +12,14 @@
 using namespace cv;
 
 /*
+* Function: rot90
+* Usage: rot90();
+* -------------------
+* Image transposition
+*/
+void rot90(Mat &matImage, int flag);
+
+/*
 * Function: find_seam
 * Usage: find_seam();
 * -------------------
@@ -27,7 +35,7 @@ int *find_seam(Mat &image, int num_workers = 1);
 * -------------------
 * Removes found seam
 */
-void remove_pixels(Mat& image, Mat& output, int *seam, int num_workers = 1);
+void remove_pixels(Mat& image, int *seam, int num_workers = 1);
 
 /*
 * Function: energy_function
@@ -44,5 +52,21 @@ void energy_function(Mat &image, Mat &output, int num_workers = 1);
 * Calculates coherence-aware energy map
 */
 void coherence_function(Mat &image, int* seam, int num_workers = 1);
+
+/*
+* Function: remove_seam
+* Usage: remove_seam();
+* -------------------
+* Removes seam
+*/
+void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1);
+
+/*
+* Function: realTime
+* Usage: realTime();
+* -------------------
+* Real time seams removal
+*/
+void realTime(Mat& image, int num_workers);
 
 #endif

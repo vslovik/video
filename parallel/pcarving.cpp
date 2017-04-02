@@ -6,43 +6,27 @@
 #include "psobel.h"
 #include <opencv2/highgui/highgui.hpp>
 
-struct PMinState {
-	PMinState(const int n, cv::Point *points):
-			n(n), points(points) {};
-	const int n;
-	int step = 2;
-	cv::Point *points;
-};
+const int CW = 1;
+const int CCW = 0;
+
+static void help()
+{
+	std::cout
+			<< "------------------------------------------------------------------------------" << std::endl
+			<< "Image seam carving"                                                             << std::endl
+			<< "Usage:"                                                                         << std::endl
+			<< "./seam image"                                                                   << std::endl
+			<< "Ex: ./seam /home/valeriya/project/video/data_/monteverdi_ritratto.jpg"          << std::endl
+			<< "------------------------------------------------------------------------------" << std::endl
+			<< std::endl;
+}
+
+void rot90(Mat &matImage, int flag) {
+	transpose(matImage, matImage);
+	flip(matImage, matImage, flag);
+}
 
 uchar max_int = std::numeric_limits<uchar>::max();
-
-cv::Point parallel_min(cv::Point *points, const int N, int num_workers = 1){
-
-	PMinState* st = new PMinState(N, points);
-	ff::ParallelFor pf(num_workers, false);
-
-	while (true) {
-		if (st->step > st->n) {
-			break;
-		}
-
-		pf.parallel_for(1, (long) st->n, (long) st->step, [&st](int i) {
-			ulong left = (ulong) i - 1;
-			ulong right = (ulong) cv::min(st->n - 1, i - 1 + st->step - 1);
-
-			if (st->points[left].y > st->points[right].y) {
-				st->points[left] = st->points[right];
-			} else {
-				st->points[right] = st->points[left];
-			}
-		});
-
-		st->step = st->step << 1;
-	}
-
-	return st->points[0];
-};
-
 
 int *find_seam(Mat &image, int num_workers = 1){
     int H = image.rows;
@@ -122,57 +106,94 @@ int *find_seam(Mat &image, int num_workers = 1){
     return path;
 }
 
-void remove_pixels(Mat& image, Mat& output, int *seam, int num_workers = 1){
+void remove_pixels(Mat& image, int *seam, int num_workers = 1){
 	int W = image.cols;
+	int H = image.rows;
+
+	Mat output(image.rows, image.cols - 1, CV_8UC3);
 
     ff::ParallelFor pf(num_workers, false);
+	pf.parallel_for(0L, H*W, [W, &image, seam, &output](int i) {
+		int r = i / W;
+		int c = i % W;
 
-    for(int r = 0; r < image.rows; r++ ) {
-        pf.parallel_for(0L, W, [r, W, &image, &seam, &output](int c) {
-            if (c >= seam[r])
-                output.at<Vec3b>(r,c) = image.at<Vec3b>(r, c + 1);
-            else
-                output.at<Vec3b>(r,c) = image.at<Vec3b>(r, c);
-        });
-    }
+		if (c >= seam[r])
+			output.at<Vec3b>(r,c) = image.at<Vec3b>(r, c + 1);
+		else
+			output.at<Vec3b>(r,c) = image.at<Vec3b>(r, c);
+	});
+
+	image = output;
 }
 
 void energy_function(Mat &image, Mat &output, int num_workers = 1){
     sobel(image, output, num_workers);
 }
 
-
 void coherence_function(Mat &image, int* seam, int num_workers = 1) {
-    coherence(image, seam, 8);
+    coherence(image, seam, num_workers);
+}
+
+void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
+	if (orientation == 'h')
+		rot90(image, CW);
+
+	Mat eimage;
+	energy_function(image, eimage, num_workers);
+
+	int* seam = find_seam(eimage, num_workers);
+
+	remove_pixels(image, seam, num_workers);
+
+	if (orientation == 'h')
+		rot90(image, CCW);
+}
+
+void realTime(Mat& image, int num_workers){
+	std::cout << "UP ARROW: Shrink horizontally" << std::endl;
+	std::cout << "LEFT ARROW: Shrink vertically" << std::endl;
+	std::cout << "q: Quit" << std::endl;
+
+	int key;
+	while(1) {
+		namedWindow("Display window", WINDOW_AUTOSIZE);
+		imshow("Display window", image);
+		key = waitKey(0);
+		if (key == 'q')
+			break;
+		else if (key == 'v') {
+			remove_seam(image, 'v', num_workers);
+		}
+		else if (key == 'h') {
+			remove_seam(image, 'h', num_workers);
+		}
+	}
 }
 
 int main(int argc, char **argv)
 {
-	std::cout << "find seam" << std::endl;
+	int num_workers = 4;
+
+	if(argc < 2) {
+		std::cout << "Not enough parameters" << std::endl;
+		return -1;
+	}
+
 	try {
 		Mat image;
+		image = imread(argv[1], IMREAD_COLOR);
 
-		int num_workers = 4;
+//		realTime(image, num_workers);
 
-        image = imread("../data_/monteverdi_ritratto.jpg", 1);
+		ff::ffTime(ff::START_TIME);
 
-		Mat gray;
-		cvtColor(image, gray, CV_BGR2GRAY);
+		for(int k = 0; k < 100; k++)
+			remove_seam(image, 'v', num_workers);
 
-		Mat eimage;
-		energy_function(gray, eimage, num_workers);
+		ff::ffTime(ff::STOP_TIME);
 
-		std::time_t t0 = std::time(0);
-
-		for(int k = 0; k < 100; k++) {
-			int *seam = find_seam(image, num_workers);
-
-//		for(int r = 0; r < image.rows; r++) {
-//			std::cout << seam[r] << std::endl;
-//		}
-		}
-
-		std::cout <<  std::time(0) - t0 << std::endl;
+		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
+		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
 
 	} catch(std::string e){
 		std::cout << e << std::endl;

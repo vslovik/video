@@ -3,17 +3,14 @@
 #include <ff/parallel_for.hpp>
 
 /* ----- utility function ------- */
-template<typename T>
-T *Mat2uchar(cv::Mat &in) {
-    T *out = new T[in.rows * in.cols];
-    for (int i = 0; i < in.rows; ++i)
-        for (int j = 0; j < in.cols; ++j)
-            out[i * (in.cols) + j] = in.at<T>(i, j);
-    return out;
-}
 
 #define XY2I(Y,X,COLS) (((Y) * (COLS)) + (X))
+
 /* ------------------------------ */
+
+const float R = 0.3;
+const float G = 0.59;
+const float B = 0.11;
 
 // returns the gradient in the x direction
 static inline long xGradient(uchar * image, long cols, long x, long y) {
@@ -37,13 +34,24 @@ static inline long yGradient(uchar * image, long cols, long x, long y) {
 
 void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 
-    int rows = image.rows;
-    int cols = image.cols;
+	int rows = image.rows;
+	int cols = image.cols;
 
-    uchar * dst = new uchar[rows * cols];
-    uchar * src = Mat2uchar<uchar>(image);
+	uchar * src = new uchar[rows * cols];
+	uchar * dst = new uchar[rows * cols];
 
-    ff::ParallelFor pf(num_workers, false);
+	ff::ParallelFor pf(num_workers, false);
+	pf.parallel_for(0L, rows*cols, [cols, &src, &image](int i) {
+		int r = i / cols;
+		int c = i % cols;
+
+		cv::Vec3b values = image.at<cv::Vec3b>(r, c);
+		int val = (int) (R*values[0] + G*values[1] + B*values[2]);
+		if(val > 255)
+			val = 255;
+		src[r * cols + c] = (uchar) val;
+	});
+
     pf.parallel_for(1, rows - 1,[src, cols, &dst](const long y) {
         for(long x = 1; x < cols - 1; x++){
             const long gx = xGradient(src, cols, x, y);
@@ -66,11 +74,17 @@ void coherence(cv::Mat &image, int* seam, int num_workers) {
     int cols = image.cols;
 
     uchar * dst = new uchar[rows * cols];
-    uchar * src = Mat2uchar<uchar>(image);
+	uchar * src = new uchar[rows * cols];
 
-    int Il[cols], Ir[cols];
+	ff::ParallelFor pf(num_workers, false);
+	pf.parallel_for(0L, rows*cols, [cols, &src, &image](int i) {
+		int r = i / cols;
+		int c = i % cols;
+		src[r * cols + c] = image.at<uchar>(r, c);
+	});
 
-    ff::ParallelFor pf(num_workers, false);
+	int Il[cols], Ir[cols];
+
     pf.parallel_for(0, rows, [src, cols, &dst, &seam, &Il, &Ir](const long r) {
         int sum;
         for (int c = 0; c < cols - 1; c++) {

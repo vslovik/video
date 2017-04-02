@@ -1,0 +1,101 @@
+    ffTime(START_TIME);
+    // starts the pipe and waits for termination
+    if (pipe.run_and_wait_end()<0) {
+        error("running pipe");
+        return -1;
+    }
+    ffTime(STOP_TIME);
+
+    std::cout << "Elapsed (farm(" << nw1 << "): elapsed time =" ;
+    std::cout << ffTime(GET_TIME) << " ms\n";
+
+---------------------------------------------
+
+    ffTime(START_TIME);
+    // starts the pipeline and waits for termination
+    if (pipe.run_and_wait_end()<0) {
+        error("running pipeline");
+        return -1;
+    }
+    ffTime(STOP_TIME);
+
+    std::cout << "Elapsed (seq,";
+    if(nw1 == 1)  std::cout << "seq,";
+    else    	  std::cout << "farm(" << nw1 << "),";
+    if(nw2 == 1)  std::cout << "seq,";
+    else    	  std::cout << "farm(" << nw2 << "),";
+    if (1)        std::cout << "seq) : elapsed time =" ;
+    std::cout << ffTime(GET_TIME) << " ms\n";
+
+    return 0;
+
+
+https://github.com/opencv/opencv/blob/master/modules/imgproc/src/color.cpp
+
+struct IPPColor2GrayFunctor
+{
+    IPPColor2GrayFunctor(ippiColor2GrayFunc _func) :
+        ippiColorToGray(_func)
+    {
+        coeffs[0] = B2YF;
+        coeffs[1] = G2YF;
+        coeffs[2] = R2YF;
+    }
+    bool operator()(const void *src, int srcStep, void *dst, int dstStep, int cols, int rows) const
+    {
+        return ippiColorToGray ? CV_INSTRUMENT_FUN_IPP(ippiColorToGray, src, srcStep, dst, dstStep, ippiSize(cols, rows), coeffs) >= 0 : false;
+    }
+private:
+    ippiColor2GrayFunc ippiColorToGray;
+    Ipp32f coeffs[3];
+};
+
+
+
+
+template<> struct RGB2Gray<uchar>
+{
+    typedef uchar channel_type;
+
+    RGB2Gray(int _srccn, int blueIdx, const int* coeffs) : srccn(_srccn)
+    {
+        const int coeffs0[] = { R2Y, G2Y, B2Y };
+        if(!coeffs) coeffs = coeffs0;
+
+        int b = 0, g = 0, r = (1 << (yuv_shift-1));
+        int db = coeffs[blueIdx^2], dg = coeffs[1], dr = coeffs[blueIdx];
+
+        for( int i = 0; i < 256; i++, b += db, g += dg, r += dr )
+        {
+            tab[i] = b;
+            tab[i+256] = g;
+            tab[i+512] = r;
+        }
+    }
+    void operator()(const uchar* src, uchar* dst, int n) const
+    {
+        int scn = srccn;
+        const int* _tab = tab;
+        for(int i = 0; i < n; i++, src += scn)
+            dst[i] = (uchar)((_tab[src[0]] + _tab[src[1]+256] + _tab[src[2]+512]) >> yuv_shift);
+    }
+    int srccn;
+    int tab[256*3];
+};
+
+
+//http://stackoverflow.com/questions/16865730/how-to-to-parallelize-the-matrix-transpose
+void rot90(Mat &matImage, int rotflag){
+    //1=CW, 2=CCW, 3=180
+    if (rotflag == 1){
+        transpose(matImage, matImage);
+        flip(matImage, matImage,1); //transpose+flip(1)=CW
+    } else if (rotflag == 2) {
+        transpose(matImage, matImage);
+        flip(matImage, matImage,0); //transpose+flip(0)=CCW
+    } else if (rotflag ==3){
+        flip(matImage, matImage,-1);    //flip(-1)=180
+    } else if (rotflag != 0){ //if not 0,1,2,3:
+	    std::cout  << "Unknown rotation flag(" << rotflag << ")" << std::endl;
+    }
+}
