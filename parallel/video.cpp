@@ -16,7 +16,6 @@ struct State {
 	std::string output;
     double fps;
     int numFrames;
-    Mat inFrame, outFrame;
     int* v_seams;
     int* h_seams;
     bool firstFrame = true;
@@ -25,15 +24,11 @@ struct State {
             double fps,
             int numFrames,
             Size size,
-            Mat inFrame,
-            Mat outFrame,
             std::string output = "out.avi"
     ) :
             fps(fps),
             numFrames(numFrames),
             size(size),
-            inFrame(inFrame),
-            outFrame(outFrame),
             output(output),
             v_seams(v_seams),
             h_seams(h_seams)
@@ -102,7 +97,6 @@ void process_video(std::string source, int num_workers = 1)
     }
 
     int numFrames = (int) inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
-    Mat inFrame, outFrame;
     s = new State(
             inputVideo.get(CV_CAP_PROP_FPS),
             numFrames,
@@ -110,8 +104,6 @@ void process_video(std::string source, int num_workers = 1)
              (int) inputVideo.get(CV_CAP_PROP_FRAME_WIDTH),
              (int) inputVideo.get(CV_CAP_PROP_FRAME_HEIGHT)
             ),
-            inFrame,
-            outFrame,
             "out.avi"
     );
 
