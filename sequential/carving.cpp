@@ -128,5 +128,9 @@ void coherence_function(cv::Mat &image, int* seam) {
         }
     }
 
+    delete[] src;
+
     image = cv::Mat(rows, cols, CV_8U, dst, cv::Mat::AUTO_STEP);
+
+    delete[] dst;
 }

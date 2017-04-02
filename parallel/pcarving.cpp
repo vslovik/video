@@ -183,17 +183,17 @@ int main(int argc, char **argv)
 		Mat image;
 		image = imread(argv[1], IMREAD_COLOR);
 
-//		realTime(image, num_workers);
+		realTime(image, num_workers);
 
-		ff::ffTime(ff::START_TIME);
-
-		for(int k = 0; k < 100; k++)
-			remove_seam(image, 'v', num_workers);
-
-		ff::ffTime(ff::STOP_TIME);
-
-		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
-		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+//		ff::ffTime(ff::START_TIME);
+//
+//		for(int k = 0; k < 100; k++)
+//			remove_seam(image, 'v', num_workers);
+//
+//		ff::ffTime(ff::STOP_TIME);
+//
+//		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
+//		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
 
 	} catch(std::string e){
 		std::cout << e << std::endl;
