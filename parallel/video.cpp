@@ -6,7 +6,7 @@
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc.hpp>
+#include <ff/utils.hpp>
 #include "pcarving.h"
 
 struct State {
@@ -95,75 +95,67 @@ void shrink_image(Mat& image, int ver, int hor, int num_workers = 1){
 
 void process_video(std::string source, int num_workers = 1)
 {
-//    VideoCapture inputVideo(source);
-//    if (!inputVideo.isOpened())
-//    {
-//        throw source;
-//    }
-//
-//    int numFrames = (int) inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
-//    Mat inFrame, outFrame;
-//    s = new State(
-//            inputVideo.get(CV_CAP_PROP_FPS),
-//            numFrames,
-//            Size(
-//             (int) inputVideo.get(CV_CAP_PROP_FRAME_WIDTH),
-//             (int) inputVideo.get(CV_CAP_PROP_FRAME_HEIGHT)
-//            ),
-//            inFrame,
-//            outFrame,
-//            "out.avi"
-//    );
-//
-//	std::cout << "Input frame resolution: Width=" << s->size.width << "  Height=" << s->size.height
-//         << " of nr#: " << s->numFrames << std::endl;
-//	std::cout << "Input codec type: " << ".avi" << std::endl;
-//
-//    VideoWriter outputVideo;
-//    outputVideo.open(
-//            s->output,
-//            CV_FOURCC('D', 'I', 'V', 'X'),
-//            s->fps,
-//            Size(
-//                    s->size.width - s->ver,
-//                    s->size.height - s->hor
-//            ),
-//            true
-//    );
-//
-//    if (!outputVideo.isOpened()) {
-//        throw source;
-//    }
+    VideoCapture inputVideo(source);
+    if (!inputVideo.isOpened())
+    {
+        throw source;
+    }
 
-//
-//    for(int i = 0; i < s->numFrames; ++i) {
+    int numFrames = (int) inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
+    Mat inFrame, outFrame;
+    s = new State(
+            inputVideo.get(CV_CAP_PROP_FPS),
+            numFrames,
+            Size(
+             (int) inputVideo.get(CV_CAP_PROP_FRAME_WIDTH),
+             (int) inputVideo.get(CV_CAP_PROP_FRAME_HEIGHT)
+            ),
+            inFrame,
+            outFrame,
+            "out.avi"
+    );
 
-//        inputVideo >> s->inFrame;
-//	    std::time_t t = std::time(0);
+	std::cout << "Input frame resolution: Width=" << s->size.width << "  Height=" << s->size.height
+         << " of nr#: " << s->numFrames << std::endl;
+	std::cout << "Input codec type: " << ".avi" << std::endl;
 
-//        cout << "UP ARROW: Shrink horizontally" << endl;
-//        cout << "LEFT ARROW: Shrink vertically" << endl;
-//        cout << "q: Quit" << endl;
+    VideoWriter outputVideo;
+    outputVideo.open(
+            s->output,
+            CV_FOURCC('D', 'I', 'V', 'X'),
+            s->fps,
+            Size(
+                    s->size.width - s->ver,
+                    s->size.height - s->hor
+            ),
+            true
+    );
 
-        Mat image;
-
-        image = imread("../data_/monteverdi_ritratto.jpg", 1);
-        realTime(image, num_workers);
-//        remove_seam(0, image, 'v', num_workers);
+    if (!outputVideo.isOpened()) {
+        throw source;
+    }
 
 
-//        image = s->inFrame;
-//        shrink_image(image, s->ver, s->hor, num_workers);
-//        s->firstFrame = false;
+    for(int i = 0; i < s->numFrames; ++i) {
 
-//        cout << image.rows << "---" << image.cols << endl;
-//        imshow("mainWin", image);
-//        waitKey(5000);
+	    Mat image;
 
-//	    std::cout << i << "/" << s->numFrames << " " << std::time(0) - t << std::endl;
-//        outputVideo << image;
-//    }
+        inputVideo >> image;
 
-//    inputVideo.release();
-//    outputVideo.release();
+	    ff::ffTime(ff::START_TIME);
+
+        shrink_image(image, s->ver, s->hor, num_workers);
+        s->firstFrame = false;
+
+		ff::ffTime(ff::STOP_TIME);
+
+//      imshow("mainWin", image);
+//      waitKey(5000);
+
+	    std::cout << i << "/" << s->numFrames << " " << ff::ffTime(ff::GET_TIME) << " ms\n" << " " << std::endl;
+        outputVideo << image;
+    }
+
+    inputVideo.release();
+    outputVideo.release();
 }
