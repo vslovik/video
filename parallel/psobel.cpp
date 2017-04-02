@@ -87,7 +87,8 @@ void coherence(cv::Mat &image, int* seam, int num_workers) {
 		src[r * cols + c] = image.at<uchar>(r, c);
 	});
 
-	int Il[cols], Ir[cols];
+	int *Il = new int[cols];
+	int *Ir = new int[cols];
 
     pf.parallel_for(0, rows, [src, cols, &dst, &seam, &Il, &Ir](const long r) {
         int sum;
@@ -108,6 +109,8 @@ void coherence(cv::Mat &image, int* seam, int num_workers) {
         }
     });
 
+	delete[] Il;
+	delete[] Ir;
 	delete[] src;
 
     image = cv::Mat(rows, cols, CV_8U, dst, cv::Mat::AUTO_STEP);

@@ -18,6 +18,6 @@ using namespace std;
 * -------------------
 * Retargets a video sample
 */
-void process_video(string source, int num_workers = 1);
+void process_video(std::string source, int ver, int hor, int num_workers = 1);
 
 #endif

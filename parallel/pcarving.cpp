@@ -6,8 +6,8 @@
 #include "psobel.h"
 #include <opencv2/highgui/highgui.hpp>
 
-const int CW = 1;
-const int CCW = 0;
+#define CW 1;
+#define CCW 0;
 
 static void help()
 {
@@ -15,8 +15,8 @@ static void help()
 			<< "------------------------------------------------------------------------------" << std::endl
 			<< "Image seam carving"                                                             << std::endl
 			<< "Usage:"                                                                         << std::endl
-			<< "./seam image"                                                                   << std::endl
-			<< "Ex: ./seam /home/valeriya/project/video/data_/monteverdi_ritratto.jpg"          << std::endl
+			<< "./seam image num_workers"                                                       << std::endl
+			<< "Ex: ./seam /home/valeriya/project/video/data_/monteverdi_ritratto.jpg 4"        << std::endl
 			<< "------------------------------------------------------------------------------" << std::endl
 			<< std::endl;
 }
@@ -134,8 +134,11 @@ void coherence_function(Mat &image, int* seam, int num_workers = 1) {
 }
 
 void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
-	if (orientation == 'h')
-		rot90(image, CW);
+
+	if (orientation == 'h') {
+		int flag = CW;
+		rot90(image, flag);
+	}
 
 	Mat eimage;
 	energy_function(image, eimage, num_workers);
@@ -147,8 +150,10 @@ void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
 
 	delete[] seam;
 
-	if (orientation == 'h')
-		rot90(image, CCW);
+	if (orientation == 'h') {
+		int flag = CCW;
+		rot90(image, flag);
+	}
 }
 
 void realTime(Mat& image, int num_workers){
@@ -172,35 +177,35 @@ void realTime(Mat& image, int num_workers){
 	}
 }
 
-int main(int argc, char **argv)
-{
-	int num_workers = 4;
-
-	if(argc < 2) {
-		std::cout << "Not enough parameters" << std::endl;
-		return -1;
-	}
-
-	try {
-		Mat image;
-		image = imread(argv[1], IMREAD_COLOR);
-
-		realTime(image, num_workers);
-
-//		ff::ffTime(ff::START_TIME);
+//int main(int argc, char **argv)
+//{
+//	if(argc < 3) {
+//		std::cout << "Not enough parameters" << std::endl;
+//		return -1;
+//	}
 //
-//		for(int k = 0; k < 100; k++)
-//			remove_seam(image, 'v', num_workers);
+//	int num_workers = atoi(argv[2]);
 //
-//		ff::ffTime(ff::STOP_TIME);
+//	try {
 //
-//		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
-//		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
-
-	} catch(std::string e){
-		std::cout << e << std::endl;
-		return -1;
-	}
-
-	return 0;
-}
+//		Mat image = imread(argv[1], IMREAD_COLOR);
+//
+//		realTime(image, num_workers);
+//
+////		ff::ffTime(ff::START_TIME);
+////
+////		for(int k = 0; k < 100; k++)
+////			remove_seam(image, 'v', num_workers);
+////
+////		ff::ffTime(ff::STOP_TIME);
+////
+////		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
+////		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+//
+//	} catch(std::string e){
+//		std::cout << e << std::endl;
+//		return -1;
+//	}
+//
+//	return 0;
+//}

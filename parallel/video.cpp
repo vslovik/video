@@ -9,9 +9,12 @@
 #include <ff/utils.hpp>
 #include "pcarving.h"
 
+#define CW 1;
+#define CCW 0;
+
 struct State {
-    static const int ver = 20;
-    static const int hor = 20;
+    int ver;
+    int hor;
     Size size;
 	std::string output;
     double fps;
@@ -21,11 +24,15 @@ struct State {
     bool firstFrame = true;
 
     State(
+		    int ver,
+		    int hor,
             double fps,
             int numFrames,
             Size size,
             std::string output = "out.avi"
     ) :
+            ver(ver),
+            hor(hor),
             fps(fps),
             numFrames(numFrames),
             size(size),
@@ -41,42 +48,48 @@ struct State {
 State* s;
 
 void retarget_frame(int i, Mat& image, char orientation = 'v', int num_workers = 1){
-    if (orientation == 'h')
-        rot90(image, 1);
+	if (orientation == 'h') {
+		int flag = CW;
+		rot90(image, flag);
+	}
     int H = image.rows, W = image.cols;
 
     Mat eimage;
     energy_function(image, eimage, num_workers);
 
-    if(!s->firstFrame){
-        int* prev_seam = new int[H];
-        for (int r = 0; r < H; r++) {
-            if (orientation == 'v')
-                prev_seam[r] = s->v_seams[r * s->ver + i];
-            else
-                prev_seam[r] = s->h_seams[r * s->hor + i];
-        }
+	if (!s->firstFrame) {
+		int *prev_seam = new int[H];
 
-        coherence_function(eimage, prev_seam, num_workers);
-    }
+		for (int r = 0; r < H; r++) {
+			if (orientation == 'v')
+				prev_seam[r] = s->v_seams[r * s->ver + i];
+			else
+				prev_seam[r] = s->h_seams[r * s->hor + i];
+		}
 
-	int* seam = new int[eimage.rows];
+		coherence_function(eimage, prev_seam, num_workers);
+
+		delete[] prev_seam;
+	}
+
+	int *seam = new int[eimage.rows];
 	find_seam(eimage, seam, num_workers);
 
-    if (orientation == 'v') {
-        for (int r = 0; r < H; r++)
-            s->v_seams[r * s->ver + i] = seam[r];
-    } else {
-        for (int r = 0; r < H; r++)
-            s->h_seams[r * s->hor + i] = seam[r];
-    }
+	for (int r = 0; r < H; r++) {
+		if (orientation == 'v')
+			s->v_seams[r * s->ver + i] = seam[r];
+		else
+			s->h_seams[r * s->hor + i] = seam[r];
+	}
 
     remove_pixels(image, seam, num_workers);
 
 	delete[] seam;
 
-    if (orientation == 'h')
-        rot90(image, 2);
+	if (orientation == 'h') {
+		int flag = CCW;
+		rot90(image, flag);
+	}
 }
 
 void shrink_image(Mat& image, int ver, int hor, int num_workers = 1){
@@ -88,7 +101,7 @@ void shrink_image(Mat& image, int ver, int hor, int num_workers = 1){
     }
 }
 
-void process_video(std::string source, int num_workers = 1)
+void process_video(std::string source, int ver, int hor, int num_workers = 1)
 {
     VideoCapture inputVideo(source);
     if (!inputVideo.isOpened())
@@ -98,6 +111,8 @@ void process_video(std::string source, int num_workers = 1)
 
     int numFrames = (int) inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
     s = new State(
+		    ver,
+		    hor,
             inputVideo.get(CV_CAP_PROP_FPS),
             numFrames,
             Size(
@@ -109,7 +124,6 @@ void process_video(std::string source, int num_workers = 1)
 
 	std::cout << "Input frame resolution: Width=" << s->size.width << "  Height=" << s->size.height
          << " of nr#: " << s->numFrames << std::endl;
-	std::cout << "Input codec type: " << ".avi" << std::endl;
 
     VideoWriter outputVideo;
     outputVideo.open(
@@ -127,7 +141,6 @@ void process_video(std::string source, int num_workers = 1)
         throw source;
     }
 
-
     for(int i = 0; i < s->numFrames; ++i) {
 
 	    Mat image;
@@ -137,7 +150,9 @@ void process_video(std::string source, int num_workers = 1)
 	    ff::ffTime(ff::START_TIME);
 
         shrink_image(image, s->ver, s->hor, num_workers);
-        s->firstFrame = false;
+
+	    if (s->firstFrame)
+            s->firstFrame = false;
 
 		ff::ffTime(ff::STOP_TIME);
 
