@@ -32,9 +32,9 @@ int *find_seam(Mat &image, int num_workers = 1){
     int H = image.rows;
     int W = image.cols;
 
-	cv::Point *points = (cv::Point *) malloc(W * sizeof(cv::Point));
-	uchar *row = (uchar *) malloc(W * sizeof(uchar));
-	int *seams = (int *) malloc(W * H * sizeof(int));
+	cv::Point *points = new cv::Point[W];
+	uchar *row = new uchar[W];
+	int *seams = new int[W * H];
 
 	ff::ParallelFor pf(num_workers, false);
     for(int r = 0; r < H; r++){
@@ -71,7 +71,7 @@ int *find_seam(Mat &image, int num_workers = 1){
         });
     }
 
-	delete row;
+	delete[] row;
 
 	int step = 2;
 
@@ -96,12 +96,14 @@ int *find_seam(Mat &image, int num_workers = 1){
 
 	Point p = points[0];
 
-	delete points;
+	delete[] points;
 
 	int *path = (int *) malloc(H * sizeof(int));
 	pf.parallel_for(0, (long)H, [W, &path, &p, &seams](int r) {
 		path[r] = seams[r * W + p.x];
 	});
+
+	delete[] seams;
 
     return path;
 }
