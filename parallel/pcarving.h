@@ -27,7 +27,7 @@ void rot90(Mat &matImage, int flag);
 * with minimal image distortion
 * as parallel computing task
 */
-int *find_seam(Mat &image, int num_workers = 1);
+void find_seam(Mat &image, int *path, int num_workers = 1);
 
 /*
 * Function: remove_pixels

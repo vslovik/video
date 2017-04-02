@@ -65,7 +65,8 @@ void retarget_frame(int i, Mat& image, char orientation = 'v', int num_workers =
         coherence_function(eimage, prev_seam, num_workers);
     }
 
-    int* seam = find_seam(eimage, num_workers);
+	int* seam = new int[eimage.rows];
+	find_seam(eimage, seam, num_workers);
 
     if (orientation == 'v') {
         for (int r = 0; r < H; r++)
@@ -76,6 +77,8 @@ void retarget_frame(int i, Mat& image, char orientation = 'v', int num_workers =
     }
 
     remove_pixels(image, seam, num_workers);
+
+	delete[] seam;
 
     if (orientation == 'h')
         rot90(image, 2);

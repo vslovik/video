@@ -28,7 +28,7 @@ void rot90(Mat &matImage, int flag) {
 
 uchar max_int = std::numeric_limits<uchar>::max();
 
-int *find_seam(Mat &image, int num_workers = 1){
+void find_seam(Mat &image, int *path, int num_workers = 1){
     int H = image.rows;
     int W = image.cols;
 
@@ -98,14 +98,11 @@ int *find_seam(Mat &image, int num_workers = 1){
 
 	delete[] points;
 
-	int *path = (int *) malloc(H * sizeof(int));
 	pf.parallel_for(0, (long)H, [W, &path, &p, &seams](int r) {
 		path[r] = seams[r * W + p.x];
 	});
 
 	delete[] seams;
-
-    return path;
 }
 
 void remove_pixels(Mat& image, int *seam, int num_workers = 1){
@@ -143,9 +140,12 @@ void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
 	Mat eimage;
 	energy_function(image, eimage, num_workers);
 
-	int* seam = find_seam(eimage, num_workers);
+	int* seam = new int[eimage.rows];
+	find_seam(eimage, seam, num_workers);
 
 	remove_pixels(image, seam, num_workers);
+
+	delete[] seam;
 
 	if (orientation == 'h')
 		rot90(image, CCW);
