@@ -202,15 +202,19 @@ int main(int argc, char **argv)
 			Mat eimage;
 			energy_function(image, eimage, num_workers);
 
-			int* seam = new int[eimage.rows];
-			find_seam(eimage, seam, num_workers);
-
-			remove_pixels(image, seam, num_workers);
 
 			ff::ffTime(ff::STOP_TIME);
 
 			std::cout << "num_workers: " << num_workers << " elapsed time =";
 			std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+
+
+			int* seam = new int[eimage.rows];
+			find_seam(eimage, seam, num_workers);
+
+			remove_pixels(image, seam, num_workers);
+
+
 		}
 
 	} catch(std::string e){
