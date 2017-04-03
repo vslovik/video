@@ -29,51 +29,53 @@ void rot90(Mat &matImage, int flag) {
 uchar max_int = std::numeric_limits<uchar>::max();
 
 void find_seam(Mat &image, int *path, int num_workers = 1){
-    int H = image.rows;
-    int W = image.cols;
+	int H = image.rows;
+	int W = image.cols;
 
 	cv::Point *points = new cv::Point[W];
 	uchar *row = new uchar[W];
 	int *seams = new int[W * H];
 
-
-	int minimum = 256;
-	int argmin = W + 1;
+	ff::ffTime(ff::STOP_TIME);
 
 	ff::ParallelFor pf(num_workers, false);
-    for(int r = 0; r < H; r++){
+	for(int r = 0; r < H; r++){
 
-        // Calculate row values
-        pf.parallel_for(0L, W, [&row, r, W, &image](int c) {
-	        uchar next = image.at<uchar>(r,c);
-            if(r > 0) {
-                uchar left = c > 0 ? row[c - 1] : max_int;
-                uchar right = c < W - 1 ? row[c + 1] : max_int;
-                next += std::min({left, row[c], right});
-            }
-            row[c] = next;
-        });
+		// Calculate row values
+		pf.parallel_for(0L, W, [&row, r, W, &image](int c) {
+			uchar next = image.at<uchar>(r,c);
+			if(r > 0) {
+				uchar left = c > 0 ? row[c - 1] : max_int;
+				uchar right = c < W - 1 ? row[c + 1] : max_int;
+				next += std::min({left, row[c], right});
+			}
+			row[c] = next;
+		});
 
-        // Advance seams
-        pf.parallel_for(0L,W,[&row, r, W, H, &seams, &points](int c) {
-            if(r > 0) {
-	            uchar left = c > 0 ? row[c - 1] : max_int;
-	            uchar right = c < W - 1 ? row[c + 1] : max_int;
-	            uchar middle = row[c];
-	            uchar m = std::min({left, middle, right});
-                if(r == H - 1) {
-	                points[c] = cv::Point(c, m);
-                }
-                if(m == left)
-                    seams[r * W + c] = c - 1;
-                else if(m == right)
-                    seams[r * W + c] = c + 1;
-                else
-                    seams[r*W + c] = c;
-            } else
-                seams[r*W + c] = row[c];
-        });
-    }
+		// Advance seams
+		pf.parallel_for(0L,W,[&row, r, W, H, &seams, &points](int c) {
+			if(r > 0) {
+				uchar left = c > 0 ? row[c - 1] : max_int;
+				uchar right = c < W - 1 ? row[c + 1] : max_int;
+				uchar middle = row[c];
+				uchar m = std::min({left, middle, right});
+				if(r == H - 1) {
+					points[c] = cv::Point(c, m);
+				}
+				if(m == left)
+					seams[r * W + c] = c - 1;
+				else if(m == right)
+					seams[r * W + c] = c + 1;
+				else
+					seams[r*W + c] = c;
+			} else
+				seams[r*W + c] = row[c];
+		});
+	}
+
+	ff::ffTime(ff::STOP_TIME);
+	std::cout << "num_workers: " << num_workers << " elapsed time =" ;
+	std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
 
 	delete[] row;
 
@@ -115,7 +117,7 @@ void remove_pixels(Mat& image, int *seam, int num_workers = 1){
 
 	Mat output(image.rows, image.cols - 1, CV_8UC3);
 
-    ff::ParallelFor pf(num_workers, false);
+	ff::ParallelFor pf(num_workers, false);
 	pf.parallel_for(0L, H*W, [W, &image, seam, &output](int i) {
 		int r = i / W;
 		int c = i % W;
@@ -130,11 +132,11 @@ void remove_pixels(Mat& image, int *seam, int num_workers = 1){
 }
 
 void energy_function(Mat &image, Mat &output, int num_workers = 1){
-    sobel(image, output, num_workers);
+	sobel(image, output, num_workers);
 }
 
 void coherence_function(Mat &image, int* seam, int num_workers = 1) {
-    coherence(image, seam, num_workers);
+	coherence(image, seam, num_workers);
 }
 
 void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
@@ -188,7 +190,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-//    int num_workers = atoi(argv[2]);
+//	int num_workers = atoi(argv[2]);
 
 	try {
 
@@ -196,26 +198,15 @@ int main(int argc, char **argv)
 
 //		realTime(image, num_workers);
 
-		for(int num_workers = 1; num_workers <= 20; num_workers++) {
-			ff::ffTime(ff::START_TIME);
+//		ff::ffTime(ff::START_TIME);
 
-			Mat eimage;
-			energy_function(image, eimage, num_workers);
+		for(int k = 1; k < 21; k++)
+			remove_seam(image, 'v', k);
 
-
-			ff::ffTime(ff::STOP_TIME);
-
-			std::cout << "num_workers: " << num_workers << " elapsed time =";
-			std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
-
-
-			int* seam = new int[eimage.rows];
-			find_seam(eimage, seam, num_workers);
-
-			remove_pixels(image, seam, num_workers);
-
-
-		}
+//		ff::ffTime(ff::STOP_TIME);
+//
+//		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
+//		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
 
 	} catch(std::string e){
 		std::cout << e << std::endl;
