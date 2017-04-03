@@ -268,3 +268,47 @@ num_workers: 17 elapsed time =127.697 ms
 num_workers: 18 elapsed time =92.656 ms
 num_workers: 19 elapsed time =106.137 ms
 num_workers: 20 elapsed time =79.053 ms
+
+t
+num_workers: 1 elapsed time =155.905 ms
+num_workers: 2 elapsed time =174.007 ms
+num_workers: 3 elapsed time =150.997 ms
+num_workers: 4 elapsed time =207.025 ms
+num_workers: 5 elapsed time =212.499 ms
+num_workers: 6 elapsed time =206.852 ms
+num_workers: 7 elapsed time =222.924 ms
+num_workers: 8 elapsed time =251.34 ms
+num_workers: 9 elapsed time =238.617 ms
+num_workers: 10 elapsed time =233.739 ms
+num_workers: 11 elapsed time =237.875 ms
+num_workers: 12 elapsed time =259.333 ms
+num_workers: 13 elapsed time =265.78 ms
+num_workers: 14 elapsed time =289.852 ms
+num_workers: 15 elapsed time =291.136 ms
+num_workers: 16 elapsed time =317.864 ms
+num_workers: 17 elapsed time =290.332 ms
+num_workers: 18 elapsed time =390.706 ms
+num_workers: 19 elapsed time =377.043 ms
+num_workers: 20 elapsed time =481.581 ms
+
+min mio
+num_workers: 1 elapsed time =0.016 ms
+num_workers: 2 elapsed time =0.055 ms
+num_workers: 3 elapsed time =0.072 ms
+num_workers: 4 elapsed time =0.095 ms
+num_workers: 5 elapsed time =0.113 ms
+num_workers: 6 elapsed time =0.117 ms
+num_workers: 7 elapsed time =0.689 ms
+num_workers: 8 elapsed time =0.136 ms
+num_workers: 9 elapsed time =0.146 ms
+num_workers: 10 elapsed time =0.155 ms
+num_workers: 11 elapsed time =0.167 ms
+num_workers: 12 elapsed time =0.18 ms
+num_workers: 13 elapsed time =0.248 ms
+num_workers: 14 elapsed time =0.245 ms
+num_workers: 15 elapsed time =0.23 ms
+num_workers: 16 elapsed time =0.238 ms
+num_workers: 17 elapsed time =0.238 ms
+num_workers: 18 elapsed time =0.251 ms
+num_workers: 19 elapsed time =0.262 ms
+num_workers: 20 elapsed time =0.293 ms
