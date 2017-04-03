@@ -32,9 +32,13 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
     int H = image.rows;
     int W = image.cols;
 
-	cv::Point *points = new cv::Point[W];
+//	cv::Point *points = new cv::Point[W];
 	uchar *row = new uchar[W];
 	int *seams = new int[W * H];
+
+
+	int minimum = 256;
+	int argmin = W + 1;
 
 	ff::ParallelFor pf(num_workers, false);
     for(int r = 0; r < H; r++){
@@ -51,14 +55,19 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
         });
 
         // Advance seams
-        pf.parallel_for(0L,W,[&row, r, W, H, &seams, &points](int c) {
+	    pf.parallel_for(0L,W,[&row, r, W, H, &seams, &minimum, &argmin](int c) {
+//        pf.parallel_for(0L,W,[&row, r, W, H, &seams, &points](int c) {
             if(r > 0) {
 	            uchar left = c > 0 ? row[c - 1] : max_int;
 	            uchar right = c < W - 1 ? row[c + 1] : max_int;
 	            uchar middle = row[c];
 	            uchar m = std::min({left, middle, right});
                 if(r == H - 1) {
-	                points[c] = cv::Point(c, m);
+	                if(minimum > m) {
+		                minimum = m;
+		                argmin = c;
+	                }
+//	                points[c] = cv::Point(c, m);
                 }
                 if(m == left)
                     seams[r * W + c] = c - 1;
@@ -73,34 +82,39 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 
 	delete[] row;
 
-	int step = 2;
+//	int step = 2;
+//
+//	while (true) {
+//		if (step > W) {
+//			break;
+//		}
+//
+//		pf.parallel_for(1, (long) W, (long) step, [W, step, &points](int i) {
+//			ulong left = (ulong) i - 1;
+//			ulong right = (ulong) cv::min(W - 1, i - 1 + step - 1);
+//
+//			if (points[left].y > points[right].y) {
+//				points[left] = points[right];
+//			} else {
+//				points[right] = points[left];
+//			}
+//		});
+//
+//		step = step << 1;
+//	}
+//
+//	Point p = points[0];
+//
+//	delete[] points;
 
-	while (true) {
-		if (step > W) {
-			break;
-		}
+//	pf.parallel_for(0, (long)H, [W, &path, &p, &seams](int r) {
+//		path[r] = seams[r * W + p.x];
+//	});
 
-		pf.parallel_for(1, (long) W, (long) step, [W, step, &points](int i) {
-			ulong left = (ulong) i - 1;
-			ulong right = (ulong) cv::min(W - 1, i - 1 + step - 1);
-
-			if (points[left].y > points[right].y) {
-				points[left] = points[right];
-			} else {
-				points[right] = points[left];
-			}
-		});
-
-		step = step << 1;
-	}
-
-	Point p = points[0];
-
-	delete[] points;
-
-	pf.parallel_for(0, (long)H, [W, &path, &p, &seams](int r) {
-		path[r] = seams[r * W + p.x];
+	pf.parallel_for(0, (long)H, [W, &path, argmin, &seams](int r) {
+		path[r] = seams[r * W + argmin];
 	});
+
 
 	delete[] seams;
 }
@@ -177,35 +191,55 @@ void realTime(Mat& image, int num_workers){
 	}
 }
 
-//int main(int argc, char **argv)
-//{
-//	if(argc < 3) {
-//		std::cout << "Not enough parameters" << std::endl;
-//		return -1;
-//	}
-//
-//	int num_workers = atoi(argv[2]);
-//
-//	try {
-//
-//		Mat image = imread(argv[1], IMREAD_COLOR);
-//
+int main(int argc, char **argv)
+{
+	if(argc < 3) {
+		std::cout << "Not enough parameters" << std::endl;
+		return -1;
+	}
+
+//    int num_workers = atoi(argv[2]);
+
+	try {
+
+		Mat image = imread(argv[1], IMREAD_COLOR);
+
 //		realTime(image, num_workers);
+
+
+
+		for(int num_workers = 1; num_workers <= 20; num_workers++) {
+//			ff::ffTime(ff::START_TIME);
+
+			Mat eimage;
+			energy_function(image, eimage, num_workers);
+
+//			ff::ffTime(ff::STOP_TIME);
+//			std::cout << "num_workers: " << num_workers << " elapsed time =";
+//			std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+
+			ff::ffTime(ff::START_TIME);
+			int* seam = new int[eimage.rows];
+			find_seam(eimage, seam, num_workers);
+
+			ff::ffTime(ff::STOP_TIME);
+			std::cout << "num_workers: " << num_workers << " elapsed time =";
+			std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+
+//			ff::ffTime(ff::START_TIME);
+
+			remove_pixels(image, seam, num_workers);
+
+//			ff::ffTime(ff::STOP_TIME);
 //
-////		ff::ffTime(ff::START_TIME);
-////
-////		for(int k = 0; k < 100; k++)
-////			remove_seam(image, 'v', num_workers);
-////
-////		ff::ffTime(ff::STOP_TIME);
-////
-////		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
-////		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
-//
-//	} catch(std::string e){
-//		std::cout << e << std::endl;
-//		return -1;
-//	}
-//
-//	return 0;
-//}
+//			std::cout << "num_workers: " << num_workers << " elapsed time =";
+//			std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+		}
+
+	} catch(std::string e){
+		std::cout << e << std::endl;
+		return -1;
+	}
+
+	return 0;
+}
