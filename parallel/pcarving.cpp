@@ -62,10 +62,6 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 	            uchar middle = row[c];
 	            uchar m = std::min({left, middle, right});
                 if(r == H - 1) {
-	                if(minimum > m) {
-		                minimum = m;
-		                argmin = c;
-	                }
 	                points[c] = cv::Point(c, m);
                 }
                 if(m == left)
