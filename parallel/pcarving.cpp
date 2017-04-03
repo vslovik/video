@@ -36,7 +36,7 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 	uchar *row = new uchar[W];
 	int *seams = new int[W * H];
 
-	ff::ffTime(ff::STOP_TIME);
+	ff::ffTime(ff::START_TIME);
 
 	ff::ParallelFor pf(num_workers, false);
 	for(int r = 0; r < H; r++){

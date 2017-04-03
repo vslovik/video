@@ -245,3 +245,26 @@ num_workers: 17 elapsed time =33.204 ms
 num_workers: 18 elapsed time =38.498 ms
 num_workers: 19 elapsed time =40.91 ms
 num_workers: 20 elapsed time =55.882 ms
+
+
+inside f mio
+num_workers: 1 elapsed time =66.505 ms
+num_workers: 2 elapsed time =44.542 ms
+num_workers: 3 elapsed time =40.842 ms
+num_workers: 4 elapsed time =98.451 ms
+num_workers: 5 elapsed time =61.953 ms
+num_workers: 6 elapsed time =68.748 ms
+num_workers: 7 elapsed time =80.001 ms
+num_workers: 8 elapsed time =127.993 ms
+num_workers: 9 elapsed time =139.02 ms
+num_workers: 10 elapsed time =81.971 ms
+num_workers: 11 elapsed time =140.525 ms
+num_workers: 12 elapsed time =109.555 ms
+num_workers: 13 elapsed time =84.973 ms
+num_workers: 14 elapsed time =70.729 ms
+num_workers: 15 elapsed time =114.501 ms
+num_workers: 16 elapsed time =120.763 ms
+num_workers: 17 elapsed time =127.697 ms
+num_workers: 18 elapsed time =92.656 ms
+num_workers: 19 elapsed time =106.137 ms
+num_workers: 20 elapsed time =79.053 ms
