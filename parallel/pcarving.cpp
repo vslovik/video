@@ -41,7 +41,7 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 	ff::ParallelFor pf(num_workers, false);
 	for(int r = 0; r < H; r++){
 
-
+		ff::ffTime(ff::START_TIME);
 
 		// Calculate row values
 		pf.parallel_for(0L, W, [&row, r, W, &image](int c) {
@@ -54,7 +54,9 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 			row[c] = next;
 		});
 
-		ff::ffTime(ff::START_TIME);
+		ff::ffTime(ff::STOP_TIME);
+		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
+		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
 
 		// Advance seams
 		pf.parallel_for(0L,W,[&row, r, W, H, &seams, &points](int c) {
@@ -77,9 +79,7 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 		});
 
 
-		ff::ffTime(ff::STOP_TIME);
-		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
-		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+
 	}
 
 
