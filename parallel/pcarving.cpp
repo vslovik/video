@@ -53,21 +53,22 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 		// Advance seams
 		pf.parallel_for(0L,W,[&row, r, W, H, &seams, &points](int c) {
 			if(r > 0) {
-				uchar left = c > 0 ? row[c - 1] : max_int;
-				uchar right = c < W - 1 ? row[c + 1] : max_int;
-				uchar middle = row[c];
+				int sc = seams[(r-1)*W + c];
+				uchar left = sc > 0 ? row[sc - 1] : max_int;
+				uchar right = sc < W - 1 ? row[sc + 1] : max_int;
+				uchar middle = row[sc];
 				uchar m = std::min({left, middle, right});
 				if(r == H - 1) {
 					points[c] = cv::Point(c, m);
 				}
 				if(m == left)
-					seams[r * W + c] = c - 1;
+					seams[r * W + c] = sc - 1;
 				else if(m == right)
-					seams[r * W + c] = c + 1;
+					seams[r * W + c] = sc + 1;
 				else
-					seams[r*W + c] = c;
+					seams[r * W + c] = sc;
 			} else
-				seams[r*W + c] = row[c];
+				seams[r*W + c] = c;
 		});
 	}
 
@@ -76,9 +77,6 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 	int step = 2;
 
 	while (true) {
-		if (step > W) {
-			break;
-		}
 
 		pf.parallel_for(1, (long) W, (long) step, [W, step, &points](int i) {
 			ulong left = (ulong) i - 1;
@@ -90,6 +88,10 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 				points[right] = points[left];
 			}
 		});
+
+		if (step > W) {
+			break;
+		}
 
 		step = step << 1;
 	}
