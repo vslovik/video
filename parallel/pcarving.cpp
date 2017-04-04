@@ -101,20 +101,9 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 
 	Point p = points[0];
 
-
-//	int mm = 256; int argmm = 0;
-//	for(int i = 0; i < W; i++) {
-//		if(mm > points[i].y){
-//			mm = points[i].y;
-//			argmm = points[i].x;
-//		}
-//	}
-//
-//	std::cout << mm << "--" << argmm << std::endl;
-
 	delete[] points;
 
-	pf.parallel_for(0, (long)H, [W, &path, p, &seams, &image](int r) {
+	pf.parallel_for(0, (long)H, [W, &path, p, seams, &image](int r) {
 		path[r] = seams[r * W + p.x];
 //		image.at<uchar>(r,path[r]) = 255;
 	});
