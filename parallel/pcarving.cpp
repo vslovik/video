@@ -34,24 +34,27 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 
 	cv::Point *points = new cv::Point[W];
 	uchar *row = new uchar[W];
+	uchar *next_row = new uchar[W];
 	int *seams = new int[W * H];
 
 	ff::ParallelFor pf(num_workers, false);
 	for(int r = 0; r < H; r++){
 
 		// Calculate row values
-		pf.parallel_for(0L, W, [&row, r, W, &image](int c) {
+		pf.parallel_for(0L, W, [&next_row, row, r, W, image](int c) {
 			uchar next = image.at<uchar>(r,c);
 			if(r > 0) {
 				uchar left = c > 0 ? row[c - 1] : max_int;
 				uchar right = c < W - 1 ? row[c + 1] : max_int;
 				next += std::min({left, row[c], right});
 			}
-			row[c] = next;
+			next_row[c] = next;
 		});
 
+		row = next_row;
+
 		// Advance seams
-		pf.parallel_for(0L,W,[&row, r, W, H, &seams, &points](int c) {
+		pf.parallel_for(0L,W,[row, r, W, H, &seams, &points](int c) {
 			if(r > 0) {
 				int sc = seams[(r-1)*W + c];
 				uchar left = sc > 0 ? row[sc - 1] : max_int;
@@ -98,10 +101,22 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 
 	Point p = points[0];
 
+
+//	int mm = 256; int argmm = 0;
+//	for(int i = 0; i < W; i++) {
+//		if(mm > points[i].y){
+//			mm = points[i].y;
+//			argmm = points[i].x;
+//		}
+//	}
+//
+//	std::cout << mm << "--" << argmm << std::endl;
+
 	delete[] points;
 
-	pf.parallel_for(0, (long)H, [W, &path, &p, &seams](int r) {
+	pf.parallel_for(0, (long)H, [W, &path, p, &seams, &image](int r) {
 		path[r] = seams[r * W + p.x];
+//		image.at<uchar>(r,path[r]) = 255;
 	});
 
 	delete[] seams;
@@ -147,6 +162,10 @@ void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
 
 	int* seam = new int[eimage.rows];
 	find_seam(eimage, seam, num_workers);
+
+//	for(int r = 0; r < image.rows; r++) {
+//		image.at<Vec3b>(r, seam[r]) = Vec3b(255, 255, 255);
+//	}
 
 	remove_pixels(image, seam, num_workers);
 
