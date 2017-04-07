@@ -79,9 +79,8 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 
 		row = next_row;
 
-
 		// Advance seams
-		pf.parallel_for(0L,W,[row, r, W, H, &seams, &traces](int c) {
+		pf.parallel_for(0L, W,[row, r, W, H, &seams, &traces](int c) {
 			if(r > 0) {
 
 				if (c == 0) {
@@ -94,12 +93,14 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 						seams[r * W + seam_index1] = c;
 						next_traces[c] = seam_index1;
 						energy[seam_index1] = p1.y;
+						traces[c] = 0;
 						count++;
 					}
 					else if (p2.x == c && p1.x != c) {
 						seams[r * W + seam_index2] = c;
 						next_traces[c] = seam_index2;
 						energy[seam_index2] = p2.y;
+						traces[c + 1] = 0;
 						count++;
 					}
 					else if(p1.x == c && p2.x == c) {
@@ -107,12 +108,14 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 							seams[r * W + seam_index1] = c;
 							next_traces[c] = seam_index1;
 							energy[seam_index1] = p1.y;
+							traces[c] = 0;
 							count++;
 						}
 						else {
 							seams[r * W + seam_index2] = c;
 							next_traces[c] = seam_index2;
 							energy[seam_index2] = p2.y;
+							traces[c + 1] = 0;
 							count++;
 						}
 					}
@@ -127,12 +130,14 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 						seams[r * W + seam_index1] = c;
 						next_traces[c] = seam_index1;
 						energy[seam_index1] = p1.y;
+						traces[c - 1] = 0;
 						count++;
 					}
 					else if (p2.x == c && p1.x != c) {
 						seams[r * W + seam_index2] = c;
 						next_traces[c] = seam_index2;
 						energy[seam_index2] = p2.y;
+						traces[c] = 0;
 						count++;
 					}
 					else if(p1.x == c && p2.x == c) {
@@ -140,12 +145,14 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 							seams[r * W + seam_index1] = c;
 							next_traces[c] = seam_index1;
 							energy[seam_index1] = p1.y;
+							traces[c - 1] = 0;
 							count++;
 						}
 						else {
 							seams[r * W + seam_index2] = c;
 							next_traces[c] = seam_index2;
 							energy[seam_index2] = p2.y;
+							traces[c] = 0;
 							count++;
 						}
 					}
@@ -163,18 +170,21 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 						seams[r * W + seam_index1] = c;
 						next_traces[c] = seam_index1;
 						energy[seam_index1] = p1.y;
+						traces[c - 1] = 0;
 						count++;
 					}
 					else if (p2.x == c && p1.x != c && p3.x != c) {
 						seams[r * W + seam_index2] = c;
 						next_traces[c] = seam_index2;
 						energy[seam_index2] = p2.y;
+						traces[c] = 0;
 						count++;
 					}
 					else if (p3.x == c && p2.x != c && p1.x != c) {
 						seams[r * W + seam_index3] = c;
 						next_traces[c] = seam_index3;
 						energy[seam_index3] = p3.y;
+						traces[c + 1] = 0;
 						count++;
 					}
 					else if(p1.x == c && p2.x == c && p3.x !=c) {
@@ -182,12 +192,14 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 							seams[r * W + seam_index1] = c;
 							next_traces[c] = seam_index1;
 							energy[seam_index1] = p1.y;
+							traces[c - 1] = 0;
 							count++;
 						}
 						else {
 							seams[r * W + seam_index2] = c;
 							next_traces[c] = seam_index2;
 							energy[seam_index2] = p2.y;
+							traces[c] = 0;
 							count++;
 						}
 					}
@@ -196,12 +208,14 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 							seams[r * W + seam_index2] = c;
 							next_traces[c] = seam_index2;
 							energy[seam_index2] = p2.y;
+							traces[c] = 0;
 							count++;
 						}
 						else {
 							seams[r * W + seam_index3] = c;
 							next_traces[c] = seam_index3;
 							energy[seam_index3] = p2.y;
+							traces[c] = 0;
 							count++;
 						}
 					}
@@ -210,12 +224,14 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 							seams[r * W + seam_index1] = c;
 							next_traces[c] = seam_index1;
 							energy[seam_index1] = p1.y;
+							traces[c - 1] = 0;
 							count++;
 						}
 						else {
 							seams[r * W + seam_index3] = c;
 							next_traces[c] = seam_index3;
 							energy[seam_index3] = p3.y;
+							traces[c + 1] = 0;
 							count++;
 						}
 					}
@@ -225,18 +241,21 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 							seams[r * W + seam_index1] = c;
 							next_traces[c] = seam_index1;
 							energy[seam_index1] = p1.y;
+							traces[c - 1] = 0;
 							count++;
 						}
 						else if(m == energy[seam_index2]) {
 							seams[r * W + seam_index2] = c;
 							next_traces[c] = seam_index2;
 							energy[seam_index2] = p2.y;
+							traces[c] = 0;
 							count++;
 						}
 						else if(m == energy[seam_index3]) {
 							seams[r * W + seam_index3] = c;
 							next_traces[c] = seam_index3;
 							energy[seam_index3] = p3.y;
+							traces[c + 1] = 0;
 							count++;
 						}
 					}
@@ -248,10 +267,31 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 				energy[c] = row[c];
 				count++;
 			}
-
-			traces = next_traces;
-
 		});
+
+		int thr = THRESHOLD // keep discarded seams (splitting)
+		if(r > H * thr / 100) {
+
+			pf.parallel_for(0L, W, [row, r, W, H, &seams, &traces, &i](int c) {
+				if(next_traces[c] == 0) {
+					int seam_index;
+					if(traces[c - 1] != 0) {
+						seam_index = traces[c - 1];
+					} else if (traces[c] != 0) {
+						seam_index = traces[c];
+					} else if (traces[c + 1] == 0) {
+						seam_index = traces[c + 1];
+					}
+
+					seams[r * W + seam_index] = c;
+					next_traces[c] = seam_index;
+					energy[seam_index] = row[c];
+					count++;
+				}
+			});
+		}
+
+		traces = next_traces;
 	}
 
 	cv::Point *epoints = new cv::Point[count];
@@ -261,8 +301,6 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 			epoints[count++] = Point(traces[c], energy[traces[c]]);
 		}
 	}
-
-
 
 	delete[] row;
 	delete[] traces;
