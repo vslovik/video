@@ -119,7 +119,7 @@ inline void QuickSort(int i, int j) {
 
 void initArray() {
 	/* All of the elements are unique. */
-	for (unsigned int i = 0; i < size; i++)	A[i] = i;
+	for (unsigned int i = 0; i < size; i++)	A[i] = i*4;
 
 	/* Shuffle them randomly. */
 	srandom(0);
@@ -308,7 +308,7 @@ int main(int argc, char *argv[]) {
 	}
 	printf("Time: %g (ms)\n", farm.ffTime());
 
-	if (0) print_array();
+	print_array();
 
 	if (check_result) {
 		for(unsigned int i=0;i<size;i++)

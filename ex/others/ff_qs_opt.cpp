@@ -53,7 +53,7 @@ struct ff_task {
 // some globals
 unsigned size    = 0;
 int thresh       = 0;
-unsigned int   *A= NULL;
+cv::Point   *A= NULL;
 
 
 void print_array() {
@@ -65,7 +65,7 @@ void print_array() {
 			j=0;
 		}
 		j++;
-		printf("%d ", A[i]);
+		printf(" %d:%d ", A[i].x, A[i].y);
 	}
 	printf("\n\n");
 }
@@ -81,11 +81,11 @@ void print_array() {
 inline int FindPivot(int i, int j) {
 	// NOTE: this is not the best choice for the pivot.
 	register int pivot = (i+(j-i))/2;
-	if (A[i]>A[pivot]) {
-		if (A[i]>A[j]) return i;
+	if (A[i].y>A[pivot].y) {
+		if (A[i].y>A[j].y) return i;
 		else return j;
 	} else {
-		if (A[pivot]>A[j]) return pivot;
+		if (A[pivot].y>A[j].y) return pivot;
 		else return j;
 	}
 
@@ -101,8 +101,8 @@ inline int Partition(int i, int j, unsigned int pivot) {
 
 	do {
 		std::swap(A[left],A[right]);
-		while (A[left]  <  pivot) left++;
-		while (A[right] >= pivot) right--;
+		while ((uint) A[left].y  <  pivot) left++;
+		while ((uint) A[right].y >= pivot) right--;
 	} while (left <= right);
 
 	return(left);
@@ -111,11 +111,11 @@ inline int Partition(int i, int j, unsigned int pivot) {
 
 inline void QuickSort(int i, int j) {
 	if (j-i <= 1) {
-		if (A[i]>A[j]) std::swap(A[i],A[j]);
+		if (A[i].y>A[j].y) std::swap(A[i],A[j]);
 		return;
 	}
 	int pivot = FindPivot(i,j);
-	int k     = Partition(i,j,A[pivot]);
+	int k     = Partition(i,j,A[pivot].y);
 	QuickSort(i, k-1);
 	QuickSort(k,j);
 }
@@ -123,7 +123,7 @@ inline void QuickSort(int i, int j) {
 
 void initArray() {
 	/* All of the elements are unique. */
-	for (unsigned int i = 0; i < size; i++)	A[i] = i;
+	for (unsigned int i = 0; i < size; i++)	A[i] = cv::Point(i, i*5);
 
 	/* Shuffle them randomly. */
 	srandom(0);
@@ -155,6 +155,7 @@ private:
 	size_t victim;
 };
 
+bool sortByY(const cv::Point &lhs, const cv::Point &rhs) { return lhs.y < rhs.y; }
 
 class Worker: public ff_node {
 public:
@@ -169,13 +170,13 @@ public:
 
 		do {
 			if (j - i <= thresh) {
-				std::sort(&A[i],&A[i]+((j-i)+1));
+				std::sort(&A[i],&A[i]+((j-i)+1),sortByY);
 				//QuickSort(i,j);
 				task->i = -1; // reset the value
 				return task;
 			}
 			int pivot = FindPivot(i,j);
-			int k     = Partition(i,j,A[pivot]);
+			int k     = Partition(i,j,A[pivot].y);
 
 			task->i=k;
 			ff_send_out(task);
@@ -202,7 +203,7 @@ public:
 		// at the beginning we produce 2 tasks
 		if (task == NULL) {
 			int pivot = FindPivot(0,size-1);
-			int k     = Partition(0,size-1,A[pivot]);
+			int k     = Partition(0,size-1,A[pivot].y);
 
 			task = new ff_task(0,k-1);
 			load[0] += k-1;
@@ -255,9 +256,8 @@ private:
 
 
 int main(int argc, char *argv[]) {
-	bool check_result=false;
 
-	if (argc<4 || argc>5) {
+	if (argc<4 || argc>4) {
 		usage();
 		return -1;
 	}
@@ -265,7 +265,6 @@ int main(int argc, char *argv[]) {
 	size   = atoi(argv[1]);
 	thresh = atoi(argv[2]);
 	int nworkers=atoi(argv[3]);
-	if (argc==5) check_result=true;
 
 	if (nworkers > DEF_MAX_NUM_WORKERS) {
 		fprintf(stderr, "too many number of workers\n");
@@ -276,13 +275,15 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	A = new unsigned int[size];
+	A = new cv::Point[size];
 	if (!A) {
 		fprintf(stderr,"Not enough memory for A\n");
 		exit(1);
 	}
 
 	initArray();
+
+	if (1) print_array();
 
 	/* The mapping policy is very simple: the emitter is mapped along on CPU 0,
 	 * the workers on the remaining cores.
@@ -312,18 +313,7 @@ int main(int argc, char *argv[]) {
 	}
 	printf("Time: %g (ms)\n", farm.ffTime());
 
-	if (0) print_array();
-
-	if (check_result) {
-		for(unsigned int i=0;i<size;i++)
-			if (A[i]!=i) {
-				error("wrong result, A[%d]=%d (correct value is %d)\n",i,A[i],i);
-				//print_array();
-
-				return -1;
-			}
-		printf("Ok\n");
-	}
+	if (1) print_array();
 
 	delete [] A;
 	return 0;

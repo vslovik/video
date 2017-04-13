@@ -29,11 +29,11 @@ CC                   = gcc
 LINK_OPT             =
 VERSION              =
 OPTIMIZE_FLAGS       = -O3 -finline-functions
-CXXFLAGS             = -DNO_CMAKE_CONFIG -Wall #-DTRACE_FASTFLOW
+CXXFLAGS             = -DNO_CMAKE_CONFIG -Wall `pkg-config --cflags opencv` #-DTRACE_FASTFLOW
 CFLAGS               =
 LDFLAGS              =
 INCS                 = -I$(FF_HOME)
-LIBS                 = -lpthread
+LIBS                 = `pkg-config --libs opencv` -pthread -lpthread
 
 CXX	= g++ -std=c++11 $(INCS)
 
