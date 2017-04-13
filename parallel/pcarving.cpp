@@ -46,6 +46,51 @@ cv::Point get_pos(int c, int W, uchar *row) {
 	return cv::Point(pos, m);
 }
 
+void update(int *seams, int *next_traces, int *energy, int *traces, uchar *row, int &count, int next, int prev, int r, int W) {
+	int seam_index = traces[prev];
+	cv::Point p = get_pos(prev, W, row);
+
+	seams[r * W + seam_index] = next;
+	next_traces[next] = seam_index;
+	energy[seam_index] = p.y;
+	traces[prev] = 0;
+	count++;
+}
+
+int keep_one_out_of_two(int one, int two, int *traces, int *energy, uchar *row, int W, int c)
+{
+	if(get_pos(one, W, row).x == c && get_pos(two, W, row).x != c)
+		return one;
+	else if (get_pos(two, W, row).x == c && get_pos(one, W, row).x != c)
+		return two;
+	else {
+		if(energy[traces[one]] < energy[traces[two]]) {
+			return one;
+		}
+		else {
+			return two;
+		}
+	}
+}
+
+int keep_one_out_of_three(int *traces, int *energy, uchar *row, int W, int c)
+{
+	if(get_pos(c - 1, W, row).x != c)
+		return keep_one_out_of_two(c, c + 1, traces, energy, row, W, c);
+	else if(get_pos(c, W, row).x != c)
+		return keep_one_out_of_two(c - 1, c + 1, traces, energy, row, W, c);
+	else if(get_pos(c + 1, W, row).x != c)
+		return keep_one_out_of_two(c - 1, c, traces, energy, row, W, c);
+	else {
+		int m = std::min({energy[traces[c - 1]], energy[traces[c]], energy[traces[c + 1]]});
+		if(m == energy[traces[c - 1]])
+			return c - 1;
+		else if(m == energy[traces[c]])
+			return c;
+		else
+			return c + 1;
+	}
+}
 
 void find_seam(Mat &image, int *path, int num_workers = 1){
 	int H = image.rows;
@@ -55,7 +100,7 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 	int *traces = new int[W];
 	int *next_traces = new int[W];
 
-
+	int pos;
 	uchar *row = new uchar[W];
 	uchar *next_row = new uchar[W];
 	int *seams = new int[W * H];
@@ -82,184 +127,14 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 		// Advance seams
 		pf.parallel_for(0L, W,[row, r, W, H, &seams, &traces](int c) {
 			if(r > 0) {
+				if (c == 0)
+					pos = keep_one_out_of_two(c, c + 1, traces, energy, row, W, c);
+				else if (c == W - 1)
+					pos = keep_one_out_of_two(c - 1, c, traces, energy, row, W, c);
+				else
+					pos = keep_one_out_of_three(traces, energy, row, W, c);
 
-				if (c == 0) {
-					int seam_index1 = traces[c];
-					int seam_index2 = traces[c + 1];
-					cv::Point p1 = get_pos(c, W, row);
-					cv::Point p2 = get_pos(c + 1, W, row);
-
-					if(p1.x == c && p2.x != c) {
-						seams[r * W + seam_index1] = c;
-						next_traces[c] = seam_index1;
-						energy[seam_index1] = p1.y;
-						traces[c] = 0;
-						count++;
-					}
-					else if (p2.x == c && p1.x != c) {
-						seams[r * W + seam_index2] = c;
-						next_traces[c] = seam_index2;
-						energy[seam_index2] = p2.y;
-						traces[c + 1] = 0;
-						count++;
-					}
-					else if(p1.x == c && p2.x == c) {
-						if(energy[seam_index1] < energy[seam_index2]) {
-							seams[r * W + seam_index1] = c;
-							next_traces[c] = seam_index1;
-							energy[seam_index1] = p1.y;
-							traces[c] = 0;
-							count++;
-						}
-						else {
-							seams[r * W + seam_index2] = c;
-							next_traces[c] = seam_index2;
-							energy[seam_index2] = p2.y;
-							traces[c + 1] = 0;
-							count++;
-						}
-					}
-
-				} else if (c == W - 1) {
-					int seam_index1 = traces[c - 1];
-					int seam_index2 = traces[c];
-					cv::Point p1 = get_pos(c - 1, W, row);
-					cv::Point p2 = get_pos(c, W, row);
-
-					if(p1.x == c && p2.x != c) {
-						seams[r * W + seam_index1] = c;
-						next_traces[c] = seam_index1;
-						energy[seam_index1] = p1.y;
-						traces[c - 1] = 0;
-						count++;
-					}
-					else if (p2.x == c && p1.x != c) {
-						seams[r * W + seam_index2] = c;
-						next_traces[c] = seam_index2;
-						energy[seam_index2] = p2.y;
-						traces[c] = 0;
-						count++;
-					}
-					else if(p1.x == c && p2.x == c) {
-						if(energy[seam_index1] < energy[seam_index2]) {
-							seams[r * W + seam_index1] = c;
-							next_traces[c] = seam_index1;
-							energy[seam_index1] = p1.y;
-							traces[c - 1] = 0;
-							count++;
-						}
-						else {
-							seams[r * W + seam_index2] = c;
-							next_traces[c] = seam_index2;
-							energy[seam_index2] = p2.y;
-							traces[c] = 0;
-							count++;
-						}
-					}
-
-				} else {
-					int seam_index1 = traces[c - 1];
-					int seam_index2 = traces[c];
-					int seam_index3 = traces[c + 1];
-
-					cv::Point p1 = get_pos(c - 1, W, row);
-					cv::Point p2 = get_pos(c, W, row);
-					cv::Point p3 = get_pos(c + 1, W, row);
-
-					if(p1.x == c && p2.x != c && p3.x != c) {
-						seams[r * W + seam_index1] = c;
-						next_traces[c] = seam_index1;
-						energy[seam_index1] = p1.y;
-						traces[c - 1] = 0;
-						count++;
-					}
-					else if (p2.x == c && p1.x != c && p3.x != c) {
-						seams[r * W + seam_index2] = c;
-						next_traces[c] = seam_index2;
-						energy[seam_index2] = p2.y;
-						traces[c] = 0;
-						count++;
-					}
-					else if (p3.x == c && p2.x != c && p1.x != c) {
-						seams[r * W + seam_index3] = c;
-						next_traces[c] = seam_index3;
-						energy[seam_index3] = p3.y;
-						traces[c + 1] = 0;
-						count++;
-					}
-					else if(p1.x == c && p2.x == c && p3.x !=c) {
-						if(energy[seam_index1] < energy[seam_index2]) {
-							seams[r * W + seam_index1] = c;
-							next_traces[c] = seam_index1;
-							energy[seam_index1] = p1.y;
-							traces[c - 1] = 0;
-							count++;
-						}
-						else {
-							seams[r * W + seam_index2] = c;
-							next_traces[c] = seam_index2;
-							energy[seam_index2] = p2.y;
-							traces[c] = 0;
-							count++;
-						}
-					}
-					else if(p2.x == c && p3.x == c && p1.x != c) {
-						if(energy[seam_index2] < energy[seam_index3]) {
-							seams[r * W + seam_index2] = c;
-							next_traces[c] = seam_index2;
-							energy[seam_index2] = p2.y;
-							traces[c] = 0;
-							count++;
-						}
-						else {
-							seams[r * W + seam_index3] = c;
-							next_traces[c] = seam_index3;
-							energy[seam_index3] = p2.y;
-							traces[c] = 0;
-							count++;
-						}
-					}
-					else if(p1.x == c && p3.x == c && p2.x != c) {
-						if(energy[seam_index1] < energy[seam_index3]) {
-							seams[r * W + seam_index1] = c;
-							next_traces[c] = seam_index1;
-							energy[seam_index1] = p1.y;
-							traces[c - 1] = 0;
-							count++;
-						}
-						else {
-							seams[r * W + seam_index3] = c;
-							next_traces[c] = seam_index3;
-							energy[seam_index3] = p3.y;
-							traces[c + 1] = 0;
-							count++;
-						}
-					}
-					else if(p1.x == c && p2.x == c && p3.x == c) {
-						int m = std::min({energy[seam_index1], energy[seam_index2], energy[seam_index3]});
-						if(m == energy[seam_index1]) {
-							seams[r * W + seam_index1] = c;
-							next_traces[c] = seam_index1;
-							energy[seam_index1] = p1.y;
-							traces[c - 1] = 0;
-							count++;
-						}
-						else if(m == energy[seam_index2]) {
-							seams[r * W + seam_index2] = c;
-							next_traces[c] = seam_index2;
-							energy[seam_index2] = p2.y;
-							traces[c] = 0;
-							count++;
-						}
-						else if(m == energy[seam_index3]) {
-							seams[r * W + seam_index3] = c;
-							next_traces[c] = seam_index3;
-							energy[seam_index3] = p3.y;
-							traces[c + 1] = 0;
-							count++;
-						}
-					}
-				}
+				update(seams, next_traces, energy, traces, row, count, c, pos, r, W);
 
 			} else {
 				seams[r * W + c] = c;
@@ -274,19 +149,19 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 
 			pf.parallel_for(0L, W, [row, r, W, H, &seams, &traces, &i](int c) {
 				if(next_traces[c] == 0) {
-					int seam_index;
-					if(traces[c - 1] != 0) {
+					int seam_index = 0;
+					if(traces[c - 1] != 0)
 						seam_index = traces[c - 1];
-					} else if (traces[c] != 0) {
+					else if (traces[c] != 0)
 						seam_index = traces[c];
-					} else if (traces[c + 1] == 0) {
+					else if (traces[c + 1] != 0)
 						seam_index = traces[c + 1];
+					if(seam_index) {
+						seams[r * W + seam_index] = c;
+						next_traces[c] = seam_index;
+						energy[seam_index] = row[c];
+						count++;
 					}
-
-					seams[r * W + seam_index] = c;
-					next_traces[c] = seam_index;
-					energy[seam_index] = row[c];
-					count++;
 				}
 			});
 		}
