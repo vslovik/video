@@ -8,7 +8,6 @@
 
 #define CW 1;
 #define CCW 0;
-#define THRESHOLD 5;
 
 static void help()
 {
@@ -33,22 +32,16 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 	int H = image.rows;
 	int W = image.cols;
 
-	int *traces = new int[W];
-	bool *discarded = new bool[W];
-	cv::Point *epoints = new cv::Point[W];
+	cv::Point *points = new cv::Point[W];
 	uchar *row = new uchar[W];
 	uchar *next_row = new uchar[W];
 	int *seams = new int[W * H];
-
-	for(int c = 0; c < W; c++) {
-		discarded[c] = false;
-	}
 
 	ff::ParallelFor pf(num_workers, false);
 	for(int r = 0; r < H; r++){
 
 		// Calculate row values
-		pf.parallel_for(0L, W, [&next_row, row, r, W, image, &traces](int c) {
+		pf.parallel_for(0L, W, [&next_row, row, r, W, image](int c) {
 			uchar next = image.at<uchar>(r,c);
 			if(r > 0) {
 				uchar left = c > 0 ? row[c - 1] : max_int;
@@ -56,72 +49,29 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 				next += std::min({left, row[c], right});
 			}
 			next_row[c] = next;
-			traces[c] = 0;
 		});
 
 		row = next_row;
 
 		// Advance seams
-		pf.parallel_for(0L,W,[row, r, W, H, &seams, &epoints, &traces, &discarded](int c) {
+		pf.parallel_for(0L,W,[row, r, W, H, &seams, &points](int c) {
 			if(r > 0) {
-
 				int sc = seams[(r-1)*W + c];
-				if(!discarded[c]) {
-					uchar left = sc > 0 ? row[sc - 1] : max_int;
-					uchar right = sc < W - 1 ? row[sc + 1] : max_int;
-					uchar middle = row[sc];
-					uchar m = std::min({left, middle, right});
-
-					int pos;
-					if (m == left)
-						pos = sc - 1;
-					else if (m == right)
-						pos = sc + 1;
-					else
-						pos = sc;
-
-					if (traces[pos] == 0) {
-						traces[pos] = c;
-						epoints[c] = cv::Point(c, m);
-						seams[r * W + c] = pos;
-					} else {
-//						int  thr = THRESHOLD;
-//						if(r > H * thr / 100) {
-//							int key = 0; int val = max_int + 1;
-//							for( int k = sc - 1; k < sc + 2; k++){
-//								if(k != pos && traces[k] == 0) {
-//									if(val > row[k]) {
-//										val = row[k];
-//										key = k;
-//									}
-//								}
-//							}
-//							if(val < max_int + 1) {
-//								traces[pos] = c;
-//								epoints[c] = cv::Point(c, val);
-//								seams[r * W + c] = key;
-//							} else {
-//								discarded[c] = true;
-//								epoints[c] = cv::Point(c, max_int);
-//							}
-//						} else {
-							int index = traces[pos];
-							if (epoints[index].y > m) {
-								discarded[c] = true;
-								epoints[c] = cv::Point(c, max_int); //ToDo
-							} else {
-								discarded[index] = true;
-								epoints[index] = cv::Point(c, max_int); //ToDo
-
-								epoints[c] = cv::Point(c, m);
-								seams[r * W + c] = pos;
-							}
-//						}
-					}
+				uchar left = sc > 0 ? row[sc - 1] : max_int;
+				uchar right = sc < W - 1 ? row[sc + 1] : max_int;
+				uchar middle = row[sc];
+				uchar m = std::min({left, middle, right});
+				if(r == H - 1) {
+					points[c] = cv::Point(c, m);
 				}
+				if(m == left)
+					seams[r * W + c] = sc - 1;
+				else if(m == right)
+					seams[r * W + c] = sc + 1;
+				else
+					seams[r * W + c] = sc;
 			} else
-				seams[r * W + c] = c;
-
+				seams[r*W + c] = c;
 		});
 	}
 
@@ -131,14 +81,14 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 
 	while (true) {
 
-		pf.parallel_for(1, (long) W, (long) step, [W, step, &epoints, &discarded](int i) {
+		pf.parallel_for(1, (long) W, (long) step, [W, step, &points](int i) {
 			ulong left = (ulong) i - 1;
 			ulong right = (ulong) cv::min(W - 1, i - 1 + step - 1);
 
-			if (epoints[left].y > epoints[right].y) {
-				epoints[left] = epoints[right];
+			if (points[left].y > points[right].y) {
+				points[left] = points[right];
 			} else {
-				epoints[right] = epoints[left];
+				points[right] = points[left];
 			}
 		});
 
@@ -149,9 +99,9 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 		step = step << 1;
 	}
 
-	Point p = epoints[0];
+	Point p = points[0];
 
-	delete[] epoints;
+	delete[] points;
 
 	pf.parallel_for(0, (long)H, [W, &path, p, seams, &image](int r) {
 		path[r] = seams[r * W + p.x];
