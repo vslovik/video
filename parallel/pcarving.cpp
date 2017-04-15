@@ -29,83 +29,21 @@ void rot90(Mat &matImage, int flag) {
 
 uchar max_int = std::numeric_limits<uchar>::max();
 
-cv::Point get_pos(int c, int W, uchar *row) {
-	uchar left = c > 0 ? row[c - 1] : max_int;
-	uchar right = c < W - 1 ? row[c + 1] : max_int;
-	uchar middle = row[c];
-	uchar m = std::min({left, middle, right});
-
-	int pos;
-	if (m == left)
-		pos = c - 1;
-	else if (m == right)
-		pos = c + 1;
-	else
-		pos = c;
-
-	return cv::Point(pos, m);
-}
-
-void update(int *seams, int *next_traces, int *energy, int *traces, uchar *row, int &count, int next, int prev, int r, int W) {
-	int seam_index = traces[prev];
-	cv::Point p = get_pos(prev, W, row);
-
-	seams[r * W + seam_index] = next;
-	next_traces[next] = seam_index;
-	energy[seam_index] = p.y;
-	traces[prev] = 0;
-	count++;
-}
-
-int keep_one_out_of_two(int one, int two, int *traces, int *energy, uchar *row, int W, int c)
-{
-	if(get_pos(one, W, row).x == c && get_pos(two, W, row).x != c)
-		return one;
-	else if (get_pos(two, W, row).x == c && get_pos(one, W, row).x != c)
-		return two;
-	else {
-		if(energy[traces[one]] < energy[traces[two]]) {
-			return one;
-		}
-		else {
-			return two;
-		}
-	}
-}
-
-int keep_one_out_of_three(int *traces, int *energy, uchar *row, int W, int c)
-{
-	if(get_pos(c - 1, W, row).x != c)
-		return keep_one_out_of_two(c, c + 1, traces, energy, row, W, c);
-	else if(get_pos(c, W, row).x != c)
-		return keep_one_out_of_two(c - 1, c + 1, traces, energy, row, W, c);
-	else if(get_pos(c + 1, W, row).x != c)
-		return keep_one_out_of_two(c - 1, c, traces, energy, row, W, c);
-	else {
-		int m = std::min({energy[traces[c - 1]], energy[traces[c]], energy[traces[c + 1]]});
-		if(m == energy[traces[c - 1]])
-			return c - 1;
-		else if(m == energy[traces[c]])
-			return c;
-		else
-			return c + 1;
-	}
-}
-
 void find_seam(Mat &image, int *path, int num_workers = 1){
 	int H = image.rows;
 	int W = image.cols;
 
-	int *energy = new int[W];
 	int *traces = new int[W];
-	int *next_traces = new int[W];
-
-	int pos;
+	bool *discarded = new bool[W];
+	cv::Point *epoints = new cv::Point[W];
 	uchar *row = new uchar[W];
 	uchar *next_row = new uchar[W];
 	int *seams = new int[W * H];
 
-	int count = 0;
+	for(int c = 0; c < W; c++) {
+		discarded[c] = false;
+	}
+
 	ff::ParallelFor pf(num_workers, false);
 	for(int r = 0; r < H; r++){
 
@@ -118,75 +56,82 @@ void find_seam(Mat &image, int *path, int num_workers = 1){
 				next += std::min({left, row[c], right});
 			}
 			next_row[c] = next;
-			next_traces[c] = 0;
-			count = 0;
+			traces[c] = 0;
 		});
 
 		row = next_row;
 
 		// Advance seams
-		pf.parallel_for(0L, W,[row, r, W, H, &seams, &traces](int c) {
+		pf.parallel_for(0L,W,[row, r, W, H, &seams, &epoints, &traces, &discarded](int c) {
 			if(r > 0) {
-				if (c == 0)
-					pos = keep_one_out_of_two(c, c + 1, traces, energy, row, W, c);
-				else if (c == W - 1)
-					pos = keep_one_out_of_two(c - 1, c, traces, energy, row, W, c);
-				else
-					pos = keep_one_out_of_three(traces, energy, row, W, c);
 
-				update(seams, next_traces, energy, traces, row, count, c, pos, r, W);
+				int sc = seams[(r-1)*W + c];
+				if(!discarded[c]) {
+					uchar left = sc > 0 ? row[sc - 1] : max_int;
+					uchar right = sc < W - 1 ? row[sc + 1] : max_int;
+					uchar middle = row[sc];
+					uchar m = std::min({left, middle, right});
 
-			} else {
-				seams[r * W + c] = c;
-				traces[c] = c;
-				energy[c] = row[c];
-				count++;
-			}
-		});
+					int pos;
+					if (m == left)
+						pos = sc - 1;
+					else if (m == right)
+						pos = sc + 1;
+					else
+						pos = sc;
 
-		int thr = THRESHOLD // keep discarded seams (splitting)
-		if(r > H * thr / 100) {
+					if (traces[pos] == 0) {
+						traces[pos] = c;
+						epoints[c] = cv::Point(c, m);
+						seams[r * W + c] = pos;
+					} else {
+//						int  thr = THRESHOLD;
+//						if(r > H * thr / 100) {
+//							int key = 0; int val = max_int + 1;
+//							for( int k = sc - 1; k < sc + 2; k++){
+//								if(k != pos && traces[k] == 0) {
+//									if(val > row[k]) {
+//										val = row[k];
+//										key = k;
+//									}
+//								}
+//							}
+//							if(val < max_int + 1) {
+//								traces[pos] = c;
+//								epoints[c] = cv::Point(c, val);
+//								seams[r * W + c] = key;
+//							} else {
+//								discarded[c] = true;
+//								epoints[c] = cv::Point(c, max_int);
+//							}
+//						} else {
+							int index = traces[pos];
+							if (epoints[index].y > m) {
+								discarded[c] = true;
+								epoints[c] = cv::Point(c, max_int); //ToDo
+							} else {
+								discarded[index] = true;
+								epoints[index] = cv::Point(c, max_int); //ToDo
 
-			pf.parallel_for(0L, W, [row, r, W, H, &seams, &traces, &i](int c) {
-				if(next_traces[c] == 0) {
-					int seam_index = 0;
-					if(traces[c - 1] != 0)
-						seam_index = traces[c - 1];
-					else if (traces[c] != 0)
-						seam_index = traces[c];
-					else if (traces[c + 1] != 0)
-						seam_index = traces[c + 1];
-					if(seam_index) {
-						seams[r * W + seam_index] = c;
-						next_traces[c] = seam_index;
-						energy[seam_index] = row[c];
-						count++;
+								epoints[c] = cv::Point(c, m);
+								seams[r * W + c] = pos;
+							}
+//						}
 					}
 				}
-			});
-		}
+			} else
+				seams[r * W + c] = c;
 
-		traces = next_traces;
-	}
-
-	cv::Point *epoints = new cv::Point[count];
-	count = 0;
-	for(int c = 0; c < W; c++) {
-		if(traces[c] != 0) {
-			epoints[count++] = Point(traces[c], energy[traces[c]]);
-		}
+		});
 	}
 
 	delete[] row;
-	delete[] traces;
-	delete[] next_traces;
-	delete[] energy;
 
 	int step = 2;
 
 	while (true) {
 
-		pf.parallel_for(1, (long) W, (long) step, [W, step, &epoints](int i) {
+		pf.parallel_for(1, (long) W, (long) step, [W, step, &epoints, &discarded](int i) {
 			ulong left = (ulong) i - 1;
 			ulong right = (ulong) cv::min(W - 1, i - 1 + step - 1);
 
