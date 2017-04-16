@@ -186,10 +186,8 @@ void find_seams(Mat &image, int* seams, int* traces, int num_workers = 1){
 					int seam_index = traces[c];
 					if (c > 0 && traces[3 * W + c - 1] == W && traces[3 * W + c - 2] != W) {
 						traces[W + c - 1] = seam_index;
-//						traces[c] = W;
 					} else if (c > 1 && traces[3 * W + c - 1] != W && traces[3 * W + c - 2] == W) {
 						traces[2 * W + c - 2] = seam_index;
-//						traces[c] = W;
 					} else if (c > 1 && traces[3 * W + c - 1] == W && traces[3 * W + c - 2] == W) {
 						if (row[c - 1] > row[c - 2]) {
 							seams[r * W + seam_index] = c - 2;
@@ -202,7 +200,6 @@ void find_seams(Mat &image, int* seams, int* traces, int num_workers = 1){
 						}
 						seam_spans[seam_index] = cv::max(seam_spans[seam_index],
 						                                 abs(seams[seam_index] - seams[r * W + seam_index]));
-//						traces[c] = W;
 					}
 				}
 			}
@@ -211,10 +208,8 @@ void find_seams(Mat &image, int* seams, int* traces, int num_workers = 1){
 					int seam_index = traces[c];
 					if (c > 0 && traces[3 * W + c - 1] == W && traces[3 * W + c + 1] != W) {
 						traces[2 * W + c - 1] = seam_index;
-//						traces[W + c] = W;
 					} else if (c > 1 && traces[3 * W + c - 1] != W && traces[3 * W + c + 1] == W) {
 						traces[c + 1] = seam_index;
-//						traces[W + c] = W;
 					} else if (c > 1 && traces[3 * W + c - 1] == W && traces[3 * W + c + 1] == W) {
 						if (row[c - 1] > row[c + 1]) {
 							seams[r * W + seam_index] = c + 1;
@@ -227,7 +222,6 @@ void find_seams(Mat &image, int* seams, int* traces, int num_workers = 1){
 						}
 						seam_spans[seam_index] = cv::max(seam_spans[seam_index],
 						                                 abs(seams[seam_index] - seams[r * W + seam_index]));
-//						traces[W + c] = W;
 					}
 				}
 			}
@@ -236,10 +230,8 @@ void find_seams(Mat &image, int* seams, int* traces, int num_workers = 1){
 					int seam_index = traces[c];
 					if(c > 0 && traces[3*W + c + 1] == W && traces[3*W + c + 2] != W) {
 						traces[W + c + 1] = seam_index;
-//						traces[2*W + c] = W;
 					} else if(c > 1 && traces[3*W + c + 1] != W && traces[3*W + c + 2] == W) {
 						traces[c + 2] = seam_index;
-//						traces[2*W + c] = W;
 					} else if(c > 1 && traces[3*W + c + 1] == W && traces[3*W + c + 2] == W) {
 						if(row[c + 1] > row[c + 2]) {
 							seams[r * W + seam_index] = c + 2;
@@ -252,7 +244,6 @@ void find_seams(Mat &image, int* seams, int* traces, int num_workers = 1){
 						}
 						seam_spans[seam_index] = cv::max(seam_spans[seam_index],
 						                                 abs(seams[seam_index] - seams[r * W + seam_index]));
-//						traces[2*W + c] = W;
 					}
 				}
 			}
