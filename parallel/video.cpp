@@ -75,7 +75,7 @@ void retarget_frame(int i, Mat& image, char orientation = 'v', int num_workers =
 	int *seam = new int[eimage.rows];
 	int *seams = new int[eimage.cols * eimage.rows];
 	int *traces = new int[4*W];
-	find_seams(eimage, seam, seams, traces, num_workers);
+	find_seams(eimage, seams, traces, num_workers);
 
 	for (int r = 0; r < H; r++) {
 		if (orientation == 'v')
@@ -84,7 +84,7 @@ void retarget_frame(int i, Mat& image, char orientation = 'v', int num_workers =
 			s->h_seams[r * s->hor + i] = seam[r];
 	}
 
-    remove_pixels(image, seam, num_workers);
+    //remove_pixels(image, seam, num_workers);
 
 	delete[] seam;
 
