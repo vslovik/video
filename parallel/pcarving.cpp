@@ -60,7 +60,7 @@ void print_row(uchar *row, int W) {
 	printf("\n\n");
 }
 
-void find_seams(Mat &image, int* seams, int* traces, int &num_found, int num_workers = 1){
+int* find_seams(Mat &image, int* seams, int* traces, int &num_found, int num_workers = 1){
 	int H = image.rows;
 	int W = image.cols;
 
@@ -221,6 +221,7 @@ void find_seams(Mat &image, int* seams, int* traces, int &num_found, int num_wor
 
 	num_found = count;
 
+	return minimal_seams;
 
 //	delete[] seams;
 }
@@ -274,33 +275,14 @@ void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
 
 	int *seams = new int[eimage.cols * eimage.rows];
 
-	int *minimal_seams;
-
 	int *traces = new int[4*eimage.cols];
-	find_seams(eimage, seams, traces, num_found, num_workers);
+	int* minimal_seams = find_seams(eimage, seams, traces, num_found, num_workers);
 
-	//std::cout << num_found << std::endl;
-
-	int W = image.rows;
-
-
-	//ToDo parallel
-	for (int c = 0; c < image.rows; c++) {
-		if (traces[3 * W + c] == W) {
-			continue;
-		}
-		int seam_index = traces[3 * W + c];
-		for (int r = 0; r < image.rows; r++) {
-			image.at<Vec3b>(r, seams[r * W + seam_index]) = Vec3b(255, 255, 255);
+	for (int r = 0; r < image.cols; r++){
+		for (int i = 0; i < num_found; i++) {
+			image.at<Vec3b>(r, minimal_seams[r * num_found + i]) = Vec3b(255, 255, 255);
 		}
 	}
-
-//	for (int r = 0; r < image.cols; r++){
-//		for (int i = 0; i < num_found; i++) {
-//			image.at<Vec3b>(r, minimal_seams[r * num_found + i]) = Vec3b(255, 255, 255);
-//		}
-//	}
-
 
 	//remove_pixels(image, seams, traces, num_workers);
 
