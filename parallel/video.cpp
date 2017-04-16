@@ -73,10 +73,9 @@ void retarget_frame(int i, Mat& image, char orientation = 'v', int num_workers =
 	}
 
 	int num_found = 0;
-	int *seam = new int[eimage.rows];
-	int *seams = new int[eimage.cols * eimage.rows];
-	int *traces = new int[4*W];
-	int* minimal_seams = find_seams(eimage, seams, traces, num_found, num_workers);
+	int *seam = new int[eimage.rows]; //ToDo
+
+	int* minimal_seams = find_seams(eimage, num_found, num_workers); //ToDo
 
 	for (int r = 0; r < H; r++) {
 		if (orientation == 'v')

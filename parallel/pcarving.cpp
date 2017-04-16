@@ -60,10 +60,12 @@ void print_row(uchar *row, int W) {
 	printf("\n\n");
 }
 
-int* find_seams(Mat &image, int* seams, int* traces, int &num_found, int num_workers = 1){
+int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 	int H = image.rows;
 	int W = image.cols;
 
+	int *seams = new int[image.cols * image.rows];
+	int *traces = new int[4*image.cols];
 	uchar *row = new uchar[W];
 	uchar *next_row = new uchar[W];
 	int *seam_spans = new int[W];
@@ -76,7 +78,6 @@ int* find_seams(Mat &image, int* seams, int* traces, int &num_found, int num_wor
 	}
 
 	int count = 0;
-	//print_traces(traces, W);
 
 	std::cout << H << std::endl;
 
@@ -218,12 +219,12 @@ int* find_seams(Mat &image, int* seams, int* traces, int &num_found, int num_wor
 	}
 
 	delete[] final_points;
+	delete[] seams;
+	delete[] traces;
 
 	num_found = count;
 
 	return minimal_seams;
-
-//	delete[] seams;
 }
 
 void remove_pixels(Mat& image, int *seams, int count, int n, int num_workers = 1){
@@ -272,11 +273,7 @@ void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
 
 
 	int num_found = 0;
-
-	int *seams = new int[eimage.cols * eimage.rows];
-
-	int *traces = new int[4*eimage.cols];
-	int* minimal_seams = find_seams(eimage, seams, traces, num_found, num_workers);
+	int* minimal_seams = find_seams(eimage, num_found, num_workers);
 
 	for (int r = 0; r < image.cols; r++){
 		for (int i = 0; i < num_found; i++) {
