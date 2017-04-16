@@ -240,17 +240,17 @@ void remove_pixels(Mat& image, int *seams, int count, int n, int num_workers = 1
 		int i = 0;
 		int hole = seams[r*count + i];
 		for(int c = 0; c < W; c++) {
-			if (c == hole) {
-				i++;
-				if(i >= reduce)
-					break;
-				hole = seams[r*count + i];
-			} else
-				output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c + i);
+//			if (c == hole) {
+//				i++;
+//				if(i >= reduce)
+//					break;
+//				hole = seams[r*count + i];
+//			} else
+//				output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c + i);
 		}
 	});
 
-	image = output;
+//	image = output;
 }
 
 void energy_function(Mat &image, Mat &output, int num_workers = 1){
@@ -271,7 +271,6 @@ void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
 	Mat eimage;
 	energy_function(image, eimage, num_workers);
 
-
 	int num_found = 0;
 	int* minimal_seams = find_seams(eimage, num_found, num_workers);
 
@@ -281,7 +280,7 @@ void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
 		}
 	}
 
-	//remove_pixels(image, seams, traces, num_workers);
+	remove_pixels(image, minimal_seams, num_found, num_found, num_workers); // ToDo remove right number of seams
 
 	if (orientation == 'h') {
 		int flag = CCW;
