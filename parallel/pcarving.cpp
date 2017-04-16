@@ -60,7 +60,7 @@ void print_row(uchar *row, int W) {
 	printf("\n\n");
 }
 
-void find_seams(Mat &image, int* seams, int* traces, int num_workers = 1){
+void find_seams(Mat &image, int* seams, int* traces, int &num_found, int num_workers = 1){
 	int H = image.rows;
 	int W = image.cols;
 
@@ -123,13 +123,6 @@ void find_seams(Mat &image, int* seams, int* traces, int num_workers = 1){
 						seam_energies[seam_index] = seam_energies[seam_index] + m;
 
 						points[seam_index] = cv::Point(seam_index, seam_energies[seam_index]);
-//						if (r == H - 3)
-//							std::cout << r << "---" << seam_index << "+++++" << seam_energies[seam_index] << "===" << (int) m << std::endl;
-//						if (r == H - 2)
-//							std::cout << r << "---" << seam_index << "+++++" << seam_energies[seam_index] << "===" << (int) m << std::endl;
-//						if (r == H - 1) {
-//							std::cout << r << "---" << seam_index <<  "+++++" << seam_energies[seam_index] << "===" << (int) m << std::endl;
-//						}
 					}
 				}
 			} else {
@@ -178,112 +171,6 @@ void find_seams(Mat &image, int* seams, int* traces, int num_workers = 1){
 			traces[3 * W + c] = best_seam_index;
 		});
 
-//		// seam splitting: do not trache but deviate some seams
-//		// 1. first: move trashed
-		if(r > 950) {//ToDo treshold
-			for(int c = 0; c < W; c++) {
-				if (traces[c] != W) {
-					int seam_index = traces[c];
-					if (c > 0 && traces[3 * W + c - 1] == W && traces[3 * W + c - 2] != W) {
-						traces[W + c - 1] = seam_index;
-					} else if (c > 1 && traces[3 * W + c - 1] != W && traces[3 * W + c - 2] == W) {
-						traces[2 * W + c - 2] = seam_index;
-					} else if (c > 1 && traces[3 * W + c - 1] == W && traces[3 * W + c - 2] == W) {
-						if (row[c - 1] > row[c - 2]) {
-							seams[r * W + seam_index] = c - 2;
-							traces[2 * W + c - 2] = seam_index;
-							seam_energies[seam_index] = seam_energies[seam_index] + row[c - 2];
-						} else {
-							seams[r * W + seam_index] = c - 1;
-							traces[W + c - 1] = seam_index;
-							seam_energies[seam_index] = seam_energies[seam_index] + row[c - 1];
-						}
-						seam_spans[seam_index] = cv::max(seam_spans[seam_index],
-						                                 abs(seams[seam_index] - seams[r * W + seam_index]));
-					}
-				}
-			}
-			for(int c = 0; c < W; c++) {
-				if (traces[W + c] != W) {
-					int seam_index = traces[c];
-					if (c > 0 && traces[3 * W + c - 1] == W && traces[3 * W + c + 1] != W) {
-						traces[2 * W + c - 1] = seam_index;
-					} else if (c > 1 && traces[3 * W + c - 1] != W && traces[3 * W + c + 1] == W) {
-						traces[c + 1] = seam_index;
-					} else if (c > 1 && traces[3 * W + c - 1] == W && traces[3 * W + c + 1] == W) {
-						if (row[c - 1] > row[c + 1]) {
-							seams[r * W + seam_index] = c + 1;
-							traces[c + 1] = seam_index;
-							seam_energies[seam_index] = seam_energies[seam_index] + row[c + 1];
-						} else {
-							seams[r * W + seam_index] = c - 1;
-							traces[2 * W + c - 1] = seam_index;
-							seam_energies[seam_index] = seam_energies[seam_index] + row[c - 1];
-						}
-						seam_spans[seam_index] = cv::max(seam_spans[seam_index],
-						                                 abs(seams[seam_index] - seams[r * W + seam_index]));
-					}
-				}
-			}
-			for(int c = 0; c < W; c++) {
-				if (traces[2*W + c] != W) {
-					int seam_index = traces[c];
-					if(c > 0 && traces[3*W + c + 1] == W && traces[3*W + c + 2] != W) {
-						traces[W + c + 1] = seam_index;
-					} else if(c > 1 && traces[3*W + c + 1] != W && traces[3*W + c + 2] == W) {
-						traces[c + 2] = seam_index;
-					} else if(c > 1 && traces[3*W + c + 1] == W && traces[3*W + c + 2] == W) {
-						if(row[c + 1] > row[c + 2]) {
-							seams[r * W + seam_index] = c + 2;
-							traces[c + 2] = seam_index;
-							seam_energies[seam_index] = seam_energies[seam_index] + row[c + 2];
-						} else {
-							seams[r * W + seam_index] = c + 1;
-							traces[W + c + 1] = seam_index;
-							seam_energies[seam_index] = seam_energies[seam_index] + row[c + 1];
-						}
-						seam_spans[seam_index] = cv::max(seam_spans[seam_index],
-						                                 abs(seams[seam_index] - seams[r * W + seam_index]));
-					}
-				}
-			}
-
-			// Resolve seams conflicts
-			pf.parallel_for(0L, W, [row, r, W, H, &seams, &traces, &seam_energies, &seam_spans](int c) {
-				int seam_index;
-				int energy;
-				int min_energy = max_int;
-				int min_span = W + 1;
-				int best_seam_index = W;
-				for (int i = 0; i < 3; i++) {
-					if (traces[i * W + c] == W) {
-						continue;
-					}
-					seam_index = traces[i * W + c];
-					energy = seam_energies[seam_index];
-					int span = seam_spans[seam_index];
-					if (min_energy > span) {
-						min_energy = energy;
-						best_seam_index = seam_index;
-					} else if (min_span > span) {
-						min_span = span;
-						best_seam_index = seam_index;
-					}
-				}
-				for (int i = 0; i < 3; i++) {
-					if (traces[i * W + c] == W) {
-						continue;
-					}
-					seam_index = traces[i * W + c];
-					if(seam_index != best_seam_index) {
-						seams[r*W + seam_index] = W;
-					}
-				}
-				traces[3 * W + c] = best_seam_index;
-			});
-		}
-
-		//print_traces(traces, W);
 		// clean traces rows
 		count = 0;
 		for(unsigned int c = 0; c < W; c++){
@@ -297,13 +184,9 @@ void find_seams(Mat &image, int* seams, int* traces, int num_workers = 1){
 					traces[i * W + c] = W;
 			}
 		}
-
-		std::cout << r << "===" << count << "===" << W << std::endl;
 	}
 
 	delete[] row;
-
-	Point p = points[0];
 
 	cv::Point *final_points = new cv::Point[count];
 	int i = 0;
@@ -318,9 +201,7 @@ void find_seams(Mat &image, int* seams, int* traces, int num_workers = 1){
 		i++;
 	}
 
-//	for (unsigned int j = 0; j < count; j++) {
-//		std::cout << final_points[j].x << "===" << final_points[j].y << std::endl;
-//	}
+	delete[] points;
 
 	std::sort(final_points,final_points + count,sortByY); //ToDo: in parallel if more than 30 elements
 
@@ -328,28 +209,43 @@ void find_seams(Mat &image, int* seams, int* traces, int num_workers = 1){
 		std::cout << final_points[j].x << "---" << final_points[j].y << std::endl;
 	}
 
-	seams = new int[count];
+	int* minimal_seams = new int[H*count];
+	for(i = 0; i < count; i++) {
+		pf.parallel_for(0L, H, [i, count, W, final_points, seams, &minimal_seams](int r) {
+			int seam_index = final_points[i].x;
+			minimal_seams[r*count + i] = seams[r*W + seam_index];
+		});
+	}
 
-	delete[] points;
+	delete[] final_points;
+
+	num_found = count;
+
 
 //	delete[] seams;
 }
 
-void remove_pixels(Mat& image, int *seam, int num_workers = 1){
+void remove_pixels(Mat& image, int *seams, int count, int n, int num_workers = 1){
 	int W = image.cols;
 	int H = image.rows;
 
-	Mat output(image.rows, image.cols - 1, CV_8UC3);
+	int reduce = cv::min(n, count);
+
+	Mat output(image.rows, image.cols - reduce, CV_8UC3);
 
 	ff::ParallelFor pf(num_workers, false);
-	pf.parallel_for(0L, H*W, [W, &image, seam, &output](int i) {
-		int r = i / W;
-		int c = i % W;
-
-		if (c >= seam[r])
-			output.at<Vec3b>(r,c) = image.at<Vec3b>(r, c + 1);
-		else
-			output.at<Vec3b>(r,c) = image.at<Vec3b>(r, c);
+	pf.parallel_for(0L, H, [W, &image, seams, count, reduce, &output](int r) {
+		int i = 0;
+		int hole = seams[r*count + i];
+		for(int c = 0; c < W; c++) {
+			if (c == hole) {
+				i++;
+				if(i >= reduce)
+					break;
+				hole = seams[r*count + i];
+			} else
+				output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c + i);
+		}
 	});
 
 	image = output;
@@ -374,13 +270,21 @@ void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
 	energy_function(image, eimage, num_workers);
 
 
+	int num_found = 0;
+
 	int *seams = new int[eimage.cols * eimage.rows];
 
+	int *minimal_seams;
+
 	int *traces = new int[4*eimage.cols];
-	find_seams(eimage, seams, traces, num_workers);
+	find_seams(eimage, seams, traces, num_found, num_workers);
+
+	//std::cout << num_found << std::endl;
 
 	int W = image.rows;
 
+
+	//ToDo parallel
 	for (int c = 0; c < image.rows; c++) {
 		if (traces[3 * W + c] == W) {
 			continue;
@@ -390,6 +294,13 @@ void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
 			image.at<Vec3b>(r, seams[r * W + seam_index]) = Vec3b(255, 255, 255);
 		}
 	}
+
+//	for (int r = 0; r < image.cols; r++){
+//		for (int i = 0; i < num_found; i++) {
+//			image.at<Vec3b>(r, minimal_seams[r * num_found + i]) = Vec3b(255, 255, 255);
+//		}
+//	}
+
 
 	//remove_pixels(image, seams, traces, num_workers);
 
