@@ -94,7 +94,7 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	int count = 0;
 
-	std::cout << H << std::endl;
+//	std::cout << H << std::endl;
 
 	ff::ParallelFor pf(num_workers, false);
 	for(int r = 0; r < H; r++){
@@ -247,50 +247,33 @@ void remove_pixels(Mat& image, int *seams, int count, int n, int num_workers = 1
 	int H = image.rows;
 
 	int reduce = cv::min(n, count);
-	std::cout << reduce << std::endl;
 
-	print_seams(seams, count, H);
-
+//	print_seams(seams, count, H);
 
 	Mat output(image.rows, image.cols - reduce, CV_8UC3);
 
 	ff::ParallelFor pf(num_workers, false);
 	pf.parallel_for(0L, H, [W, &image, seams, count, reduce, &output](int r) {
-
-
 		int* holes = new int[count];
 		for(int k = 0; k < count; k++) {
 			holes[k] = seams[r * count + k];
 		}
 		std::sort(holes, holes + count);
-
 		int i = 0;
 		int hole = holes[i];
-		std::cout << r << "---" << "hole: " << i << "--" << seams[r * count + i] << std::endl;
-
 		for(int c = 0; c < W - reduce; c++) {
 			if (c + i == hole) {
 
 				while (c + i == hole && i < reduce) {
 					i++;
 					hole = holes[i];
-					std::cout << r << "---" << "hole: " << i << "--" << seams[r * count + i] << std::endl;
-
 				}
 				output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c + i);
 			} else {
 				output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c + i);
-				if(r > 958) {
-					std::cout << r << "---" << "c: " << c << "--" << c+i << std::endl;
-				}
 			}
 		}
-
 	});
-
-
-	std::cout << W << std::endl;
-
 	image = output;
 }
 
@@ -315,13 +298,17 @@ void remove_seams(Mat& image, char orientation = 'v', int num_workers = 1){
 	int num_found = 0;
 	int* minimal_seams = find_seams(eimage, num_found, num_workers);
 
-	for (int r = 0; r < image.cols; r++){
-		for (int i = 0; i < num_found; i++) {
-			image.at<Vec3b>(r, minimal_seams[r * num_found + i]) = Vec3b(255, 255, 255);
-		}
-	}
+	std::cout << "num_found: " << num_found << std::endl;
 
-	remove_pixels(image, minimal_seams, num_found, num_found, num_workers); // ToDo remove right number of seams
+//	for (int r = 0; r < image.rows; r++){
+//		for (int i = 0; i < num_found; i++) {
+//			image.at<Vec3b>(r, minimal_seams[r * num_found + i]) = Vec3b(255, 255, 255);
+//		}
+//	}
+//
+//	print_seams(minimal_seams, num_found, image.rows);
+
+    remove_pixels(image, minimal_seams, num_found, num_found, num_workers); // ToDo remove right number of seams
 
 	if (orientation == 'h') {
 		int flag = CCW;
