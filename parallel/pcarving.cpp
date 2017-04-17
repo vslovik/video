@@ -60,6 +60,21 @@ void print_row(uchar *row, int W) {
 	printf("\n\n");
 }
 
+void print_seams(int *seams, int W, int H) {
+	int j=0;
+	for(unsigned int r=0;r<H;r++) {
+		for (unsigned int i = 0; i < W; i++) {
+			if (j == W) {
+				printf("\n");
+				j = 0;
+			}
+			j++;
+			printf("%*d", 6, seams[r*W + i]);
+		}
+		printf("\n\n");
+	}
+}
+
 int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 	int H = image.rows;
 	int W = image.cols;
@@ -204,11 +219,11 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	delete[] points;
 
-	std::sort(final_points,final_points + count,sortByY); //ToDo: in parallel if more than 30 elements
-
-	for (unsigned int j = 0; j < count; j++) {
-		std::cout << final_points[j].x << "---" << final_points[j].y << std::endl;
-	}
+//	std::sort(final_points,final_points + count,sortByY); //ToDo: in parallel if more than 30 elements
+//
+//	for (unsigned int j = 0; j < count; j++) {
+//		std::cout << final_points[j].x << "---" << final_points[j].y << std::endl;
+//	}
 
 	int* minimal_seams = new int[H*count];
 	for(i = 0; i < count; i++) {
@@ -232,6 +247,10 @@ void remove_pixels(Mat& image, int *seams, int count, int n, int num_workers = 1
 	int H = image.rows;
 
 	int reduce = cv::min(n, count);
+	std::cout << reduce << std::endl;
+
+	print_seams(seams, count, H);
+
 
 	Mat output(image.rows, image.cols - reduce, CV_8UC3);
 
@@ -239,18 +258,32 @@ void remove_pixels(Mat& image, int *seams, int count, int n, int num_workers = 1
 	pf.parallel_for(0L, H, [W, &image, seams, count, reduce, &output](int r) {
 		int i = 0;
 		int hole = seams[r*count + i];
-		for(int c = 0; c < W; c++) {
-//			if (c == hole) {
-//				i++;
-//				if(i >= reduce)
-//					break;
-//				hole = seams[r*count + i];
-//			} else
-//				output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c + i);
+		std::cout << r << "---" << "hole: " << i << "--" << seams[r * count + i] << std::endl;
+
+		for(int c = 0; c < W - reduce; c++) {
+			if (c == hole) {
+
+				if(i < reduce - 1) {
+					i++;
+					hole = seams[r * count + i];
+					std::cout << r << "---" << "hole: " << i << "--" << seams[r * count + i] << std::endl;
+
+				}
+
+			} else {
+				output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c + i);
+				if(r > 958) {
+					std::cout << r << "---" << "c: " << c << "--" << c+i << std::endl;
+				}
+			}
 		}
+
 	});
 
-//	image = output;
+
+	std::cout << W << std::endl;
+
+	image = output;
 }
 
 void energy_function(Mat &image, Mat &output, int num_workers = 1){
