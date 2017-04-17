@@ -261,15 +261,15 @@ void remove_pixels(Mat& image, int *seams, int count, int n, int num_workers = 1
 		std::cout << r << "---" << "hole: " << i << "--" << seams[r * count + i] << std::endl;
 
 		for(int c = 0; c < W - reduce; c++) {
-			if (c == hole) {
+			if (c + i == hole) {
 
-				if(i < reduce - 1) {
+				if(i < reduce) {
 					i++;
 					hole = seams[r * count + i];
 					std::cout << r << "---" << "hole: " << i << "--" << seams[r * count + i] << std::endl;
 
 				}
-
+				output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c + i);
 			} else {
 				output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c + i);
 				if(r > 958) {
