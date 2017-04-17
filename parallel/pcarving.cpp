@@ -256,16 +256,24 @@ void remove_pixels(Mat& image, int *seams, int count, int n, int num_workers = 1
 
 	ff::ParallelFor pf(num_workers, false);
 	pf.parallel_for(0L, H, [W, &image, seams, count, reduce, &output](int r) {
+
+
+		int* holes = new int[count];
+		for(int k = 0; k < count; k++) {
+			holes[k] = seams[r * count + k];
+		}
+		std::sort(holes, holes + count);
+
 		int i = 0;
-		int hole = seams[r*count + i];
+		int hole = holes[i];
 		std::cout << r << "---" << "hole: " << i << "--" << seams[r * count + i] << std::endl;
 
 		for(int c = 0; c < W - reduce; c++) {
 			if (c + i == hole) {
 
-				if(i < reduce) {
+				while (c + i == hole && i < reduce) {
 					i++;
-					hole = seams[r * count + i];
+					hole = holes[i];
 					std::cout << r << "---" << "hole: " << i << "--" << seams[r * count + i] << std::endl;
 
 				}
@@ -294,7 +302,7 @@ void coherence_function(Mat &image, int* seam, int num_workers = 1) {
 	coherence(image, seam, num_workers);
 }
 
-void remove_seam(Mat& image, char orientation = 'v', int num_workers = 1){
+void remove_seams(Mat& image, char orientation = 'v', int num_workers = 1){
 
 	if (orientation == 'h') {
 		int flag = CW;
@@ -334,10 +342,10 @@ void realTime(Mat& image, int num_workers){
 		if (key == 'q')
 			break;
 		else if (key == 'v') {
-			remove_seam(image, 'v', num_workers);
+			remove_seams(image, 'v', num_workers);
 		}
 		else if (key == 'h') {
-			remove_seam(image, 'h', num_workers);
+			remove_seams(image, 'h', num_workers);
 		}
 	}
 }
