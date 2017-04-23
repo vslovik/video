@@ -219,17 +219,19 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	delete[] points;
 
-//	std::sort(final_points,final_points + count,sortByY); //ToDo: in parallel if more than 30 elements
+	std::sort(final_points,final_points + count, sortByY); //ToDo: in parallel if more than 30 elements
 //
 //	for (unsigned int j = 0; j < count; j++) {
 //		std::cout << final_points[j].x << "---" << final_points[j].y << std::endl;
 //	}
 
-	int* minimal_seams = new int[H*count];
-	for(i = 0; i < count; i++) {
-		pf.parallel_for(0L, H, [i, count, W, final_points, seams, &minimal_seams](int r) {
+	num_found = cv::min(num_found, count);
+
+	int* minimal_seams = new int[H*num_found];
+	for(i = 0; i < num_found; i++) {
+		pf.parallel_for(0L, H, [i, num_found, W, final_points, seams, &minimal_seams](int r) {
 			int seam_index = final_points[i].x;
-			minimal_seams[r*count + i] = seams[r*W + seam_index];
+			minimal_seams[r*num_found + i] = seams[r*W + seam_index];
 		});
 	}
 
@@ -237,23 +239,19 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 	delete[] seams;
 	delete[] traces;
 
-	num_found = count;
-
 	return minimal_seams;
 }
 
-void remove_pixels(Mat& image, int *seams, int count, int n, int num_workers = 1){
+void remove_pixels(Mat& image, int *seams, int count, int num_workers = 1){
 	int W = image.cols;
 	int H = image.rows;
 
-	int reduce = cv::min(n, count);
-
 //	print_seams(seams, count, H);
 
-	Mat output(image.rows, image.cols - reduce, CV_8UC3);
+	Mat output(image.rows, image.cols - count, CV_8UC3);
 
 	ff::ParallelFor pf(num_workers, false);
-	pf.parallel_for(0L, H, [W, &image, seams, count, reduce, &output](int r) {
+	pf.parallel_for(0L, H, [W, &image, seams, count, &output](int r) {
 		int* holes = new int[count];
 		for(int k = 0; k < count; k++) {
 			holes[k] = seams[r * count + k];
@@ -261,10 +259,10 @@ void remove_pixels(Mat& image, int *seams, int count, int n, int num_workers = 1
 		std::sort(holes, holes + count);
 		int i = 0;
 		int hole = holes[i];
-		for(int c = 0; c < W - reduce; c++) {
+		for(int c = 0; c < W - count; c++) {
 			if (c + i == hole) {
 
-				while (c + i == hole && i < reduce) {
+				while (c + i == hole && i < count) {
 					i++;
 					hole = holes[i];
 				}
@@ -281,8 +279,8 @@ void energy_function(Mat &image, Mat &output, int num_workers = 1){
 	sobel(image, output, num_workers);
 }
 
-void coherence_function(Mat &image, int* seam, int num_workers = 1) {
-	coherence(image, seam, num_workers);
+void coherence_function(Mat &image, int* seams, int count, int num_workers = 1) {
+	coherence(image, seams, count, num_workers);
 }
 
 void remove_seams(Mat& image, char orientation = 'v', int num_workers = 1){
@@ -295,7 +293,7 @@ void remove_seams(Mat& image, char orientation = 'v', int num_workers = 1){
 	Mat eimage;
 	energy_function(image, eimage, num_workers);
 
-	int num_found = 0;
+	int num_found = 6;
 	int* minimal_seams = find_seams(eimage, num_found, num_workers);
 
 	std::cout << "num_found: " << num_found << std::endl;
@@ -308,7 +306,7 @@ void remove_seams(Mat& image, char orientation = 'v', int num_workers = 1){
 //
 //	print_seams(minimal_seams, num_found, image.rows);
 
-    remove_pixels(image, minimal_seams, num_found, num_found, num_workers); // ToDo remove right number of seams
+    remove_pixels(image, minimal_seams, num_found, num_workers);
 
 	if (orientation == 'h') {
 		int flag = CCW;
@@ -337,35 +335,35 @@ void realTime(Mat& image, int num_workers){
 	}
 }
 
-int main(int argc, char **argv)
-{
-	if(argc < 3) {
-		std::cout << "Not enough parameters" << std::endl;
-		return -1;
-	}
-
-	int num_workers = atoi(argv[2]);
-
-	try {
-
-		Mat image = imread(argv[1], IMREAD_COLOR);
-
-		realTime(image, num_workers);
-
-//		ff::ffTime(ff::START_TIME);
+//int main(int argc, char **argv)
+//{
+//	if(argc < 3) {
+//		std::cout << "Not enough parameters" << std::endl;
+//		return -1;
+//	}
 //
-//		for(int k = 0; k < 100; k++)
-//			remove_seam(image, 'v', num_workers);
+//	int num_workers = atoi(argv[2]);
 //
-//		ff::ffTime(ff::STOP_TIME);
+//	try {
 //
-//		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
-//		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
-
-	} catch(std::string e){
-		std::cout << e << std::endl;
-		return -1;
-	}
-
-	return 0;
-}
+//		Mat image = imread(argv[1], IMREAD_COLOR);
+//
+//		realTime(image, num_workers);
+//
+////		ff::ffTime(ff::START_TIME);
+////
+////		for(int k = 0; k < 100; k++)
+////			remove_seam(image, 'v', num_workers);
+////
+////		ff::ffTime(ff::STOP_TIME);
+////
+////		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
+////		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+//
+//	} catch(std::string e){
+//		std::cout << e << std::endl;
+//		return -1;
+//	}
+//
+//	return 0;
+//}

@@ -21,6 +21,8 @@ struct State {
     int numFrames;
     int* v_seams;
     int* h_seams;
+	int v_seams_found = 0;
+	int h_seams_found = 0;
     bool firstFrame = true;
 
     State(
@@ -38,7 +40,9 @@ struct State {
             size(size),
             output(output),
             v_seams(v_seams),
-            h_seams(h_seams)
+            h_seams(h_seams),
+            v_seams_found(v_seams_found),
+            h_seams_found(h_seams_found)
     {
         v_seams = (int *)malloc(ver*size.height*sizeof(int));
         h_seams = (int *)malloc(hor*size.width*sizeof(int));
@@ -47,7 +51,7 @@ struct State {
 
 State* s;
 
-void retarget_frame(int i, Mat& image, char orientation = 'v', int num_workers = 1){
+void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
 	if (orientation == 'h') {
 		int flag = CW;
 		rot90(image, flag);
@@ -57,36 +61,45 @@ void retarget_frame(int i, Mat& image, char orientation = 'v', int num_workers =
     Mat eimage;
     energy_function(image, eimage, num_workers);
 
-	if (!s->firstFrame) {
-		int *prev_seam = new int[H];
+	int* minimal_seams;
+	int num_found;
+	if (orientation == 'v') {
 
-		for (int r = 0; r < H; r++) {
-			if (orientation == 'v')
-				prev_seam[r] = s->v_seams[r * s->ver + i];
-			else
-				prev_seam[r] = s->h_seams[r * s->hor + i];
-		}
+//		if (!s->firstFrame) {
+//			coherence_function(eimage, s->v_seams, s->hor, num_workers);
+//		}
 
-		coherence_function(eimage, prev_seam, num_workers);
+		num_found = s->hor;
+		minimal_seams = find_seams(eimage, num_found, num_workers);
+		remove_pixels(image, minimal_seams, num_found, num_workers);
 
-		delete[] prev_seam;
+//		for (int r = 0; r < H; r++) {
+//			for (int i = 0; i < num_found; i++) {
+//				s->v_seams[r * s->hor + s->v_seams_found + i] = minimal_seams[r * num_found + i];c
+//			}
+//		}
+
+//		s->v_seams_found += num_found;
+	} else {
+
+//		if (!s->firstFrame) {
+//			coherence_function(eimage, s->h_seams, s->ver, num_workers);
+//		}
+
+		num_found = s->ver;
+		minimal_seams = find_seams(eimage, num_found, num_workers);
+		remove_pixels(image, minimal_seams, num_found, num_workers);
+
+//		for (int r = 0; r < H; r++) {
+//			for (int i = 0; i < num_found; i++) {
+//				s->h_seams[r * s->ver + s->h_seams_found + i] = minimal_seams[r * num_found + i];
+//			}
+//		}
+
+//		s->h_seams_found += num_found;
 	}
 
-	int num_found = 0;
-	int *seam = new int[eimage.rows]; //ToDo
-
-	int* minimal_seams = find_seams(eimage, num_found, num_workers); //ToDo
-
-	for (int r = 0; r < H; r++) {
-		if (orientation == 'v')
-			s->v_seams[r * s->ver + i] = seam[r];
-		else
-			s->h_seams[r * s->hor + i] = seam[r];
-	}
-
-    //remove_pixels(image, seam, num_workers);
-
-	delete[] seam;
+	delete[] minimal_seams;
 
 	if (orientation == 'h') {
 		int flag = CCW;
@@ -94,13 +107,19 @@ void retarget_frame(int i, Mat& image, char orientation = 'v', int num_workers =
 	}
 }
 
-void shrink_image(Mat& image, int ver, int hor, int num_workers = 1){
-    for(int i = 0; i < ver; i++){
-        retarget_frame(i, image, 'v', num_workers);
+void shrink_image(Mat& image, Size out_size, int num_workers = 1){
+	std::cout << "cols: " << image.cols << std::endl;
+	std::cout << "--------------------" << std::endl;
+    while(image.cols > out_size.width){
+        retarget_frame(image, 'v', num_workers);
+	    std::cout << "cols: " << image.cols << std::endl;
     }
-    for(int i = 0; i < hor; i++){
-        retarget_frame(i, image, 'h', num_workers);
-    }
+//	std::cout << "rows: " << image.rows << std::endl;
+//	std::cout << "--------------------" << std::endl;
+//	while(image.rows > out_size.height){
+//        retarget_frame(image, 'h', num_workers);
+//		std::cout << "rows: " << image.rows << std::endl;
+//    }
 }
 
 void process_video(std::string source, int ver, int hor, int num_workers = 1)
@@ -127,15 +146,17 @@ void process_video(std::string source, int ver, int hor, int num_workers = 1)
 	std::cout << "Input frame resolution: Width=" << s->size.width << "  Height=" << s->size.height
          << " of nr#: " << s->numFrames << std::endl;
 
+	Size out_size = Size(
+			s->size.width - s->hor,
+			s->size.height - s->ver
+	);
+
     VideoWriter outputVideo;
     outputVideo.open(
             s->output,
             CV_FOURCC('D', 'I', 'V', 'X'),
             s->fps,
-            Size(
-                    s->size.width - s->ver,
-                    s->size.height - s->hor
-            ),
+            out_size,
             true
     );
 
@@ -151,7 +172,7 @@ void process_video(std::string source, int ver, int hor, int num_workers = 1)
 
 	    ff::ffTime(ff::START_TIME);
 
-        shrink_image(image, s->ver, s->hor, num_workers);
+        shrink_image(image, out_size, num_workers);
 
 	    if (s->firstFrame)
             s->firstFrame = false;

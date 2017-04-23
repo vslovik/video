@@ -12,27 +12,27 @@ static void help()
             << std::endl;
 }
 
-//int main(int argc, char **argv)
-//{
-//    help();
-//
-//    if(argc < 5) {
-//	    std::cout << "Not enough parameters" << std::endl;
-//        return -1;
-//    }
-//
-//    const std::string source = argv[1];
-//
-//	int ver = atoi(argv[2]);
-//	int hor = atoi(argv[3]);
-//	int num_workers = atoi(argv[4]);
-//
-//    try {
-//        process_video(source, ver, hor, num_workers);
-//    } catch(string e){
-//	    std::cout << e << std::endl;
-//        return -1;
-//    }
-//
-//    return 0;
-//}
+int main(int argc, char **argv)
+{
+    help();
+
+    if(argc < 5) {
+	    std::cout << "Not enough parameters" << std::endl;
+        return -1;
+    }
+
+    const std::string source = argv[1];
+
+	int ver = atoi(argv[2]);
+	int hor = atoi(argv[3]);
+	int num_workers = atoi(argv[4]);
+
+    try {
+        process_video(source, ver, hor, num_workers);
+    } catch(string e){
+	    std::cout << e << std::endl;
+        return -1;
+    }
+
+    return 0;
+}

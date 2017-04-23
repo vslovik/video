@@ -72,7 +72,7 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 	delete[] dst;
 }
 
-void coherence(cv::Mat &image, int* seam, int num_workers) {
+void coherence(cv::Mat &image, int* seams, int num_seams, int num_workers) {
 
     int rows = image.rows;
     int cols = image.cols;
@@ -89,23 +89,26 @@ void coherence(cv::Mat &image, int* seam, int num_workers) {
 
 	int Il[cols], Ir[cols];
 
-    pf.parallel_for(0, rows, [src, cols, &dst, &seam, &Il, &Ir](const long r) {
+    pf.parallel_for(0, rows, [src, cols, &dst, &seams, num_seams, &Il, &Ir](const long r) {
         int sum;
-        for (int c = 0; c < cols - 1; c++) {
-            Il[c] = 0; Ir[c] = 0;
-        }
-        for (int c = seam[r]; c < cols; c++) {
-            Il[c] = Il[c - 1] + abs(src[r * cols + c - 1] - src[r * cols + c]);
-        }
-        for (int c = cv::min(cols - 2, seam[r]); c >= 0; c--) {
-            Ir[c] = Ir[c + 1] + abs(src[r * cols + c + 1] - src[r * cols + c]);
-        }
-        for (int c = 1; c < cols; c++) {
-            sum = Il[c] + Ir[c] + src[r*cols+c];
-            if (sum > 255) sum = 255;
-            else if (sum < 0) sum = 0;
-            dst[r*cols+c] = (uchar) sum;
-        }
+	    for(int k = 0; k < num_seams; k++) {
+		    for (int c = 0; c < cols - 1; c++) {
+			    Il[c] = 0;
+			    Ir[c] = 0;
+		    }
+		    for (int c = seams[r*num_seams + k]; c < cols; c++) {
+			    Il[c] = Il[c - 1] + abs(src[r * cols + c - 1] - src[r * cols + c]);
+		    }
+		    for (int c = cv::min(cols - 2, seams[r*num_seams + k]); c >= 0; c--) {
+			    Ir[c] = Ir[c + 1] + abs(src[r * cols + c + 1] - src[r * cols + c]);
+		    }
+		    for (int c = 1; c < cols; c++) {
+			    sum = Il[c] + Ir[c] + src[r * cols + c];
+			    if (sum > 255) sum = 255;
+			    else if (sum < 0) sum = 0;
+			    dst[r * cols + c] = (uchar) sum;
+		    }
+	    }
     });
 
 	delete[] src;
