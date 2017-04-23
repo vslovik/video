@@ -110,7 +110,7 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 			next_row[c] = next;
 		});
 
-		row = next_row;
+		std::swap(row, next_row);
 
 		// Advance seams
 		pf.parallel_for(0L,W,[row, r, W, H, &seams, &points, &traces, &seam_energies, &seam_spans](int c) {
