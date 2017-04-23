@@ -22,6 +22,8 @@ struct State {
     int* v_seams;
     int* h_seams;
     bool firstFrame = true;
+	int num_found_v_seams = 0;
+	int num_found_h_seams = 0;
 
     State(
 		    int ver,
@@ -38,7 +40,9 @@ struct State {
             size(size),
             output(output),
             v_seams(v_seams),
-            h_seams(h_seams)
+            h_seams(h_seams),
+            num_found_v_seams(num_found_v_seams),
+			num_found_h_seams(num_found_h_seams)
     {
         v_seams = (int *)malloc(ver*size.height*sizeof(int));
         h_seams = (int *)malloc(hor*size.width*sizeof(int));
@@ -47,46 +51,31 @@ struct State {
 
 State* s;
 
-void retarget_frame(int i, Mat& image, char orientation = 'v', int num_workers = 1){
+void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
 	if (orientation == 'h') {
 		int flag = CW;
 		rot90(image, flag);
 	}
-    int H = image.rows, W = image.cols;
 
     Mat eimage;
     energy_function(image, eimage, num_workers);
 
-	if (!s->firstFrame) {
-		int *prev_seam = new int[H];
-
-		for (int r = 0; r < H; r++) {
-			if (orientation == 'v')
-				prev_seam[r] = s->v_seams[r * s->ver + i];
-			else
-				prev_seam[r] = s->h_seams[r * s->hor + i];
-		}
-
-		coherence_function(eimage, prev_seam, num_workers);
-
-		delete[] prev_seam;
+	int end_seam_index;
+	if (orientation == 'v') {
+		if (!s->firstFrame)
+			coherence_function(eimage, s->v_seams, s->hor, num_workers);
+		end_seam_index = s->hor;
+		find_seams(eimage, s->v_seams, s->hor, s->num_found_v_seams, end_seam_index, num_workers);
+		remove_pixels(image, s->v_seams, s->hor, s->num_found_v_seams, end_seam_index, num_workers);
+	} else {
+		if (!s->firstFrame)
+			coherence_function(eimage, s->h_seams, s->ver, num_workers);
+		end_seam_index = s->ver;
+		find_seams(eimage, s->h_seams, s->ver, s->num_found_h_seams, end_seam_index, num_workers);
+		remove_pixels(image, s->h_seams, s->ver, s->num_found_v_seams, end_seam_index, num_workers);
 	}
 
-	int num_found = 0;
-	int *seam = new int[eimage.rows]; //ToDo
-
-	int* minimal_seams = find_seams(eimage, num_found, num_workers); //ToDo
-
-	for (int r = 0; r < H; r++) {
-		if (orientation == 'v')
-			s->v_seams[r * s->ver + i] = seam[r];
-		else
-			s->h_seams[r * s->hor + i] = seam[r];
-	}
-
-    //remove_pixels(image, seam, num_workers);
-
-	delete[] seam;
+	s->num_found_h_seams = end_seam_index;
 
 	if (orientation == 'h') {
 		int flag = CCW;
@@ -94,12 +83,12 @@ void retarget_frame(int i, Mat& image, char orientation = 'v', int num_workers =
 	}
 }
 
-void shrink_image(Mat& image, int ver, int hor, int num_workers = 1){
-    for(int i = 0; i < ver; i++){
-        retarget_frame(i, image, 'v', num_workers);
+void shrink_image(Mat& image, int num_workers = 1){
+	while(image.cols > s->size.width - s->hor){
+        retarget_frame(image, 'v', num_workers);
     }
-    for(int i = 0; i < hor; i++){
-        retarget_frame(i, image, 'h', num_workers);
+    while(image.rows > s->size.height - s->ver){
+        retarget_frame(image, 'h', num_workers);
     }
 }
 
@@ -133,8 +122,8 @@ void process_video(std::string source, int ver, int hor, int num_workers = 1)
             CV_FOURCC('D', 'I', 'V', 'X'),
             s->fps,
             Size(
-                    s->size.width - s->ver,
-                    s->size.height - s->hor
+                    s->size.width - s->hor,
+                    s->size.height - s->ver
             ),
             true
     );
@@ -151,7 +140,7 @@ void process_video(std::string source, int ver, int hor, int num_workers = 1)
 
 	    ff::ffTime(ff::START_TIME);
 
-        shrink_image(image, s->ver, s->hor, num_workers);
+        shrink_image(image, num_workers);
 
 	    if (s->firstFrame)
             s->firstFrame = false;

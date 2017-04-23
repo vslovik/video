@@ -23,7 +23,7 @@ static void help()
 //
 //    const std::string source = argv[1];
 //
-//	int ver = atoi(argv[2]);
+//	int ver = atoi(argv[2]);  //ToDo: validate input parameters
 //	int hor = atoi(argv[3]);
 //	int num_workers = atoi(argv[4]);
 //
