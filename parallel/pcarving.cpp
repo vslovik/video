@@ -272,6 +272,7 @@ void remove_pixels(Mat& image, int *seams, int count, int num_workers = 1){
 			}
 		}
 	});
+
 	image = output;
 }
 

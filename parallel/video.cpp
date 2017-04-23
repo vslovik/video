@@ -19,6 +19,8 @@ struct State {
 	std::string output;
     double fps;
     int numFrames;
+	int* prev_frame_v_seams;
+	int* prev_frame_h_seams;
     int* v_seams;
     int* h_seams;
 	int v_seams_found = 0;
@@ -39,13 +41,17 @@ struct State {
             numFrames(numFrames),
             size(size),
             output(output),
+            prev_frame_v_seams(prev_frame_v_seams),
+            prev_frame_h_seams(prev_frame_v_seams),
             v_seams(v_seams),
             h_seams(h_seams),
             v_seams_found(v_seams_found),
             h_seams_found(h_seams_found)
     {
-        v_seams = (int *)malloc(ver*size.height*sizeof(int));
-        h_seams = (int *)malloc(hor*size.width*sizeof(int));
+	    prev_frame_v_seams = (int *)malloc(hor*size.height*sizeof(int));
+	    prev_frame_h_seams = (int *)malloc(ver*size.width*sizeof(int));
+        v_seams = (int *)malloc(hor*size.height*sizeof(int));
+        h_seams = (int *)malloc(ver*size.width*sizeof(int));
     }
 };
 
@@ -65,38 +71,39 @@ void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
 	int num_found;
 	if (orientation == 'v') {
 
-//		if (!s->firstFrame) {
-//			coherence_function(eimage, s->v_seams, s->hor, num_workers);
-//		}
+		if (!s->firstFrame) {
+			coherence_function(eimage, s->prev_frame_v_seams, s->hor, num_workers);
+		}
 
-		num_found = s->hor;
+		num_found = s->hor - s->v_seams_found;
 		minimal_seams = find_seams(eimage, num_found, num_workers);
 		remove_pixels(image, minimal_seams, num_found, num_workers);
 
-//		for (int r = 0; r < H; r++) {
-//			for (int i = 0; i < num_found; i++) {
-//				s->v_seams[r * s->hor + s->v_seams_found + i] = minimal_seams[r * num_found + i];c
-//			}
-//		}
+		for (int r = 0; r < H; r++) {
+			for (int i = 0; i < num_found; i++) {
+				s->v_seams[r * s->hor + s->v_seams_found + i] = minimal_seams[r * num_found + i];
+			}
+		}
 
-//		s->v_seams_found += num_found;
+		s->v_seams_found += num_found;
+
 	} else {
 
-//		if (!s->firstFrame) {
-//			coherence_function(eimage, s->h_seams, s->ver, num_workers);
-//		}
+		if (!s->firstFrame) {
+			coherence_function(eimage, s->prev_frame_h_seams, s->ver, num_workers);
+		}
 
-		num_found = s->ver;
+		num_found = s->ver - s->h_seams_found;
 		minimal_seams = find_seams(eimage, num_found, num_workers);
 		remove_pixels(image, minimal_seams, num_found, num_workers);
 
-//		for (int r = 0; r < H; r++) {
-//			for (int i = 0; i < num_found; i++) {
-//				s->h_seams[r * s->ver + s->h_seams_found + i] = minimal_seams[r * num_found + i];
-//			}
-//		}
+		for (int r = 0; r < H; r++) {
+			for (int i = 0; i < num_found; i++) {
+				s->h_seams[r * s->ver + s->h_seams_found + i] = minimal_seams[r * num_found + i];
+			}
+		}
 
-//		s->h_seams_found += num_found;
+		s->h_seams_found += num_found;
 	}
 
 	delete[] minimal_seams;
@@ -114,12 +121,17 @@ void shrink_image(Mat& image, Size out_size, int num_workers = 1){
         retarget_frame(image, 'v', num_workers);
 	    std::cout << "cols: " << image.cols << std::endl;
     }
-//	std::cout << "rows: " << image.rows << std::endl;
-//	std::cout << "--------------------" << std::endl;
-//	while(image.rows > out_size.height){
-//        retarget_frame(image, 'h', num_workers);
-//		std::cout << "rows: " << image.rows << std::endl;
-//    }
+	std::cout << "rows: " << image.rows << std::endl;
+	std::cout << "--------------------" << std::endl;
+	while(image.rows > out_size.height){
+        retarget_frame(image, 'h', num_workers);
+		std::cout << "rows: " << image.rows << std::endl;
+    }
+
+	std::swap(s->v_seams, s->prev_frame_v_seams);
+	std::swap(s->h_seams, s->prev_frame_h_seams);
+	s->v_seams_found = 0;
+	s->h_seams_found = 0;
 }
 
 void process_video(std::string source, int ver, int hor, int num_workers = 1)
@@ -164,15 +176,16 @@ void process_video(std::string source, int ver, int hor, int num_workers = 1)
         throw source;
     }
 
-    for(int i = 0; i < s->numFrames; ++i) {
+	Mat image;
 
-	    Mat image;
+    for(int i = 0; i < s->numFrames; ++i) {
 
         inputVideo >> image;
 
 	    ff::ffTime(ff::START_TIME);
 
         shrink_image(image, out_size, num_workers);
+
 
 	    if (s->firstFrame)
             s->firstFrame = false;
