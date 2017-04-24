@@ -86,14 +86,10 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 	int *seam_spans = new int[W];
 	int *seam_energies = new int[W];
 
-	cv::Point* points = new cv::Point[W];
-
 	ff::ParallelFor pf(num_workers, false);
 	pf.parallel_for(0L, 4*W, [W, &traces](int i) {
 		traces[i] = W;
 	});
-
-	int count = 0;
 
 	for(int r = 0; r < H; r++){
 
@@ -111,7 +107,7 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 		std::swap(row, next_row);
 
 		// Advance seams
-		pf.parallel_for(0L,W,[row, r, W, H, &seams, &points, &traces, &seam_energies, &seam_spans](int c) {
+		pf.parallel_for(0L, W,[row, r, W, H, &seams, &traces, &seam_energies, &seam_spans](int c) {
 			if(r > 0) {
 				if(traces[3 * W + c] < W) {
 					int seam_index = traces[3 * W + c]; // take seam
@@ -135,8 +131,6 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 						seam_spans[seam_index] = cv::max(seam_spans[seam_index],
 						                                 abs(seams[seam_index] - seams[r * W + seam_index]));
 						seam_energies[seam_index] = seam_energies[seam_index] + m;
-
-						points[seam_index] = cv::Point(seam_index, seam_energies[seam_index]);
 					}
 				}
 			} else {
@@ -185,14 +179,6 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 			traces[3 * W + c] = best_seam_index;
 		});
 
-		// count found seams
-		count = 0;
-		pf.parallel_for(0L, W, [W, &count, &traces](int c) {
-			if (traces[3 * W + c] < W) {
-				count++;
-			}
-		});
-
 		// clean traces rows
 		pf.parallel_for(0L, W, [W, &traces](int c) {
 			for (int i = 0; i < 3; i++) {
@@ -205,8 +191,8 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	delete[] row;
 
-	cv::Point *final_points = new cv::Point[count];
-	int i = 0;
+	cv::Point *points = new cv::Point[W];
+	int count = 0;
 	for (unsigned int c = 0; c < W; c++) {
 
 		if (traces[3 * W + c] == W) {
@@ -214,9 +200,14 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 		}
 
 		int seam_index = traces[3 * W + c];
-		final_points[i] = points[seam_index];
-		i++;
+		points[count++] = cv::Point(seam_index, seam_energies[seam_index]);
 	}
+
+	delete[] traces;
+
+	cv::Point *final_points = new cv::Point[count];
+
+	memcpy(final_points, points, count * sizeof(cv::Point));
 
 	delete[] points;
 
@@ -224,7 +215,7 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 	num_found = cv::min(num_found, count);
 
 	int* minimal_seams = new int[H*num_found];
-	for(i = 0; i < num_found; i++) {
+	for(int i = 0; i < num_found; i++) {
 		pf.parallel_for(0L, H, [i, num_found, W, final_points, seams, &minimal_seams](int r) {
 			int seam_index = final_points[i].x;
 			minimal_seams[r*num_found + i] = seams[r*W + seam_index];
@@ -233,7 +224,7 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	delete[] final_points;
 	delete[] seams;
-	delete[] traces;
+
 
 	return minimal_seams;
 }
