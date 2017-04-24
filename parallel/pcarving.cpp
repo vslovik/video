@@ -220,12 +220,7 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	delete[] points;
 
-	std::sort(final_points,final_points + count, sortByY); //ToDo: in parallel if more than 30 elements
-//
-//	for (unsigned int j = 0; j < count; j++) {
-//		std::cout << final_points[j].x << "---" << final_points[j].y << std::endl;
-//	}
-
+	std::sort(final_points,final_points + count, sortByY);
 	num_found = cv::min(num_found, count);
 
 	int* minimal_seams = new int[H*num_found];
@@ -334,35 +329,35 @@ void realTime(Mat& image, int num_workers){
 	}
 }
 
-int main(int argc, char **argv)
-{
-	if(argc < 3) {
-		std::cout << "Not enough parameters" << std::endl;
-		return -1;
-	}
-
-	int num_workers = atoi(argv[2]);
-
-	try {
-
-		Mat image = imread(argv[1], IMREAD_COLOR);
-
-		realTime(image, num_workers);
-
-//		ff::ffTime(ff::START_TIME);
+//int main(int argc, char **argv)
+//{
+//	if(argc < 3) {
+//		std::cout << "Not enough parameters" << std::endl;
+//		return -1;
+//	}
 //
-//		for(int k = 0; k < 100; k++)
-//			remove_seam(image, 'v', num_workers);
+//	int num_workers = atoi(argv[2]);
 //
-//		ff::ffTime(ff::STOP_TIME);
+//	try {
 //
-//		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
-//		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
-
-	} catch(std::string e){
-		std::cout << e << std::endl;
-		return -1;
-	}
-
-	return 0;
-}
+//		Mat image = imread(argv[1], IMREAD_COLOR);
+//
+//		realTime(image, num_workers);
+//
+////		ff::ffTime(ff::START_TIME);
+////
+////		for(int k = 0; k < 100; k++)
+////			remove_seam(image, 'v', num_workers);
+////
+////		ff::ffTime(ff::STOP_TIME);
+////
+////		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
+////		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+//
+//	} catch(std::string e){
+//		std::cout << e << std::endl;
+//		return -1;
+//	}
+//
+//	return 0;
+//}
