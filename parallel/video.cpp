@@ -75,7 +75,7 @@ void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
 			coherence_function(eimage, s->prev_frame_v_seams, s->hor, num_workers);
 		}
 
-		num_found = s->hor - s->v_seams_found;
+		num_found = s->hor - s->v_seams_found; // max num of seams IdomeneIdoto find
 		minimal_seams = find_seams(eimage, num_found, num_workers);
 		remove_pixels(image, minimal_seams, num_found, num_workers);
 
