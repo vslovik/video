@@ -115,21 +115,21 @@ void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
 }
 
 void shrink_image(Mat& image, Size out_size, int num_workers = 1){
-	std::cout << "cols: " << image.cols << std::endl;
-	std::cout << "--------------------" << std::endl;
+//	std::cout << "cols: " << image.cols << std::endl;
+//	std::cout << "--------------------" << std::endl;
     while(image.cols > out_size.width){
         retarget_frame(image, 'v', num_workers);
-	    std::cout << "cols: " << image.cols << std::endl;
+//	    std::cout << "cols: " << image.cols << std::endl;
     }
 
 	std::swap(s->v_seams, s->prev_frame_v_seams);
 	s->v_seams_found = 0;
 
-	std::cout << "rows: " << image.rows << std::endl;
-	std::cout << "--------------------" << std::endl;
+//	std::cout << "rows: " << image.rows << std::endl;
+//	std::cout << "--------------------" << std::endl;
 	while(image.rows > out_size.height){
         retarget_frame(image, 'h', num_workers);
-		std::cout << "rows: " << image.rows << std::endl;
+//		std::cout << "rows: " << image.rows << std::endl;
     }
 
 	std::swap(s->h_seams, s->prev_frame_h_seams);
