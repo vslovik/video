@@ -180,6 +180,8 @@ void process_video(std::string source, int ver, int hor, int num_workers = 1)
 
 	Mat image;
 
+	int sum = 0;
+	double avg;
     for(int i = 0; i < s->numFrames; ++i) {
 
         inputVideo >> image;
@@ -197,7 +199,9 @@ void process_video(std::string source, int ver, int hor, int num_workers = 1)
 //      imshow("mainWin", image);
 //      waitKey(5000);
 
-	    std::cout << i << "/" << s->numFrames << " " << ff::ffTime(ff::GET_TIME) << " ms\n" << " " << std::endl;
+	    sum += ff::ffTime(ff::GET_TIME);
+	    avg = (float) sum / (float) (i + 1);
+	    std::cout << i << "/" << s->numFrames << " " << ff::ffTime(ff::GET_TIME) << " ms" << "avg: " << avg << "\n" << std::endl;
         outputVideo << image;
     }
 
