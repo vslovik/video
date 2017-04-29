@@ -75,7 +75,6 @@ void print_seams(int *seams, int W, int H) {
 	}
 }
 
-
 void advance_seams(uchar *row, int r, int W, int H, int *seams, int *traces, int *seam_energies, int *seam_spans, int c) {
 	if (r > 0) {
 		if (traces[3 * W + c] < W) {
@@ -110,6 +109,39 @@ void advance_seams(uchar *row, int r, int W, int H, int *seams, int *traces, int
 	}
 }
 
+void resolve_seams_conflicts(uchar *row, int r, int W, int H, int *seams, int *traces, int *seam_energies, int *seam_spans, int c) {
+	int seam_index;
+	int energy;
+	int min_energy = max_int;
+	int min_span = W + 1;
+	int best_seam_index = W;
+	for (int i = 0; i < 3; i++) {
+		if (traces[i * W + c] == W) {
+			continue;
+		}
+		seam_index = traces[i * W + c];
+		energy = seam_energies[seam_index];
+		int span = seam_spans[seam_index];
+		if (min_energy > span) {
+			min_energy = energy;
+			best_seam_index = seam_index;
+		} else if (min_span > span) {
+			min_span = span;
+			best_seam_index = seam_index;
+		}
+	}
+	for (int i = 0; i < 3; i++) {
+		if (traces[i * W + c] == W) {
+			continue;
+		}
+		seam_index = traces[i * W + c];
+		if (seam_index != best_seam_index) {
+			seams[r * W + seam_index] = W;
+		}
+	}
+	traces[3 * W + c] = best_seam_index;
+};
+
 int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 	int H = image.rows;
 	int W = image.cols;
@@ -143,182 +175,50 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 		std::swap(row, next_row);
 
+		if (par) {
+			pf.parallel_for(0L, W, [row, r, W, H, &seams, &traces, &seam_energies, &seam_spans](int c) {
+				advance_seams(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
+			});
+		} else {
+			for (unsigned int c = 0; c < W; c++) {
+				advance_seams(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
+			};
+		}
+
+		for (unsigned int c = 0; c < W; c++) {
+			traces[3 * W + c] = W;
+		}
+
+		if (par) {
+			pf.parallel_for(0L, W, [row, r, W, H, &seams, &traces, &seam_energies, &seam_spans](int c) {
+				resolve_seams_conflicts(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
+			});
+		} else {
+			for (unsigned int c = 0; c < W; c++) {
+				resolve_seams_conflicts(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
+			};
+		}
+
+		// clean traces rows
+		for (unsigned int c = 0; c < W; c++) {
+			for (int i = 0; i < 3; i++) {
+				traces[i * W + c] = W;
+			}
+		};
+
 		if(par) {
 
-			// Advance seams
-			pf.parallel_for(0L, W, [row, r, W, H, &seams, &traces, &seam_energies, &seam_spans](int c) {
-				advance_seams(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
-//				if (r > 0) {
-//					if (traces[3 * W + c] < W) {
-//						int seam_index = traces[3 * W + c]; // take seam
-//						int sc = seams[(r - 1) * W + seam_index]; // take seam position in prev row
-//						if (sc == c) { // if seam have not been discarded before
-//							uchar left = c > 0 ? row[c - 1] : max_uchar;
-//							uchar right = c < W - 1 ? row[c + 1] : max_uchar;
-//							uchar middle = row[c];
-//							uchar m = std::min({left, middle, right});
-//
-//							if (m == left) {
-//								seams[r * W + seam_index] = c - 1;
-//								traces[c - 1] = seam_index;
-//							} else if (m == right) {
-//								seams[r * W + seam_index] = c + 1;
-//								traces[2 * W + c + 1] = seam_index;
-//							} else {
-//								seams[r * W + seam_index] = c;
-//								traces[W + c] = seam_index;
-//							}
-//							seam_spans[seam_index] = cv::max(seam_spans[seam_index],
-//							                                 abs(seams[seam_index] - seams[r * W + seam_index]));
-//							seam_energies[seam_index] = seam_energies[seam_index] + m;
-//						}
-//					}
-//				} else {
-//					seams[r * W + c] = c;
-//					traces[W + c] = c;
-//					seam_spans[c] = 0;
-//					seam_energies[c] = 0;
-//				}
-			});
-
+			int survived_seams = 0;
 			for (unsigned int c = 0; c < W; c++) {
-				traces[3 * W + c] = W;
+				if (traces[3 * W + c] < W) {
+					survived_seams++;
+				}
 			}
 
-			// Resolve seams conflicts
-			pf.parallel_for(0L, W, [row, r, W, H, &seams, &traces, &seam_energies, &seam_spans](int c) {
-				int seam_index;
-				int energy;
-				int min_energy = max_int;
-				int min_span = W + 1;
-				int best_seam_index = W;
-				for (int i = 0; i < 3; i++) {
-					if (traces[i * W + c] == W) {
-						continue;
-					}
-					seam_index = traces[i * W + c];
-					energy = seam_energies[seam_index];
-					int span = seam_spans[seam_index];
-					if (min_energy > span) {
-						min_energy = energy;
-						best_seam_index = seam_index;
-					} else if (min_span > span) {
-						min_span = span;
-						best_seam_index = seam_index;
-					}
-				}
-				for (int i = 0; i < 3; i++) {
-					if (traces[i * W + c] == W) {
-						continue;
-					}
-					seam_index = traces[i * W + c];
-					if (seam_index != best_seam_index) {
-						seams[r * W + seam_index] = W;
-					}
-				}
-				traces[3 * W + c] = best_seam_index;
-			});
-
-			// clean traces rows
-			for (unsigned int c = 0; c < W; c++) {
-				for (int i = 0; i < 3; i++) {
-					traces[i * W + c] = W;
-				}
-			};
-		} else {
-			// Advance seams
-			for (unsigned int c = 0; c < W; c++) {
-				advance_seams(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
-//				if(r > 0) {
-//					if(traces[3 * W + c] < W) {
-//						int seam_index = traces[3 * W + c]; // take seam
-//						int sc = seams[(r - 1) * W + seam_index]; // take seam position in prev row
-//						if (sc == c) { // if seam have not been discarded before
-//							uchar left = c > 0 ? row[c - 1] : max_uchar;
-//							uchar right = c < W - 1 ? row[c + 1] : max_uchar;
-//							uchar middle = row[c];
-//							uchar m = std::min({left, middle, right});
-//
-//							if (m == left) {
-//								seams[r * W + seam_index] = c - 1;
-//								traces[c - 1] = seam_index;
-//							} else if (m == right) {
-//								seams[r * W + seam_index] = c + 1;
-//								traces[2 * W + c + 1] = seam_index;
-//							} else {
-//								seams[r * W + seam_index] = c;
-//								traces[W + c] = seam_index;
-//							}
-//							seam_spans[seam_index] = cv::max(seam_spans[seam_index],
-//							                                 abs(seams[seam_index] - seams[r * W + seam_index]));
-//							seam_energies[seam_index] = seam_energies[seam_index] + m;
-//						}
-//					}
-//				} else {
-//					seams[r * W + c] = c;
-//					traces[W + c] = c;
-//					seam_spans[c] = 0;
-//					seam_energies[c] = 0;
-//				}
-			};
-
-			for (unsigned int c = 0; c < W; c++) {
-				traces[3 * W + c] = W;
-			};
-
-			// Resolve seams conflicts
-			for (unsigned int c = 0; c < W; c++) {
-				int seam_index;
-				int energy;
-				int min_energy = max_int;
-				int min_span = W + 1;
-				int best_seam_index = W;
-				for (int i = 0; i < 3; i++) {
-					if (traces[i * W + c] == W) {
-						continue;
-					}
-					seam_index = traces[i * W + c];
-					energy = seam_energies[seam_index];
-					int span = seam_spans[seam_index];
-					if (min_energy > span) {
-						min_energy = energy;
-						best_seam_index = seam_index;
-					} else if (min_span > span) {
-						min_span = span;
-						best_seam_index = seam_index;
-					}
-				}
-				for (int i = 0; i < 3; i++) {
-					if (traces[i * W + c] == W) {
-						continue;
-					}
-					seam_index = traces[i * W + c];
-					if(seam_index != best_seam_index) {
-						seams[r*W + seam_index] = W;
-					}
-				}
-				traces[3 * W + c] = best_seam_index;
-			};
-
-			// clean traces rows
-			for (unsigned int c = 0; c < W; c++) {
-				for (int i = 0; i < 3; i++) {
-					traces[i * W + c] = W;
-				}
-			};
-		}
-
-		int cou = 0;
-		for (unsigned int c = 0; c < W; c++) {
-
-			if (traces[3 * W + c] < W) {
-				cou++;
+			if (survived_seams < W / 2) {
+				par = false;
+				std::cout << "r: " << r << std::endl;
 			}
-		}
-
-		if(cou < 320 && par) {
-			par = false;
-			std::cout << "r: " << r << std::endl;
 		}
 
 	}
