@@ -186,9 +186,7 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 			// clean traces rows
 			pf.parallel_for(0L, W, [W, &traces](int c) {
 				for (int i = 0; i < 3; i++) {
-					if (traces[i * W + c] < W) {
-						traces[i * W + c] = W;
-					}
+					traces[i * W + c] = W;
 				}
 			});
 		} else {
@@ -268,9 +266,7 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 			// clean traces rows
 			for (unsigned int c = 0; c < W; c++) {
 				for (int i = 0; i < 3; i++) {
-					if (traces[i * W + c] < W) {
-						traces[i * W + c] = W;
-					}
+					traces[i * W + c] = W;
 				}
 			};
 		}
