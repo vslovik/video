@@ -118,7 +118,7 @@ void shrink_image(Mat& image, Size out_size, int num_workers = 1){
 //	std::cout << "cols: " << image.cols << std::endl;
 //	std::cout << "--------------------" << std::endl;
 //    while(image.cols > out_size.width){
-//        retarget_frame(image, 'v', num_workers);
+        retarget_frame(image, 'v', num_workers);
 //	    std::cout << "cols: " << image.cols << std::endl;
 //    }
 
