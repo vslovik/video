@@ -87,9 +87,9 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 	int *seam_energies = new int[W];
 
 	ff::ParallelFor pf(num_workers, false);
-	pf.parallel_for(0L, 4*W, [W, &traces](int i) {
+	for (unsigned int i = 0; i < 4*W; i++) {
 		traces[i] = W;
-	});
+	};
 
 	bool par = true;
 
@@ -145,9 +145,9 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 				}
 			});
 
-			pf.parallel_for(0L, W, [W, &traces](int c) {
+			for (unsigned int c = 0; c < W; c++) {
 				traces[3 * W + c] = W;
-			});
+			}
 
 			// Resolve seams conflicts
 			pf.parallel_for(0L, W, [row, r, W, H, &seams, &traces, &seam_energies, &seam_spans](int c) {
@@ -184,11 +184,11 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 			});
 
 			// clean traces rows
-			pf.parallel_for(0L, W, [W, &traces](int c) {
+			for (unsigned int c = 0; c < W; c++) {
 				for (int i = 0; i < 3; i++) {
 					traces[i * W + c] = W;
 				}
-			});
+			};
 		} else {
 			// Advance seams
 			for (unsigned int c = 0; c < W; c++) {
@@ -225,9 +225,9 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 				}
 			};
 
-			pf.parallel_for(0L, W, [W, &traces](int c) {
+			for (unsigned int c = 0; c < W; c++) {
 				traces[3 * W + c] = W;
-			});
+			};
 
 			// Resolve seams conflicts
 			for (unsigned int c = 0; c < W; c++) {
@@ -264,11 +264,11 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 			};
 
 			// clean traces rows
-			pf.parallel_for(0L, W, [W, &traces](int c) {
+			for (unsigned int c = 0; c < W; c++) {
 				for (int i = 0; i < 3; i++) {
 					traces[i * W + c] = W;
 				}
-			});
+			};
 		}
 
 		int cou = 0;
@@ -321,7 +321,6 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	delete[] final_points;
 	delete[] seams;
-
 
 	return minimal_seams;
 }
