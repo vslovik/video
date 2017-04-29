@@ -67,8 +67,8 @@ void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
     Mat eimage;
     energy_function(image, eimage, num_workers);
 
-//	int* minimal_seams;
-//	int num_found;
+	int* minimal_seams;
+	int num_found;
 //	if (orientation == 'v') {
 
 //		if (!s->firstFrame) {
@@ -76,7 +76,9 @@ void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
 //		}
 
 //		num_found = s->hor - s->v_seams_found; // max num of seams to find
-//		minimal_seams = find_seams(eimage, num_found, num_workers);
+		num_found = 100;
+		minimal_seams = find_seams(eimage, num_found, num_workers);
+		std::cout << "num_found: " << num_found << std::endl;
 //		remove_pixels(image, minimal_seams, num_found, num_workers);
 
 //		for (int r = 0; r < H; r++) {
