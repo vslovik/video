@@ -62,14 +62,14 @@ void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
 		int flag = CW;
 		rot90(image, flag);
 	}
-    int H = image.rows, W = image.cols;
+//    int H = image.rows, W = image.cols;
 
     Mat eimage;
     energy_function(image, eimage, num_workers);
 
-	int* minimal_seams;
-	int num_found;
-	if (orientation == 'v') {
+//	int* minimal_seams;
+//	int num_found;
+//	if (orientation == 'v') {
 
 //		if (!s->firstFrame) {
 //			coherence_function(eimage, s->prev_frame_v_seams, s->hor, num_workers);
@@ -87,7 +87,7 @@ void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
 //
 //		s->v_seams_found += num_found;
 
-	} else {
+//	} else {
 
 //		if (!s->firstFrame) {
 //			coherence_function(eimage, s->prev_frame_h_seams, s->ver, num_workers);
@@ -104,7 +104,7 @@ void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
 //		}
 //
 //		s->h_seams_found += num_found;
-	}
+//	}
 
 //	delete[] minimal_seams;
 
@@ -118,7 +118,7 @@ void shrink_image(Mat& image, Size out_size, int num_workers = 1){
 //	std::cout << "cols: " << image.cols << std::endl;
 //	std::cout << "--------------------" << std::endl;
 //    while(image.cols > out_size.width){
-        retarget_frame(image, 'v', num_workers);
+//        retarget_frame(image, 'v', num_workers);
 //	    std::cout << "cols: " << image.cols << std::endl;
 //    }
 
@@ -201,7 +201,7 @@ void process_video(std::string source, int ver, int hor, int num_workers = 1)
 
 	    sum += ff::ffTime(ff::GET_TIME);
 	    avg = (float) sum / (float) (i + 1);
-	    std::cout << i << "/" << s->numFrames << " " << ff::ffTime(ff::GET_TIME) << " ms" << "avg: " << avg << "\n" << std::endl;
+	    std::cout << i << "/" << s->numFrames << " " << ff::ffTime(ff::GET_TIME) << " ms " << "avg: " << avg << "\n" << std::endl;
         outputVideo << image;
     }
 
