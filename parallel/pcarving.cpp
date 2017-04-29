@@ -333,16 +333,16 @@ void realTime(Mat& image, int num_workers){
 //
 //		Mat image = imread(argv[1], IMREAD_COLOR);
 //
-////		realTime(image, num_workers);
+//		realTime(image, num_workers);
 //
-//		ff::ffTime(ff::START_TIME);
-//
-//		remove_seams(image, 'v', num_workers);
-//
-//		ff::ffTime(ff::STOP_TIME);
-//
-//		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
-//		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+////		ff::ffTime(ff::START_TIME);
+////
+////		remove_seams(image, 'v', num_workers);
+////
+////		ff::ffTime(ff::STOP_TIME);
+////
+////		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
+////		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
 //
 //	} catch(std::string e){
 //		std::cout << e << std::endl;
