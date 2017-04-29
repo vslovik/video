@@ -160,12 +160,11 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	bool par = true;
 
-	for(int r = 0; r < 6; r++){
-
-		ff::ffTime(ff::START_TIME);
+	for(int r = 0; r < H; r++){
 
 		// Calculate row values
-		pf.parallel_for(0L, W, [&next_row, row, r, W, image](int c) {
+		//pf.parallel_for(0L, W, [&next_row, row, r, W, image](int c) {
+		for (unsigned int c = 0; c < W; c++) {
 			uchar next = image.at<uchar>(r,c);
 			if(r > 0) {
 				uchar left = c > 0 ? row[c - 1] : max_uchar;
@@ -173,14 +172,9 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 				next += std::min({left, row[c], right});
 			}
 			next_row[c] = next;
-		});
+		}
 
 		std::swap(row, next_row);
-
-		ff::ffTime(ff::STOP_TIME);
-		std::cout << "row: " << ff::ffTime(ff::GET_TIME) << " ms \n" << std::endl;
-
-		ff::ffTime(ff::START_TIME);
 
 		if (par) {
 			pf.parallel_for(0L, W, [row, r, W, H, &seams, &traces, &seam_energies, &seam_spans](int c) {
@@ -212,9 +206,6 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 				traces[i * W + c] = W;
 			}
 		};
-
-		ff::ffTime(ff::STOP_TIME);
-		std::cout <<  "seams: " << ff::ffTime(ff::GET_TIME) << " ms \n" << std::endl;
 
 		if(par) {
 
