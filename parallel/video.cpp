@@ -75,9 +75,9 @@ void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
 //			coherence_function(eimage, s->prev_frame_v_seams, s->hor, num_workers);
 //		}
 
-		num_found = s->hor - s->v_seams_found; // max num of seams to find
-		minimal_seams = find_seams(eimage, num_found, num_workers);
-		remove_pixels(image, minimal_seams, num_found, num_workers);
+//		num_found = s->hor - s->v_seams_found; // max num of seams to find
+//		minimal_seams = find_seams(eimage, num_found, num_workers);
+//		remove_pixels(image, minimal_seams, num_found, num_workers);
 
 //		for (int r = 0; r < H; r++) {
 //			for (int i = 0; i < num_found; i++) {
@@ -93,9 +93,9 @@ void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
 //			coherence_function(eimage, s->prev_frame_h_seams, s->ver, num_workers);
 //		}
 
-		num_found = s->ver - s->h_seams_found;
-		minimal_seams = find_seams(eimage, num_found, num_workers);
-		remove_pixels(image, minimal_seams, num_found, num_workers);
+//		num_found = s->ver - s->h_seams_found;
+//		minimal_seams = find_seams(eimage, num_found, num_workers);
+//		remove_pixels(image, minimal_seams, num_found, num_workers);
 
 //		for (int r = 0; r < H; r++) {
 //			for (int i = 0; i < num_found; i++) {
@@ -106,7 +106,7 @@ void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
 //		s->h_seams_found += num_found;
 	}
 
-	delete[] minimal_seams;
+//	delete[] minimal_seams;
 
 	if (orientation == 'h') {
 		int flag = CCW;
@@ -117,23 +117,23 @@ void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
 void shrink_image(Mat& image, Size out_size, int num_workers = 1){
 //	std::cout << "cols: " << image.cols << std::endl;
 //	std::cout << "--------------------" << std::endl;
-    while(image.cols > out_size.width){
+//    while(image.cols > out_size.width){
         retarget_frame(image, 'v', num_workers);
 //	    std::cout << "cols: " << image.cols << std::endl;
-    }
+//    }
 
 	std::swap(s->v_seams, s->prev_frame_v_seams);
-	s->v_seams_found = 0;
-
-//	std::cout << "rows: " << image.rows << std::endl;
-//	std::cout << "--------------------" << std::endl;
-	while(image.rows > out_size.height){
-        retarget_frame(image, 'h', num_workers);
-//		std::cout << "rows: " << image.rows << std::endl;
-    }
-
-	std::swap(s->h_seams, s->prev_frame_h_seams);
-	s->h_seams_found = 0;
+//	s->v_seams_found = 0;
+//
+////	std::cout << "rows: " << image.rows << std::endl;
+////	std::cout << "--------------------" << std::endl;
+////	while(image.rows > out_size.height){
+//        retarget_frame(image, 'h', num_workers);
+////		std::cout << "rows: " << image.rows << std::endl;
+////    }
+//
+//	std::swap(s->h_seams, s->prev_frame_h_seams);
+//	s->h_seams_found = 0;
 }
 
 void process_video(std::string source, int ver, int hor, int num_workers = 1)
