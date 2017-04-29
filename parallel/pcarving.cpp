@@ -283,7 +283,7 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 			}
 		}
 
-		if(cou < 100 && par) {
+		if(cou < 200 && par) {
 			par = false;
 			std::cout << "r: " << r << std::endl;
 		}
