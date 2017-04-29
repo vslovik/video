@@ -278,7 +278,7 @@ void remove_seams(Mat& image, char orientation = 'v', int num_workers = 1){
 	Mat eimage;
 	energy_function(image, eimage, num_workers);
 
-	int num_found = 6;
+	int num_found = 10;
 	int* minimal_seams = find_seams(eimage, num_found, num_workers);
 
 	std::cout << "num_found: " << num_found << std::endl;
@@ -333,17 +333,16 @@ void realTime(Mat& image, int num_workers){
 //
 //		Mat image = imread(argv[1], IMREAD_COLOR);
 //
-//		realTime(image, num_workers);
+////		realTime(image, num_workers);
 //
-////		ff::ffTime(ff::START_TIME);
-////
-////		for(int k = 0; k < 100; k++)
-////			remove_seam(image, 'v', num_workers);
-////
-////		ff::ffTime(ff::STOP_TIME);
-////
-////		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
-////		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+//		ff::ffTime(ff::START_TIME);
+//
+//		remove_seams(image, 'v', num_workers);
+//
+//		ff::ffTime(ff::STOP_TIME);
+//
+//		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
+//		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
 //
 //	} catch(std::string e){
 //		std::cout << e << std::endl;
