@@ -79,10 +79,10 @@ void coherence(cv::Mat &image, int* seams, int num_seams, int num_workers) {
 	uchar * src = new uchar[rows * cols];
 
 	ff::ParallelFor pf(num_workers, false);
-	pf.parallel_for(0L, rows*cols, [cols, &src, &image](int i) {
-		int r = i / cols;
-		int c = i % cols;
-		src[r * cols + c] = image.at<uchar>(r, c);
+	pf.parallel_for(0L, rows, [cols, &src, &image](int r) {
+		for(int c = 1; c < cols - 1; c++) {
+			src[r * cols + c] = image.at<uchar>(r, c);
+		}
 	});
 
 	int Il[cols], Ir[cols];

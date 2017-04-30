@@ -57,7 +57,7 @@ struct State {
 
 State* s;
 
-void retarget_frame(Mat& image, int size, char orientation = 'v', int num_workers = 1){
+void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_workers = 1){
 	if (orientation == 'h') {
 		int flag = CW;
 		rot90(image, flag);
@@ -71,11 +71,22 @@ void retarget_frame(Mat& image, int size, char orientation = 'v', int num_worker
 	int num_found;
 	if (orientation == 'v') {
 
+		num_found = cv::min(s->hor - s->v_seams_found, limit); // max num of seams to find
+
 		if (!s->firstFrame) {
-			coherence_function(eimage, s->prev_frame_v_seams, s->hor, num_workers);
+			if(limit != s->hor) {
+				int seams[H*limit];
+				for (int i = 0; i < num_found; i++) {
+					for (int r = 0; r < H; r++) {
+						seams[r * limit + i] = s->prev_frame_v_seams[r * s->hor  + s->v_seams_found + i];
+					}
+				}
+				coherence_function(eimage, seams, num_found, num_workers);
+			} else {
+				coherence_function(eimage, s->prev_frame_v_seams, s->hor, num_workers);
+			}
 		}
 
-		num_found = s->hor - s->v_seams_found; // max num of seams to find
 		minimal_seams = find_seams(eimage, num_found, num_workers);
 //		std::cout << "num_found: " << num_found << std::endl;
 		remove_pixels(image, minimal_seams, num_found, num_workers);
@@ -90,11 +101,22 @@ void retarget_frame(Mat& image, int size, char orientation = 'v', int num_worker
 
 	} else {
 
+		num_found = cv::min(s->ver - s->h_seams_found, limit);
+
 		if (!s->firstFrame) {
-			coherence_function(eimage, s->prev_frame_h_seams, s->ver, num_workers);
+			if(limit != s->ver) {
+				int seams[H*limit];
+				for (int i = 0; i < num_found; i++) {
+					for (int r = 0; r < H; r++) {
+						seams[r * limit + i] = s->prev_frame_h_seams[r * s->ver  + s->h_seams_found + i];
+					}
+				}
+				coherence_function(eimage, seams, num_found, num_workers);
+			} else {
+				coherence_function(eimage, s->prev_frame_h_seams, s->ver, num_workers);
+			}
 		}
 
-		num_found = s->ver - s->h_seams_found;
 		minimal_seams = find_seams(eimage, num_found, num_workers);
 //		std::cout << "num_found: " << num_found << std::endl;
 		remove_pixels(image, minimal_seams, num_found, num_workers);
@@ -119,18 +141,25 @@ void retarget_frame(Mat& image, int size, char orientation = 'v', int num_worker
 void shrink_image(Mat &image, Size out_size, int num_workers = 1) {
 	s->v_seams_found = 0;
 	s->h_seams_found = 0;
+	int limit;
 	if (image.cols > out_size.width) {
-
+		if(s->hor > 20)
+			limit = 10;
+		else
+			limit = s->hor;
 		while (image.cols > out_size.width) {
-			retarget_frame(image, out_size.width, 'v', num_workers);
+			retarget_frame(image, limit, 'v', num_workers);
 		}
-
 		std::swap(s->v_seams, s->prev_frame_v_seams);
 	}
 
 	if (image.rows > out_size.height) {
 		while (image.rows > out_size.height) {
-			retarget_frame(image, out_size.height, 'h', num_workers);
+			if(s->ver > 20)
+				limit = 10;
+			else
+				limit = s->hor;
+			retarget_frame(image, limit, 'h', num_workers);
 		}
 
 		std::swap(s->h_seams, s->prev_frame_h_seams);
