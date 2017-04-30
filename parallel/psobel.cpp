@@ -41,15 +41,14 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 	uchar * dst = new uchar[rows * cols];
 
 	ff::ParallelFor pf(num_workers, false);
-	pf.parallel_for(0L, rows*cols, [cols, &src, &image](int i) {
-		int r = i / cols;
-		int c = i % cols;
-
-		cv::Vec3b values = image.at<cv::Vec3b>(r, c);
-		int val = (int) (R*values[0] + G*values[1] + B*values[2]);
-		if(val > 255)
-			val = 255;
-		src[r * cols + c] = (uchar) val;
+	pf.parallel_for(0L, rows, [cols, &src, &image](int r) {
+		for(int c = 1; c < cols - 1; c++) {
+			cv::Vec3b values = image.at<cv::Vec3b>(r, c);
+			int val = (int) (R * values[0] + G * values[1] + B * values[2]);
+			if (val > 255)
+				val = 255;
+			src[r * cols + c] = (uchar) val;
+		}
 	});
 
     pf.parallel_for(1, rows - 1,[src, cols, &dst](const long y) {
