@@ -146,12 +146,12 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 	int H = image.rows;
 	int W = image.cols;
 
-	int *seams = new int[image.cols * image.rows];
-	int *traces = new int[4*image.cols];
+	int seams[image.cols * image.rows];
+	int traces[4*image.cols];
 	uchar *row = new uchar[W];
 	uchar *next_row = new uchar[W];
-	int *seam_spans = new int[W];
-	int *seam_energies = new int[W];
+	int seam_spans[W];
+	int seam_energies[W];
 
 	ff::ParallelFor pf(num_workers, false);
 	for (unsigned int i = 0; i < 4*W; i++) {
@@ -241,23 +241,20 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	int* minimal_seams = new int[H*num_found];
 	for (int i = 0; i < num_found; i++) {
-		pf.parallel_for(0L, H, [i, num_found, W, final_points, seams, &minimal_seams](int r) {
+		pf.parallel_for(0L, H, [i, num_found, W, final_points, &seams, &minimal_seams](int r) {
 			int seam_index = final_points[i].x;
 			minimal_seams[r * num_found + i] = seams[r * W + seam_index];
 		});
 	}
 
-	seams = minimal_seams;
-	
-	delete final_points;
+
+	delete[] final_points;
 	delete[] points;
 
 	delete[] row;
 	delete[] next_row;
-	delete[] seam_spans;
-	delete[] seam_energies;
 
-	return seams;
+	return minimal_seams;
 }
 
 void remove_pixels(Mat& image, int *seams, int count, int num_workers = 1){
