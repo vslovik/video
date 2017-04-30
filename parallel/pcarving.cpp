@@ -267,7 +267,8 @@ void remove_pixels(Mat& image, int *seams, int count, int num_workers = 1){
 	Mat output(image.rows, image.cols - count, CV_8UC3);
 
 	ff::ParallelFor pf(num_workers, false);
-	pf.parallel_for(0L, H, [W, &image, seams, count, &output](int r) {
+	//pf.parallel_for(0L, H, [W, &image, seams, count, &output](int r) {
+	for(int r = 0; r < W - count; r++) {
 		int* holes = new int[count];
 		for(int k = 0; k < count; k++) {
 			holes[k] = seams[r * count + k];
@@ -286,7 +287,7 @@ void remove_pixels(Mat& image, int *seams, int count, int num_workers = 1){
 				output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c + i);
 			}
 		}
-	});
+	}
 
 	image = output;
 }
