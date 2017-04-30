@@ -71,46 +71,44 @@ void retarget_frame(Mat& image, int size, char orientation = 'v', int num_worker
 	int num_found;
 	if (orientation == 'v') {
 
-//		if (!s->firstFrame) {
-//			coherence_function(eimage, s->prev_frame_v_seams, s->hor, num_workers);
-//		}
+		if (!s->firstFrame) {
+			coherence_function(eimage, s->prev_frame_v_seams, s->hor, num_workers);
+		}
 
-		//num_found = s->hor - s->v_seams_found; // max num of seams to find
-
-		num_found = image.cols - size;
+		num_found = s->hor - s->v_seams_found; // max num of seams to find
 		minimal_seams = find_seams(eimage, num_found, num_workers);
 //		std::cout << "num_found: " << num_found << std::endl;
 		remove_pixels(image, minimal_seams, num_found, num_workers);
 
-//		for (int r = 0; r < H; r++) {
-//			for (int i = 0; i < num_found; i++) {
-//				s->v_seams[r * s->hor + s->v_seams_found + i] = minimal_seams[r * num_found + i];
-//			}
-//		}
-//
-//		s->v_seams_found += num_found;
+		for (int r = 0; r < H; r++) {
+			for (int i = 0; i < num_found; i++) {
+				s->v_seams[r * s->hor + s->v_seams_found + i] = minimal_seams[r * num_found + i];
+			}
+		}
+
+		s->v_seams_found += num_found;
 
 	} else {
 
-//		if (!s->firstFrame) {
-//			coherence_function(eimage, s->prev_frame_h_seams, s->ver, num_workers);
-//		}
+		if (!s->firstFrame) {
+			coherence_function(eimage, s->prev_frame_h_seams, s->ver, num_workers);
+		}
 
-		//num_found = s->ver - s->h_seams_found;
-		num_found = image.rows - size;
+		num_found = s->ver - s->h_seams_found;
 		minimal_seams = find_seams(eimage, num_found, num_workers);
+//		std::cout << "num_found: " << num_found << std::endl;
 		remove_pixels(image, minimal_seams, num_found, num_workers);
 
-//		for (int r = 0; r < H; r++) {
-//			for (int i = 0; i < num_found; i++) {
-//				s->h_seams[r * s->ver + s->h_seams_found + i] = minimal_seams[r * num_found + i];
-//			}
-//		}
-//
-//		s->h_seams_found += num_found;
+		for (int r = 0; r < H; r++) {
+			for (int i = 0; i < num_found; i++) {
+				s->h_seams[r * s->ver + s->h_seams_found + i] = minimal_seams[r * num_found + i];
+			}
+		}
+
+		s->h_seams_found += num_found;
 	}
 
-//	delete[] minimal_seams;
+	delete[] minimal_seams;
 
 	if (orientation == 'h') {
 		int flag = CCW;
@@ -118,26 +116,25 @@ void retarget_frame(Mat& image, int size, char orientation = 'v', int num_worker
 	}
 }
 
-void shrink_image(Mat& image, Size out_size, int num_workers = 1){
-//	std::cout << "cols: " << image.cols << std::endl;
-//	std::cout << "--------------------" << std::endl;
-    while(image.cols > out_size.width){
-        retarget_frame(image, out_size.width, 'v', num_workers);
-//	    std::cout << "cols: " << image.cols << std::endl;
-    }
+void shrink_image(Mat &image, Size out_size, int num_workers = 1) {
+	s->v_seams_found = 0;
+	s->h_seams_found = 0;
+	if (image.cols > out_size.width) {
 
-//	std::swap(s->v_seams, s->prev_frame_v_seams);
-//	s->v_seams_found = 0;
+		while (image.cols > out_size.width) {
+			retarget_frame(image, out_size.width, 'v', num_workers);
+		}
 
-//	std::cout << "rows: " << image.rows << std::endl;
-//	std::cout << "--------------------" << std::endl;
-	while(image.rows > out_size.height){
-        retarget_frame(image, out_size.height, 'h', num_workers);
-//		std::cout << "rows: " << image.rows << std::endl;
-    }
+		std::swap(s->v_seams, s->prev_frame_v_seams);
+	}
 
-//	std::swap(s->h_seams, s->prev_frame_h_seams);
-//	s->h_seams_found = 0;
+	if (image.rows > out_size.height) {
+		while (image.rows > out_size.height) {
+			retarget_frame(image, out_size.height, 'h', num_workers);
+		}
+
+		std::swap(s->h_seams, s->prev_frame_h_seams);
+	}
 }
 
 void process_video(std::string source, int ver, int hor, int num_workers = 1)
