@@ -64,11 +64,7 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
         }
     });
 
-	delete[] src;
-
     output = cv::Mat(rows, cols, CV_8U, dst, cv::Mat::AUTO_STEP);
-
-	delete[] dst;
 }
 
 void coherence(cv::Mat &image, int* seams, int num_seams, int num_workers) {
@@ -110,9 +106,5 @@ void coherence(cv::Mat &image, int* seams, int num_seams, int num_workers) {
 	    }
     });
 
-	delete[] src;
-
     image = cv::Mat(rows, cols, CV_8U, src, cv::Mat::AUTO_STEP);
-
-	delete[] dst;
 }

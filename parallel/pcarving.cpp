@@ -224,8 +224,6 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	}
 
-	delete[] row;
-
 	cv::Point *points = new cv::Point[W];
 	int count = 0;
 	for (unsigned int c = 0; c < W; c++) {
@@ -235,27 +233,19 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 		}
 	}
 
-	delete[] traces;
-
-	cv::Point *final_points = new cv::Point[count];
-
+	cv::Point *final_points = new cv::Point[W];
 	memcpy(final_points, points, count * sizeof(cv::Point));
-
-	delete[] points;
 
 	std::sort(final_points,final_points + count, sortByY);
 	num_found = cv::min(num_found, count);
 
 	int* minimal_seams = new int[H*num_found];
-	for(int i = 0; i < num_found; i++) {
+	for (int i = 0; i < num_found; i++) {
 		pf.parallel_for(0L, H, [i, num_found, W, final_points, seams, &minimal_seams](int r) {
 			int seam_index = final_points[i].x;
-			minimal_seams[r*num_found + i] = seams[r*W + seam_index];
+			minimal_seams[r * num_found + i] = seams[r * W + seam_index];
 		});
 	}
-
-	delete[] final_points;
-	delete[] seams;
 
 	return minimal_seams;
 }
@@ -267,16 +257,15 @@ void remove_pixels(Mat& image, int *seams, int count, int num_workers = 1){
 	Mat output(image.rows, image.cols - count, CV_8UC3);
 
 	ff::ParallelFor pf(num_workers, false);
-	//pf.parallel_for(0L, H, [W, &image, seams, count, &output](int r) {
-	for(int r = 0; r < H; r++) {
-		int* holes = new int[count];
-		for(int k = 0; k < count; k++) {
+	pf.parallel_for(0L, H, [W, &image, seams, count, &output](int r) {
+		int *holes = new int[count];
+		for (int k = 0; k < count; k++) {
 			holes[k] = seams[r * count + k];
 		}
 		std::sort(holes, holes + count);
 		int i = 0;
 		int hole = holes[i];
-		for(int c = 0; c < W - count; c++) {
+		for (int c = 0; c < W - count; c++) {
 			if (c + i == hole) {
 				while (c + i == hole && i < count) {
 					i++;
@@ -287,7 +276,7 @@ void remove_pixels(Mat& image, int *seams, int count, int num_workers = 1){
 				output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c + i);
 			}
 		}
-	}
+	});
 
 	image = output;
 }
