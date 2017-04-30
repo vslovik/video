@@ -229,13 +229,10 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 	cv::Point *points = new cv::Point[W];
 	int count = 0;
 	for (unsigned int c = 0; c < W; c++) {
-
-		if (traces[3 * W + c] == W) {
-			continue;
+		if (traces[3 * W + c] < W) {
+			int seam_index = traces[3 * W + c];
+			points[count++] = cv::Point(seam_index, seam_energies[seam_index]);
 		}
-
-		int seam_index = traces[3 * W + c];
-		points[count++] = cv::Point(seam_index, seam_energies[seam_index]);
 	}
 
 	delete[] traces;
@@ -251,10 +248,11 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	int* minimal_seams = new int[H*num_found];
 	for(int i = 0; i < num_found; i++) {
-		pf.parallel_for(0L, H, [i, num_found, W, final_points, seams, &minimal_seams](int r) {
+		//pf.parallel_for(0L, H, [i, num_found, W, final_points, seams, &minimal_seams](int r) {
+		for(int r = 0; r < H; r++) {
 			int seam_index = final_points[i].x;
 			minimal_seams[r*num_found + i] = seams[r*W + seam_index];
-		});
+		}
 	}
 
 	delete[] final_points;
