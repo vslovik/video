@@ -248,11 +248,10 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	int* minimal_seams = new int[H*num_found];
 	for(int i = 0; i < num_found; i++) {
-		//pf.parallel_for(0L, H, [i, num_found, W, final_points, seams, &minimal_seams](int r) {
-		for(int r = 0; r < H; r++) {
+		pf.parallel_for(0L, H, [i, num_found, W, final_points, seams, &minimal_seams](int r) {
 			int seam_index = final_points[i].x;
 			minimal_seams[r*num_found + i] = seams[r*W + seam_index];
-		}
+		});
 	}
 
 	delete[] final_points;
