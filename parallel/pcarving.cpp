@@ -247,6 +247,14 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 		});
 	}
 
+	delete final_points;
+	delete[] points;
+
+	delete[] row;
+	delete[] next_row;
+	delete[] seam_spans;
+	delete[] seam_energies;
+
 	return minimal_seams;
 }
 
