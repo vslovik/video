@@ -79,7 +79,7 @@ void retarget_frame(Mat& image, char orientation = 'v', int num_workers = 1){
 		num_found = 100;
 		minimal_seams = find_seams(eimage, num_found, num_workers);
 		std::cout << "num_found: " << num_found << std::endl;
-//		remove_pixels(image, minimal_seams, num_found, num_workers);
+		remove_pixels(image, minimal_seams, num_found, num_workers);
 
 //		for (int r = 0; r < H; r++) {
 //			for (int i = 0; i < num_found; i++) {
