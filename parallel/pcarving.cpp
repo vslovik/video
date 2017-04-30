@@ -247,6 +247,8 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 		});
 	}
 
+	seams = minimal_seams;
+	
 	delete final_points;
 	delete[] points;
 
@@ -255,7 +257,7 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 	delete[] seam_spans;
 	delete[] seam_energies;
 
-	return minimal_seams;
+	return seams;
 }
 
 void remove_pixels(Mat& image, int *seams, int count, int num_workers = 1){

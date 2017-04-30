@@ -110,4 +110,7 @@ void coherence(cv::Mat &image, int* seams, int num_seams, int num_workers) {
     });
 
     image = cv::Mat(rows, cols, CV_8U, src, cv::Mat::AUTO_STEP);
+
+	delete[] dst;
+	delete[] src;
 }
