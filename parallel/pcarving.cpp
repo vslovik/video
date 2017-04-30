@@ -218,7 +218,7 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 			if (survived_seams < W / 2) {
 				par = false;
-				std::cout << "r: " << r << std::endl;
+//				std::cout << "r: " << r << std::endl;
 			}
 		}
 
