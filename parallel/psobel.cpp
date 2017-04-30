@@ -52,19 +52,18 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 		src[r * cols + c] = (uchar) val;
 	});
 
-	pf.parallel_for(0, rows*cols, [src, cols, rows, &dst](const long i) {
-		const long r = i / cols;
-		const long c = i % cols;
-		if(r > 0 && c > 0 && r < rows && c < cols) {
-			const long gx = xGradient(src, cols, c, r);
-			const long gy = yGradient(src, cols, c, r);
-			// approximation of sqrt(gx*gx+gy*gy)
-			int sum = abs((int) gx) + abs((int) gy);
-			if (sum > 255) sum = 255;
-			else if (sum < 0) sum = 0;
-			dst[r * cols + c] = (uchar) sum;
-		}
-	});
+    pf.parallel_for(1, rows - 1,[src, cols, &dst](const long y) {
+        for(long x = 1; x < cols - 1; x++){
+            const long gx = xGradient(src, cols, x, y);
+            const long gy = yGradient(src, cols, x, y);
+            // approximation of sqrt(gx*gx+gy*gy)
+            int sum = abs((int)gx) + abs((int)gy);
+            if (sum > 255) sum = 255;
+            else if (sum < 0) sum = 0;
+
+            dst[y*cols+x] = (uchar) sum;
+        }
+    });
 
 	delete[] src;
 
