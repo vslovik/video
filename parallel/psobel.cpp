@@ -95,10 +95,14 @@ void coherence(cv::Mat &image, int* seams, int num_seams, int num_workers) {
 			    Ir[c] = 0;
 		    }
 		    for (int c = seams[r*num_seams + k]; c < cols; c++) {
-			    Il[c] = Il[c - 1] + abs(src[r * cols + c - 1] - src[r * cols + c]);
+			    if(c > 0) {
+				    Il[c] = Il[c - 1] + abs(src[r * cols + c - 1] - src[r * cols + c]);
+			    }
 		    }
 		    for (int c = cv::min(cols - 2, seams[r*num_seams + k]); c >= 0; c--) {
-			    Ir[c] = Ir[c + 1] + abs(src[r * cols + c + 1] - src[r * cols + c]);
+			    if(c < cols - 1) {
+				    Ir[c] = Ir[c + 1] + abs(src[r * cols + c + 1] - src[r * cols + c]);
+			    }
 		    }
 		    for (int c = 1; c < cols; c++) {
 			    sum = Il[c] + Ir[c] + src[r * cols + c];
