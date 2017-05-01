@@ -90,7 +90,7 @@ void coherence(cv::Mat &image, int* seams, int num_seams, int num_workers) {
     pf.parallel_for(0L, rows , [src, cols, &dst, &seams, num_seams, &Il, &Ir](const long r) {
         int sum;
 	    for(int k = 0; k < num_seams; k++) {
-		    for (int c = 0; c < cols - 1; c++) {
+		    for (int c = 0; c < cols; c++) {
 			    Il[c] = 0;
 			    Ir[c] = 0;
 		    }
