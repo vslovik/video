@@ -161,7 +161,7 @@ void shrink_image(Mat &image, Size out_size, int num_workers = 1) {
 			if(s->ver > threshold)
 				limit = limit_param;
 			else
-				limit = s->hor;
+				limit = s->ver;
 			retarget_frame(image, limit, 'h', num_workers);
 		}
 
@@ -222,7 +222,6 @@ void process_video(std::string source, int ver, int hor, int num_workers = 1)
 	    ff::ffTime(ff::START_TIME);
 
         shrink_image(image, out_size, num_workers);
-
 
 	    if (s->firstFrame)
             s->firstFrame = false;
