@@ -11,6 +11,8 @@
 
 #define CW 1;
 #define CCW 0;
+#define THRESHOLD 20;
+#define LIMIT 10;
 
 struct State {
     int ver;
@@ -88,7 +90,6 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 		}
 
 		minimal_seams = find_seams(eimage, num_found, num_workers);
-//		std::cout << "num_found: " << num_found << std::endl;
 		remove_pixels(image, minimal_seams, num_found, num_workers);
 
 		for (int r = 0; r < H; r++) {
@@ -118,7 +119,6 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 		}
 
 		minimal_seams = find_seams(eimage, num_found, num_workers);
-//		std::cout << "num_found: " << num_found << std::endl;
 		remove_pixels(image, minimal_seams, num_found, num_workers);
 
 		for (int r = 0; r < H; r++) {
@@ -141,10 +141,13 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 void shrink_image(Mat &image, Size out_size, int num_workers = 1) {
 	s->v_seams_found = 0;
 	s->h_seams_found = 0;
+
+	int threshold = THRESHOLD;
+	int limit_param = LIMIT;
 	int limit;
 	if (image.cols > out_size.width) {
-		if(s->hor > 20)
-			limit = 10;
+		if(s->hor > threshold)
+			limit = limit_param;
 		else
 			limit = s->hor;
 		while (image.cols > out_size.width) {
@@ -155,8 +158,8 @@ void shrink_image(Mat &image, Size out_size, int num_workers = 1) {
 
 	if (image.rows > out_size.height) {
 		while (image.rows > out_size.height) {
-			if(s->ver > 20)
-				limit = 10;
+			if(s->ver > threshold)
+				limit = limit_param;
 			else
 				limit = s->hor;
 			retarget_frame(image, limit, 'h', num_workers);

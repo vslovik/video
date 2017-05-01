@@ -25,8 +25,8 @@ int main(int argc, char **argv)
 
     const std::string source = argv[1];
 
-	int ver = atoi(argv[2]);
-	int hor = atoi(argv[3]);
+	int hor = atoi(argv[2]);
+	int ver = atoi(argv[3]);
 	int num_workers = atoi(argv[4]);
 
 	if(ver <= 0 && hor <= 0) {

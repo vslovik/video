@@ -7,7 +7,7 @@
 #             the one containing the ff directory).
 
 #FF_ROOT	= $(HOME)/fastflow
-FF_ROOT	= /home/valeriya/project/fastflow-2.1.0
+FF_ROOT	= $(HOME)/project/fastflow-2.1.0
 
 INCS = -I $(FF_ROOT)
 

@@ -218,7 +218,6 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 			if (survived_seams < W / 2) {
 				par = false;
-//				std::cout << "r: " << r << std::endl;
 			}
 		}
 
@@ -309,7 +308,7 @@ void remove_seams(Mat& image, char orientation = 'v', int num_workers = 1){
 	int num_found = 10;
 	int* minimal_seams = find_seams(eimage, num_found, num_workers);
 
-	std::cout << "num_found: " << num_found << std::endl;
+//	std::cout << "num_found: " << num_found << std::endl;
 
 //	for (int r = 0; r < image.rows; r++){
 //		for (int i = 0; i < num_found; i++) {
