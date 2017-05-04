@@ -103,7 +103,7 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 			}
 		}
 
-		while(to_find > 0) {
+		do {
 			ff::ffTime(ff::START_TIME);
 			minimal_seams = find_seams(eimage, num_found, num_workers);
 			ff::ffTime(ff::STOP_TIME);
@@ -120,7 +120,8 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 
 			to_find -= num_found;
 			num_found = to_find;
-		}
+
+		} while(to_find > 0);
 
 		ff::ffTime(ff::START_TIME);
 		remove_pixels(image, s->v_seams, s->v_seams_found, num_workers);
