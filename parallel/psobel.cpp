@@ -66,7 +66,7 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 
     output = cv::Mat(rows, cols, CV_8U, dst, cv::Mat::AUTO_STEP);
 
-	delete[] dst;
+//	delete[] dst;
 	delete[] src;
 }
 

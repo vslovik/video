@@ -77,10 +77,11 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 	metrics[0] += ff::ffTime(ff::GET_TIME);
 
 	int* minimal_seams;
-	int num_found;
+	int to_find, num_found;
 	if (orientation == 'v') {
 
-		num_found = cv::min(s->hor - s->v_seams_found, limit); // max num of seams to find
+		to_find = cv::min(s->hor - s->v_seams_found, limit); // max num of seams to find
+		num_found = to_find;
 
 		if (!s->firstFrame) {
 			if(limit != s->hor) {
@@ -102,23 +103,29 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 			}
 		}
 
-		ff::ffTime(ff::START_TIME);
-		minimal_seams = find_seams(eimage, num_found, num_workers);
-		ff::ffTime(ff::STOP_TIME);
-		metrics[2] += ff::ffTime(ff::GET_TIME);
+		while(to_find > 0) {
+			ff::ffTime(ff::START_TIME);
+			minimal_seams = find_seams(eimage, num_found, num_workers);
+			ff::ffTime(ff::STOP_TIME);
+			metrics[2] += ff::ffTime(ff::GET_TIME);
 
-		ff::ffTime(ff::START_TIME);
-		remove_pixels(image, minimal_seams, num_found, num_workers);
-		ff::ffTime(ff::STOP_TIME);
-		metrics[3] += ff::ffTime(ff::GET_TIME);
-
-		for (int r = 0; r < H; r++) {
-			for (int i = 0; i < num_found; i++) {
-				s->v_seams[r * s->hor + s->v_seams_found + i] = minimal_seams[r * num_found + i];
+			for (int r = 0; r < H; r++) {
+				for (int i = 0; i < num_found; i++) {
+					s->v_seams[r * s->hor + s->v_seams_found + i] = minimal_seams[r * num_found + i];
+					eimage.at<uchar>(r, minimal_seams[r * num_found + i]) = 255;
+				}
 			}
+
+			s->v_seams_found += num_found;
+
+			to_find -= num_found;
+			num_found = to_find;
 		}
 
-		s->v_seams_found += num_found;
+		ff::ffTime(ff::START_TIME);
+		remove_pixels(image, s->v_seams, s->v_seams_found, num_workers);
+		ff::ffTime(ff::STOP_TIME);
+		metrics[3] += ff::ffTime(ff::GET_TIME);
 
 	} else {
 
@@ -162,29 +169,17 @@ void shrink_image(Mat &image, Size out_size, int num_workers = 1) {
 	s->v_seams_found = 0;
 	s->h_seams_found = 0;
 
-	int threshold = THRESHOLD;
-	int limit_param = LIMIT;
-	int limit;
 	if (image.cols > out_size.width) {
-		if(s->hor > threshold)
-			limit = limit_param;
-		else
-			limit = s->hor;
 		while (image.cols > out_size.width) {
-			retarget_frame(image, limit, 'v', num_workers);
+			retarget_frame(image, s->hor, 'v', num_workers);
 		}
 		std::swap(s->v_seams, s->prev_frame_v_seams);
 	}
 
 	if (image.rows > out_size.height) {
 		while (image.rows > out_size.height) {
-			if(s->ver > threshold)
-				limit = limit_param;
-			else
-				limit = s->ver;
-			retarget_frame(image, limit, 'h', num_workers);
+			retarget_frame(image, s->ver, 'h', num_workers);
 		}
-
 		std::swap(s->h_seams, s->prev_frame_h_seams);
 	}
 }
