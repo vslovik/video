@@ -75,16 +75,16 @@ void print_seams(int *seams, int W, int H) {
 	}
 }
 
-void advance_seams(uchar *row, int r, int W, int H, int *seams, int *traces, int *seam_energies, int *seam_spans, int c) {
+void advance_seams(int *row, int r, int W, int H, int *seams, int *traces, int *seam_energies, int *seam_spans, int c) {
 	if (r > 0) {
 		if (traces[3 * W + c] < W) {
 			int seam_index = traces[3 * W + c]; // take seam
 			int sc = seams[(r - 1) * W + seam_index]; // take seam position in prev row
 			if (sc == c) { // if seam have not been discarded before
-				uchar left = c > 0 ? row[c - 1] : max_uchar;
-				uchar right = c < W - 1 ? row[c + 1] : max_uchar;
-				uchar middle = row[c];
-				uchar m = std::min({left, middle, right});
+				int left = c > 0 ? row[c - 1] : max_int;
+				int right = c < W - 1 ? row[c + 1] : max_int;
+				int middle = row[c];
+				int m = std::min({left, middle, right});
 
 				if (m == left) {
 					seams[r * W + seam_index] = c - 1;
@@ -109,7 +109,7 @@ void advance_seams(uchar *row, int r, int W, int H, int *seams, int *traces, int
 	}
 }
 
-void resolve_seams_conflicts(uchar *row, int r, int W, int H, int *seams, int *traces, int *seam_energies, int *seam_spans, int c) {
+void resolve_seams_conflicts(int *row, int r, int W, int H, int *seams, int *traces, int *seam_energies, int *seam_spans, int c) {
 	int seam_index;
 	int energy;
 	int min_energy = max_int;
@@ -148,8 +148,8 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	int seams[image.cols * image.rows];
 	int traces[4*image.cols];
-	uchar *row = new uchar[W];
-	uchar *next_row = new uchar[W];
+	int *row = new int[W];
+	int *next_row = new int[W];
 	int seam_spans[W];
 	int seam_energies[W];
 
@@ -165,10 +165,12 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 		// Calculate row values
 		//pf.parallel_for(0L, W, [&next_row, row, r, W, image](int c) {
 		for (unsigned int c = 0; c < W; c++) {
-			uchar next = image.at<uchar>(r,c);
+			int next = image.at<uchar>(r,c);
+			if(next == 255)
+				next = max_int;
 			if(r > 0) {
-				uchar left = c > 0 ? row[c - 1] : max_uchar;
-				uchar right = c < W - 1 ? row[c + 1] : max_uchar;
+				int left = c > 0 ? row[c - 1] : max_int;
+				int right = c < W - 1 ? row[c + 1] : max_int;
 				next += std::min({left, row[c], right});
 			}
 			next_row[c] = next;
@@ -268,7 +270,12 @@ void remove_pixels(Mat& image, int *seams, int count, int num_workers = 1){
 		for (int k = 0; k < count; k++) {
 			holes[k] = seams[r * count + k];
 		}
+//		std::cout << "---------------" << std::endl;
 		std::sort(holes, holes + count);
+//		for (int k = 0; k < count; k++) {
+//			std::cout << holes[k] << std::endl;
+//		}
+//		std::cout << "---------------" << std::endl;
 		int i = 0;
 		int hole = holes[i];
 		for (int c = 0; c < W - count; c++) {

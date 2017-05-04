@@ -84,23 +84,10 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 		num_found = to_find;
 
 		if (!s->firstFrame) {
-			if(limit != s->hor) {
-				int seams[H*limit];
-				for (int i = 0; i < num_found; i++) {
-					for (int r = 0; r < H; r++) {
-						seams[r * limit + i] = s->prev_frame_v_seams[r * s->hor  + s->v_seams_found + i];
-					}
-				}
-				ff::ffTime(ff::START_TIME);
-				coherence_function(eimage, seams, num_found, num_workers);
-				ff::ffTime(ff::STOP_TIME);
-				metrics[1] += ff::ffTime(ff::GET_TIME);
-			} else {
-				ff::ffTime(ff::START_TIME);
-				coherence_function(eimage, s->prev_frame_v_seams, s->hor, num_workers);
-				ff::ffTime(ff::STOP_TIME);
-				metrics[1] += ff::ffTime(ff::GET_TIME);
-			}
+			ff::ffTime(ff::START_TIME);
+			coherence_function(eimage, s->prev_frame_v_seams, s->hor, num_workers);
+			ff::ffTime(ff::STOP_TIME);
+			metrics[1] += ff::ffTime(ff::GET_TIME);
 		}
 
 		do {
@@ -130,32 +117,31 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 
 	} else {
 
-		num_found = cv::min(s->ver - s->h_seams_found, limit);
+		to_find = cv::min(s->ver - s->h_seams_found, limit);
+		num_found = to_find;
 
 		if (!s->firstFrame) {
-			if(limit != s->ver) {
-				int seams[H*limit];
+			coherence_function(eimage, s->prev_frame_h_seams, s->ver, num_workers);
+		}
+
+		do {
+			minimal_seams = find_seams(eimage, num_found, num_workers);
+
+			for (int r = 0; r < H; r++) {
 				for (int i = 0; i < num_found; i++) {
-					for (int r = 0; r < H; r++) {
-						seams[r * limit + i] = s->prev_frame_h_seams[r * s->ver  + s->h_seams_found + i];
-					}
+					s->h_seams[r * s->ver + s->h_seams_found + i] = minimal_seams[r * num_found + i];
+					eimage.at<uchar>(r, minimal_seams[r * num_found + i]) = 255;
 				}
-				coherence_function(eimage, seams, num_found, num_workers);
-			} else {
-				coherence_function(eimage, s->prev_frame_h_seams, s->ver, num_workers);
 			}
-		}
 
-		minimal_seams = find_seams(eimage, num_found, num_workers);
+			s->h_seams_found += num_found;
+
+			to_find -= num_found;
+			num_found = to_find;
+
+		} while (to_find > 0);
+
 		remove_pixels(image, minimal_seams, num_found, num_workers);
-
-		for (int r = 0; r < H; r++) {
-			for (int i = 0; i < num_found; i++) {
-				s->h_seams[r * s->ver + s->h_seams_found + i] = minimal_seams[r * num_found + i];
-			}
-		}
-
-		s->h_seams_found += num_found;
 	}
 
 	delete[] minimal_seams;
