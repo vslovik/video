@@ -60,6 +60,7 @@ struct State {
 State* s;
 
 float metrics[4] = {0,0,0,0};
+int maxint = std::numeric_limits<int>::max();
 
 void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_workers = 1){
 	if (orientation == 'h') {
@@ -90,16 +91,16 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 			metrics[1] += ff::ffTime(ff::GET_TIME);
 		}
 
+		ff::ffTime(ff::START_TIME);
 		do {
-			ff::ffTime(ff::START_TIME);
+
 			minimal_seams = find_seams(eimage, num_found, num_workers);
-			ff::ffTime(ff::STOP_TIME);
-			metrics[2] += ff::ffTime(ff::GET_TIME);
 
 			for (int r = 0; r < H; r++) {
 				for (int i = 0; i < num_found; i++) {
 					s->v_seams[r * s->hor + s->v_seams_found + i] = minimal_seams[r * num_found + i];
-					eimage.at<uchar>(r, minimal_seams[r * num_found + i]) = 255;
+					eimage.at<int>(r, minimal_seams[r * num_found + i]) = maxint;
+					image.at<Vec3b>(r, minimal_seams[r * num_found + i]) = Vec3b(255, 255, 255);
 				}
 			}
 
@@ -109,6 +110,9 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 			num_found = to_find;
 
 		} while(to_find > 0);
+
+		ff::ffTime(ff::STOP_TIME);
+		metrics[2] += ff::ffTime(ff::GET_TIME);
 
 		ff::ffTime(ff::START_TIME);
 		remove_pixels(image, s->v_seams, s->v_seams_found, num_workers);
@@ -130,7 +134,7 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 			for (int r = 0; r < H; r++) {
 				for (int i = 0; i < num_found; i++) {
 					s->h_seams[r * s->ver + s->h_seams_found + i] = minimal_seams[r * num_found + i];
-					eimage.at<uchar>(r, minimal_seams[r * num_found + i]) = 255;
+					eimage.at<int>(r, minimal_seams[r * num_found + i]) = maxint;
 				}
 			}
 

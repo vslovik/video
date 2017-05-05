@@ -46,7 +46,7 @@ void print_traces(int *traces, int W) {
 	printf("\n\n");
 }
 
-void print_row(uchar *row, int W) {
+void print_row(int *row, int W) {
 	int j=0;
 
 	for(unsigned int i=0;i<W;i++) {
