@@ -53,14 +53,12 @@ energy: 28820.2 coherence: 54380.4 seam search: 55995.1 pixel removal: 17414.8
 energy: 26729.1 coherence: 48923.1 seam search: 55941.3 pixel removal: 17353.7
 energy: 25951.1 coherence: 48043.8 seam search: 55054.3 pixel removal: 17016.2
 energy: 24791.2 coherence: 48816.1 seam search: 57602.9 pixel removal: 16129.7
+energy: 24226.8 coherence: 48053.2 seam search: 56319.8 pixel removal: 16384.1
+energy: 24071.9 coherence: 49072.4 seam search: 56652.3 pixel removal: 17005.7
 
-
-energy: 19834.1 coherence: 40201.9 seam search: 47953.7 pixel removal: 14184.5
-energy: 20349.0 coherence: 43361.8 seam search: 49042.4 pixel removal: 14361.2
 energy: 20542.7 coherence: 45563.9 seam search: 49988.5 pixel removal: 14463.9
 energy: 19459.5 coherence: 40334.5 seam search: 48646.5 pixel removal: 13608.5
 energy: 20671.3 coherence: 44741.3 seam search: 49280.3 pixel removal: 14487.2
-
 
 energy: 23867.1 coherence: 52384.9 seam search: 55894.6 pixel removal: 16862.2
 energy: 23552.7 coherence: 51920.0 seam search: 57115.9 pixel removal: 17595.0
