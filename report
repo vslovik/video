@@ -6,10 +6,8 @@ energy: 3437.18 coherence: 10828.1 seam search: 9088.96 pixel removal: 1615.42
 energy: 2940.34 coherence: 6463.32 seam search: 9291.37 pixel removal: 1456.81
 energy: 2664.74 coherence: 6135.52 seam search: 9628.61 pixel removal: 1573.3
 energy: 3037.06 coherence: 7027.85 seam search: 9723.15 pixel removal: 1670.31
-
-energy: 2815.95 coherence: 12280.1 seam search: 9390.85 pixel removal: 1590.87
-
-energy: 2822.39 coherence: 8667.35 seam search: 9589.24 pixel removal: 1624.76
+energy: 2801.61 coherence: 6031.70 seam search: 9399.35 pixel removal: 1588.32
+energy: 2578.27 coherence: 6947.47 seam search: 9475.12 pixel removal: 1455.54
 
 160 seams removal (25 % width reduction)
 energy: 27782.4 coherence: 68858.9 seam search: 43435.5 pixel removal: 11618.2
@@ -21,8 +19,7 @@ energy: 13755.1 coherence: 31827.0 seam search: 44863.5 pixel removal: 8041.65
 energy: 12713.2 coherence: 29286.5 seam search: 43944.0 pixel removal: 7663.38
 
 
-
-Unupi Workstation, Cenerentola  (videoplayback.mp4)
+Unipi Workstation, Cenerentola  (videoplayback.mp4)
 32 seams removal (5 % width reduction)
 
 energy: 26554.1 coherence: 51398.3 seam search: 31848.9 pixel removal: 13905.0
@@ -43,7 +40,7 @@ energy: 13971.1 coherence: 28084.9 seam search: 33277.4 pixel removal: 10416.5
 energy: 14296.6 coherence: 29612.0 seam search: 32488.2 pixel removal: 10525.6
 
 
-Unupi Workstation, Megamind (Megamind.mp4)
+Unipi Workstation, Megamind (Megamind.mp4)
 36 seams removal  (5 % width reduction)
 
 energy: 46619.4 coherence: 94391.1 seam search: 55202.6 pixel removal: 23237.0
@@ -55,11 +52,9 @@ energy: 25951.1 coherence: 48043.8 seam search: 55054.3 pixel removal: 17016.2
 energy: 24791.2 coherence: 48816.1 seam search: 57602.9 pixel removal: 16129.7
 energy: 24226.8 coherence: 48053.2 seam search: 56319.8 pixel removal: 16384.1
 energy: 24071.9 coherence: 49072.4 seam search: 56652.3 pixel removal: 17005.7
-
-energy: 20542.7 coherence: 45563.9 seam search: 49988.5 pixel removal: 14463.9
-energy: 19459.5 coherence: 40334.5 seam search: 48646.5 pixel removal: 13608.5
-energy: 20671.3 coherence: 44741.3 seam search: 49280.3 pixel removal: 14487.2
-
+energy: 23020.6 coherence: 49574.2 seam search: 56085.6 pixel removal: 16861.3
+energy: 22778.0 coherence: 54785.9 seam search: 55858.9 pixel removal: 16949.1
+energy: 23323.4 coherence: 51608.5 seam search: 55644.2 pixel removal: 16573.4
 energy: 23867.1 coherence: 52384.9 seam search: 55894.6 pixel removal: 16862.2
 energy: 23552.7 coherence: 51920.0 seam search: 57115.9 pixel removal: 17595.0
 energy: 23622.6 coherence: 50716.1 seam search: 58271.2 pixel removal: 17011.5

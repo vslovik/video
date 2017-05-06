@@ -162,8 +162,7 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	for(int r = 0; r < H; r++){
 
-		// Calculate row values
-		//pf.parallel_for(0L, W, [&next_row, row, r, W, image](int c) {
+		// calculate row values
 		for (unsigned int c = 0; c < W; c++) {
 			uchar next = image.at<uchar>(r,c);
 			if(r > 0) {
@@ -220,7 +219,6 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 				par = false;
 			}
 		}
-
 	}
 
 	cv::Point *points = new cv::Point[W];
@@ -245,7 +243,6 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 			minimal_seams[r * num_found + i] = seams[r * W + seam_index];
 		});
 	}
-
 
 	delete[] final_points;
 	delete[] points;
@@ -307,8 +304,6 @@ void remove_seams(Mat& image, char orientation = 'v', int num_workers = 1){
 
 	int num_found = 10;
 	int* minimal_seams = find_seams(eimage, num_found, num_workers);
-
-//	std::cout << "num_found: " << num_found << std::endl;
 
 //	for (int r = 0; r < image.rows; r++){
 //		for (int i = 0; i < num_found; i++) {
