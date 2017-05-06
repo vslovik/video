@@ -98,9 +98,11 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 
 			for (int r = 0; r < H; r++) {
 				for (int i = 0; i < num_found; i++) {
-					s->v_seams[r * s->hor + s->v_seams_found + i] = minimal_seams[r * num_found + i];
-					eimage.at<int>(r, minimal_seams[r * num_found + i]) = maxint;
-					image.at<Vec3b>(r, minimal_seams[r * num_found + i]) = Vec3b(255, 255, 255);
+					if(eimage.at<int>(r, minimal_seams[r * num_found + i]) != maxint) {
+						s->v_seams[r * s->hor + s->v_seams_found + i] = minimal_seams[r * num_found + i];
+						eimage.at<int>(r, minimal_seams[r * num_found + i]) = maxint;
+						image.at<Vec3b>(r, minimal_seams[r * num_found + i]) = Vec3b(255, 255, 255);
+					}
 				}
 			}
 
@@ -133,8 +135,10 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 
 			for (int r = 0; r < H; r++) {
 				for (int i = 0; i < num_found; i++) {
-					s->h_seams[r * s->ver + s->h_seams_found + i] = minimal_seams[r * num_found + i];
-					eimage.at<int>(r, minimal_seams[r * num_found + i]) = maxint;
+					if(eimage.at<int>(r, minimal_seams[r * num_found + i]) != maxint) {
+						s->h_seams[r * s->ver + s->h_seams_found + i] = minimal_seams[r * num_found + i];
+						eimage.at<int>(r, minimal_seams[r * num_found + i]) = maxint;
+					}
 				}
 			}
 
