@@ -1,156 +1,74 @@
-Input frame resolution: Width=640  Height=480 of nr#: 11930
-0/11930 5673.71 ms avg: 5673
+Home PC, Cenerentola (videoplayback.mp4)
+
+32 seams removal (5 % width reduction)
+energy: 5728.74 coherence: 13112.8 seam search: 9028.37 pixel removal: 2260.97
+energy: 3437.18 coherence: 10828.1 seam search: 9088.96 pixel removal: 1615.42
+energy: 2940.34 coherence: 6463.32 seam search: 9291.37 pixel removal: 1456.81
+energy: 2664.74 coherence: 6135.52 seam search: 9628.61 pixel removal: 1573.3
+energy: 3037.06 coherence: 7027.85 seam search: 9723.15 pixel removal: 1670.31
+
+energy: 2815.95 coherence: 12280.1 seam search: 9390.85 pixel removal: 1590.87
+
+energy: 2822.39 coherence: 8667.35 seam search: 9589.24 pixel removal: 1624.76
+
+160 seams removal (25 % width reduction)
+energy: 27782.4 coherence: 68858.9 seam search: 43435.5 pixel removal: 11618.2
+energy: 16791.2 coherence: 48079.3 seam search: 43366.6 pixel removal: 8347.91
+energy: 13785.5 coherence: 35020.8 seam search: 43953.1 pixel removal: 8391.88
+energy: 12515.9 coherence: 32097.6 seam search: 44602.1 pixel removal: 7780.05
+energy: 14785.2 coherence: 38533.5 seam search: 46146.6 pixel removal: 9202.55
+energy: 13755.1 coherence: 31827.0 seam search: 44863.5 pixel removal: 8041.65
+energy: 12713.2 coherence: 29286.5 seam search: 43944.0 pixel removal: 7663.38
+
+
+
+Unupi Workstation, Cenerentola  (videoplayback.mp4)
+32 seams removal (5 % width reduction)
+
+energy: 26554.1 coherence: 51398.3 seam search: 31848.9 pixel removal: 13905.0
+energy: 20556.7 coherence: 47615.6 seam search: 32926.8 pixel removal: 12050.0
+energy: 18197.7 coherence: 34379.6 seam search: 32044.5 pixel removal: 10783.8
+energy: 17216.6 coherence: 28990.0 seam search: 32074.8 pixel removal: 10911.5
+energy: 17161.8 coherence: 28627.1 seam search: 33060.6 pixel removal: 10525.0
+energy: 16106.6 coherence: 28122.4 seam search: 33074.1 pixel removal: 10469.6
+energy: 15202.5 coherence: 27934.0 seam search: 32768.6 pixel removal:  9909.4
+energy: 14362.5 coherence: 31582.9 seam search: 32532.9 pixel removal: 11256.3
+energy: 15535.7 coherence: 30659.2 seam search: 34858.0 pixel removal: 12004.4
+energy: 13852.9 coherence: 31003.8 seam search: 32007.5 pixel removal: 10611.0
+energy: 14028.9 coherence: 30289.4 seam search: 32265.2 pixel removal: 9969.83
+energy: 15427.5 coherence: 29704.5 seam search: 33682.8 pixel removal: 10589.8
+energy: 14780.5 coherence: 29436.2 seam search: 34153.9 pixel removal: 10604.7
+energy: 15398.8 coherence: 29760.3 seam search: 34397.8 pixel removal: 10577.8
+energy: 13971.1 coherence: 28084.9 seam search: 33277.4 pixel removal: 10416.5
+energy: 14296.6 coherence: 29612.0 seam search: 32488.2 pixel removal: 10525.6
+
+
+Unupi Workstation, Megamind (Megamind.mp4)
+36 seams removal  (5 % width reduction)
+
+energy: 46619.4 coherence: 94391.1 seam search: 55202.6 pixel removal: 23237.0
+energy: 34597.1 coherence: 91079.6 seam search: 56331.8 pixel removal: 19308.7
+energy: 29291.4 coherence: 58298.4 seam search: 54357.9 pixel removal: 17142.6
+energy: 28820.2 coherence: 54380.4 seam search: 55995.1 pixel removal: 17414.8
+energy: 26729.1 coherence: 48923.1 seam search: 55941.3 pixel removal: 17353.7
+energy: 25951.1 coherence: 48043.8 seam search: 55054.3 pixel removal: 17016.2
+energy: 24791.2 coherence: 48816.1 seam search: 57602.9 pixel removal: 16129.7
+
+
+energy: 19834.1 coherence: 40201.9 seam search: 47953.7 pixel removal: 14184.5
+energy: 20349.0 coherence: 43361.8 seam search: 49042.4 pixel removal: 14361.2
+energy: 20542.7 coherence: 45563.9 seam search: 49988.5 pixel removal: 14463.9
+energy: 19459.5 coherence: 40334.5 seam search: 48646.5 pixel removal: 13608.5
+energy: 20671.3 coherence: 44741.3 seam search: 49280.3 pixel removal: 14487.2
+
+
+energy: 23867.1 coherence: 52384.9 seam search: 55894.6 pixel removal: 16862.2
+energy: 23552.7 coherence: 51920.0 seam search: 57115.9 pixel removal: 17595.0
+energy: 23622.6 coherence: 50716.1 seam search: 58271.2 pixel removal: 17011.5
+energy: 22181.2 coherence: 46516.5 seam search: 56511.4 pixel removal: 16921.7
+energy: 23256.6 coherence: 47829.2 seam search: 56364.9 pixel removal: 16814.7
+
+
+Unupi Workstation, Megamind (Megamind.mp4)
+180 seams removal  (25 % width reduction)
 
-1/11930 8798.53 ms avg: 7235.5
-
-2/11930 8786.32 ms avg: 7752.33
-
-3/11930 9839.53 ms avg: 8274
-
-4/11930 9943.31 ms avg: 8607.8
-
-valeria@titanic:~/video/parallel$ ./video ../data/videoplayback.mp4 320 0 7
-------------------------------------------------------------------------------
-This program reads filters and write video files.
-Usage:
-./video inputvideoName ver hor num_workers
-hor - number of vertical seams to remove (and shrink horizontally)
-ver - number of horizontal seams to remove (and shrink vertically)
-------------------------------------------------------------------------------
-
-Input frame resolution: Width=640  Height=480 of nr#: 11930
-0/11930 5651.35 ms avg: 5651
-
-1/11930 8417.44 ms avg: 7034
-
-2/11930 8858.66 ms avg: 7642
-
-3/11930 9805.01 ms avg: 8182.75
-
-4/11930 9511.93 ms avg: 8448.4
-
-5/11930 9215.89 ms avg: 8576.17
-
-6/11930 9102.95 ms avg: 8651.29
-
-7/11930 9734.98 ms avg: 8786.62
-
-8/11930 9168.11 ms avg: 8829
-
-9/11930 8810.51 ms avg: 8827.1
-
-10/11930 10025.7 ms avg: 8936
-
-11/11930 9013.51 ms avg: 8942.42
-
-12/11930 8755.65 ms avg: 8928
-
-13/11930 9040.04 ms avg: 8936
-
-14/11930 9209.91 ms avg: 8954.2
-
-15/11930 9693.92 ms avg: 9000.38
-
-16/11930 9001.46 ms avg: 9000.41
-
-17/11930 9612.21 ms avg: 9034.39
-
-18/11930 9189.42 ms avg: 9042.53
-
-19/11930 9839.47 ms avg: 9082.35
-
-20/11930 8891.97 ms avg: 9073.24
-
-21/11930 9279.44 ms avg: 9082.59
-
-22/11930 10027.4 ms avg: 9123.65
-
-23/11930 10389.3 ms avg: 9176.38
-
-Segmentation fault (core dumped)
-
-
-Input frame resolution: Width=640  Height=480 of nr#: 11930
-0/11930 5568.4 ms avg: 5568
-
-1/11930 8473.56 ms avg: 7020.5
-
-2/11930 9166.05 ms avg: 7735.67
-
-3/11930 10513.9 ms avg: 8430
-
-4/11930 9378.46 ms avg: 8619.6
-
-5/11930 9534.14 ms avg: 8772
-
-6/11930 10896.7 ms avg: 9075.43
-
-7/11930 9611.74 ms avg: 9142.38
-
-8/11930 10143.9 ms avg: 9253.56
-
-9/11930 10070.3 ms avg: 9335.2
-
-10/11930 9829.89 ms avg: 9380.09
-
-11/11930 9788.78 ms avg: 9414.08
-
-12/11930 10591.7 ms avg: 9504.62
-
-13/11930 9620.72 ms avg: 9512.86
-
-14/11930 10121.9 ms avg: 9553.4
-
-15/11930 10157.8 ms avg: 9591.12
-
-16/11930 9355 ms avg: 9577.18
-
-17/11930 9413.03 ms avg: 9568.06
-
-18/11930 9234.79 ms avg: 9550.47
-
-19/11930 9713.25 ms avg: 9558.6
-
-20/11930 9840.22 ms avg: 9572
-
-21/11930 9586.07 ms avg: 9572.64
-
-22/11930 9727.3 ms avg: 9579.35
-
-23/11930 10289.9 ms avg: 9608.92
-
-24/11930 12005.7 ms avg: 9704.76
-
-25/11930 9714.45 ms avg: 9705.12
-
-26/11930 10376.1 ms avg: 9729.96
-
-27/11930 11130.9 ms avg: 9779.96
-
-28/11930 10854.1 ms avg: 9817
-
-29/11930 11281.8 ms avg: 9865.8
-
-30/11930 11121.4 ms avg: 9906.29
-
-31/11930 11003 ms avg: 9940.56
-
-32/11930 11466 ms avg: 9986.76
-
-33/11930 11714.9 ms avg: 10037.6
-
-34/11930 10580.2 ms avg: 10053.1
-
-Segmentation fault (core dumped)
-
-valeria@titanic:~/video/parallel$ ./video ../data/videoplayback.mp4 320 0 7
-------------------------------------------------------------------------------
-This program reads filters and write video files.
-Usage:
-./video inputvideoName ver hor num_workers
-hor - number of vertical seams to remove (and shrink horizontally)
-ver - number of horizontal seams to remove (and shrink vertically)
-------------------------------------------------------------------------------
-
-Input frame resolution: Width=640  Height=480 of nr#: 11930
-Segmentation fault (core dumped)
