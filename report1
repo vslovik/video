@@ -4,23 +4,23 @@ Home, Cenerentola
 1 energy: 5728.74 coherence: 13112.8 seam search: 9028.37 pixel removal: 2260.97
   energy: 3437.18 coherence: 10828.1 seam search: 9088.96 pixel removal: 1615.42
   energy: 2940.34 coherence: 6463.32 seam search: 9291.37 pixel removal: 1456.81
-  energy: 2385.73 coherence: 7978.76 seam search: 9311.23 pixel removal: 1365.18
-  energy: 2991.21 coherence: 8898.29 seam search: 9295.32 pixel removal: 1477.52
-  energy: 2928.73 coherence: 6224.41 seam search: 9413.62 pixel removal: 1588.26
-  energy: 2578.21 coherence: 5624.57 seam search: 9302.91 pixel removal: 1434.07
-8 energy: 4058.32 coherence: 6948.67 seam search: 11145.9 pixel removal: 2567.32
+  energy: 2664.74 coherence: 6135.52 seam search: 9628.61 pixel removal: 1573.3
+ energy: 3037.06 coherence: 7027.85 seam search: 9723.15 pixel removal: 1670.31
+ energy: 2815.95 coherence: 12280.1 seam search: 9390.85 pixel removal: 1590.87
+ energy: 2822.39 coherence: 8667.35 seam search: 9589.24 pixel removal: 1624.76
+
 
 160
 energy: 27782.4 coherence: 68858.9 seam search: 43435.5 pixel removal: 11618.2
 energy: 16791.2 coherence: 48079.3 seam search: 43366.6 pixel removal: 8347.91
 energy: 13785.5 coherence: 35020.8 seam search: 43953.1 pixel removal: 8391.88
 energy: 12515.9 coherence: 32097.6 seam search: 44602.1 pixel removal: 7780.05
-energy: 14828.8 coherence: 90627.2 seam search: 44430.6 pixel removal: 8001.47
-(energy: 14785.2 coherence: 38533.5 seam search: 46146.6 pixel removal: 9202.55)
+energy: 14785.2 coherence: 38533.5 seam search: 46146.6 pixel removal: 9202.55
 energy: 13755.1 coherence: 31827 seam search: 44863.5 pixel removal: 8041.65
 energy: 12713.2 coherence: 29286.5 seam search: 43944 pixel removal: 7663.38
-energy: 20224.7 coherence: 39020.4 seam search: 52314 pixel removal: 13305.3
+
 
 360
 energy: 58835 coherence: 142052 seam search: 89788 pixel removal: 26767.6
 energy: 39485.6 coherence: 183092 seam search: 93378.9 pixel removal: 22467.7
+

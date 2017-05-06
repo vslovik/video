@@ -122,7 +122,7 @@ void resolve_seams_conflicts(uchar *row, int r, int W, int H, int *seams, int *t
 		seam_index = traces[i * W + c];
 		energy = seam_energies[seam_index];
 		int span = seam_spans[seam_index];
-		if (min_energy > span) {
+		if (min_energy > energy) {
 			min_energy = energy;
 			best_seam_index = seam_index;
 		} else if (min_span > span) {

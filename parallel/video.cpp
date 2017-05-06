@@ -11,7 +11,7 @@
 
 #define CW 1;
 #define CCW 0;
-#define THRESHOLD 20;
+#define THRESHOLD 15;
 #define LIMIT 10;
 
 struct State {
@@ -144,6 +144,7 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 		for (int r = 0; r < H; r++) {
 			for (int i = 0; i < num_found; i++) {
 				s->h_seams[r * s->ver + s->h_seams_found + i] = minimal_seams[r * num_found + i];
+				image.at<Vec3b>(r, minimal_seams[r * num_found + i]) = Vec3b(255, 255, 255);
 			}
 		}
 
