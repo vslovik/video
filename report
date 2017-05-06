@@ -65,3 +65,7 @@ energy: 23256.6 coherence: 47829.2 seam search: 56364.9 pixel removal: 16814.7
 Unupi Workstation, Megamind (Megamind.mp4)
 180 seams removal  (25 % width reduction)
 
+energy: 265934 coherence: 564827 seam search: 316598 pixel removal: 148347
+energy: 210593 coherence: 604038 seam search: 327464 pixel removal: 127723
+energy: 179506 coherence: 364999 seam search: 320715 pixel removal: 113637
+
