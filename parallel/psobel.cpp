@@ -70,7 +70,7 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 	delete[] src;
 }
 
-void coherence(cv::Mat &image, int* seams, int num_seams, int num_workers) {
+void coherence(cv::Mat &image, int* seams, int num_seams) {
 
     int rows = image.rows;
     int cols = image.cols;
@@ -78,16 +78,15 @@ void coherence(cv::Mat &image, int* seams, int num_seams, int num_workers) {
     uchar * dst = new uchar[rows * cols];
 	uchar * src = new uchar[rows * cols];
 
-	ff::ParallelFor pf(num_workers, false);
-	pf.parallel_for(0L, rows, [cols, &src, &image](int r) {
+	for (unsigned int r = 0; r < rows; r++) {
 		for(int c = 1; c < cols - 1; c++) {
 			src[r * cols + c] = image.at<uchar>(r, c);
 		}
-	});
+	}
 
 	int Il[cols], Ir[cols];
 
-    pf.parallel_for(0L, rows , [src, cols, &dst, &seams, num_seams, &Il, &Ir](const long r) {
+	for (unsigned int r = 0; r < rows; r++) {
         int sum;
 	    for(int k = 0; k < num_seams; k++) {
 		    for (int c = 0; c < cols; c++) {
@@ -111,7 +110,7 @@ void coherence(cv::Mat &image, int* seams, int num_seams, int num_workers) {
 			    dst[r * cols + c] = (uchar) sum;
 		    }
 	    }
-    });
+    }
 
     image = cv::Mat(rows, cols, CV_8U, src, cv::Mat::AUTO_STEP);
 

@@ -27,7 +27,7 @@ void rot90(Mat &matImage, int flag);
 * with minimal image distortion
 * as parallel computing task
 */
-int* find_seams(Mat &image, int &num_found, int num_workers = 1);
+int* find_seams(Mat &image, int &num_found);
 
 /*
 * Function: remove_pixels
@@ -35,7 +35,7 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1);
 * -------------------
 * Removes found seam
 */
-void remove_pixels(Mat& image, int *seams, int count, int num_workers = 1);
+void remove_pixels(Mat& image, int *seams, int count);
 
 /*
 * Function: energy_function
@@ -51,7 +51,7 @@ void energy_function(Mat &image, Mat &output, int num_workers = 1);
 * -------------------
 * Calculates coherence-aware energy map
 */
-void coherence_function(Mat &image, int* seams, int num_found, int num_workers = 1);
+void coherence_function(Mat &image, int* seams, int num_found);
 
 /*
 * Function: remove_seam

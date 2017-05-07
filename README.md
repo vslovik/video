@@ -41,3 +41,5 @@ nw — number of workers
 `$ ./video ../data/videoplayback.mp4 0 100 10`
 
 `$ ./video ../data/Megamind.mp4 0 100 10`
+
+`$ time ./video ../data/Megamind.mp4 32 0 4`

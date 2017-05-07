@@ -109,7 +109,7 @@ void advance_seams(uchar *row, int r, int W, int H, int *seams, int *traces, int
 	}
 }
 
-void resolve_seams_conflicts(uchar *row, int r, int W, int H, int *seams, int *traces, int *seam_energies, int *seam_spans, int c) {
+void resolve_seams_conflicts(int r, int W, int H, int *seams, int *traces, int *seam_energies, int *seam_spans, int c) {
 	int seam_index;
 	int energy;
 	int min_energy = max_int;
@@ -142,7 +142,7 @@ void resolve_seams_conflicts(uchar *row, int r, int W, int H, int *seams, int *t
 	traces[3 * W + c] = best_seam_index;
 };
 
-int* find_seams(Mat &image, int &num_found, int num_workers = 1){
+int* find_seams(Mat &image, int &num_found){
 	int H = image.rows;
 	int W = image.cols;
 
@@ -153,12 +153,9 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 	int seam_spans[W];
 	int seam_energies[W];
 
-	ff::ParallelFor pf(num_workers, false);
 	for (unsigned int i = 0; i < 4*W; i++) {
 		traces[i] = W;
 	};
-
-	bool par = true;
 
 	for(int r = 0; r < H; r++){
 
@@ -175,29 +172,17 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 		std::swap(row, next_row);
 
-		if (par) {
-			pf.parallel_for(0L, W, [row, r, W, H, &seams, &traces, &seam_energies, &seam_spans](int c) {
-				advance_seams(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
-			});
-		} else {
-			for (unsigned int c = 0; c < W; c++) {
-				advance_seams(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
-			};
-		}
+		for (unsigned int c = 0; c < W; c++) {
+			advance_seams(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
+		};
 
 		for (unsigned int c = 0; c < W; c++) {
 			traces[3 * W + c] = W;
 		}
 
-		if (par) {
-			pf.parallel_for(0L, W, [row, r, W, H, &seams, &traces, &seam_energies, &seam_spans](int c) {
-				resolve_seams_conflicts(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
-			});
-		} else {
-			for (unsigned int c = 0; c < W; c++) {
-				resolve_seams_conflicts(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
-			};
-		}
+		for (unsigned int c = 0; c < W; c++) {
+			resolve_seams_conflicts(r, W, H, seams, traces, seam_energies, seam_spans, c);
+		};
 
 		// clean traces rows
 		for (unsigned int c = 0; c < W; c++) {
@@ -205,20 +190,6 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 				traces[i * W + c] = W;
 			}
 		};
-
-		if(par) {
-
-			int survived_seams = 0;
-			for (unsigned int c = 0; c < W; c++) {
-				if (traces[3 * W + c] < W) {
-					survived_seams++;
-				}
-			}
-
-			if (survived_seams < W / 2) {
-				par = false;
-			}
-		}
 	}
 
 	cv::Point *points = new cv::Point[W];
@@ -238,10 +209,10 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 
 	int* minimal_seams = new int[H*num_found];
 	for (int i = 0; i < num_found; i++) {
-		pf.parallel_for(0L, H, [i, num_found, W, final_points, &seams, &minimal_seams](int r) {
+		for (unsigned int r = 0; r < H; r++) {
 			int seam_index = final_points[i].x;
 			minimal_seams[r * num_found + i] = seams[r * W + seam_index];
-		});
+		};
 	}
 
 	delete[] final_points;
@@ -253,14 +224,13 @@ int* find_seams(Mat &image, int &num_found, int num_workers = 1){
 	return minimal_seams;
 }
 
-void remove_pixels(Mat& image, int *seams, int count, int num_workers = 1){
+void remove_pixels(Mat& image, int *seams, int count){
 	int W = image.cols;
 	int H = image.rows;
 
 	Mat output(image.rows, image.cols - count, CV_8UC3);
 
-	ff::ParallelFor pf(num_workers, false);
-	pf.parallel_for(0L, H, [W, &image, seams, count, &output](int r) {
+	for (unsigned int r = 0; r < H; r++) {
 		int *holes = new int[count];
 		for (int k = 0; k < count; k++) {
 			holes[k] = seams[r * count + k];
@@ -279,7 +249,7 @@ void remove_pixels(Mat& image, int *seams, int count, int num_workers = 1){
 				output.at<Vec3b>(r, c) = image.at<Vec3b>(r, c + i);
 			}
 		}
-	});
+	}
 
 	image = output;
 }
@@ -288,8 +258,8 @@ void energy_function(Mat &image, Mat &output, int num_workers = 1){
 	sobel(image, output, num_workers);
 }
 
-void coherence_function(Mat &image, int* seams, int count, int num_workers = 1) {
-	coherence(image, seams, count, num_workers);
+void coherence_function(Mat &image, int* seams, int count) {
+	coherence(image, seams, count);
 }
 
 void remove_seams(Mat& image, char orientation = 'v', int num_workers = 1){
@@ -303,7 +273,7 @@ void remove_seams(Mat& image, char orientation = 'v', int num_workers = 1){
 	energy_function(image, eimage, num_workers);
 
 	int num_found = 10;
-	int* minimal_seams = find_seams(eimage, num_found, num_workers);
+	int* minimal_seams = find_seams(eimage, num_found);
 
 //	for (int r = 0; r < image.rows; r++){
 //		for (int i = 0; i < num_found; i++) {
@@ -313,7 +283,7 @@ void remove_seams(Mat& image, char orientation = 'v', int num_workers = 1){
 //
 //	print_seams(minimal_seams, num_found, image.rows);
 
-    remove_pixels(image, minimal_seams, num_found, num_workers);
+    remove_pixels(image, minimal_seams, num_found);
 
 	if (orientation == 'h') {
 		int flag = CCW;

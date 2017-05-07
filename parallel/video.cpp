@@ -84,15 +84,15 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 					}
 				}
 
-				coherence_function(eimage, seams, num_found, num_workers);
+				coherence_function(eimage, seams, num_found);
 
 			} else {
-				coherence_function(eimage, s->prev_frame_v_seams, s->hor, num_workers);
+				coherence_function(eimage, s->prev_frame_v_seams, s->hor);
 			}
 		}
 
-		minimal_seams = find_seams(eimage, num_found, num_workers);
-		remove_pixels(image, minimal_seams, num_found, num_workers);
+		minimal_seams = find_seams(eimage, num_found);
+		remove_pixels(image, minimal_seams, num_found);
 
 		for (int r = 0; r < H; r++) {
 			for (int i = 0; i < num_found; i++) {
@@ -114,14 +114,14 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 						seams[r * limit + i] = s->prev_frame_h_seams[r * s->ver  + s->h_seams_found + i];
 					}
 				}
-				coherence_function(eimage, seams, num_found, num_workers);
+				coherence_function(eimage, seams, num_found);
 			} else {
-				coherence_function(eimage, s->prev_frame_h_seams, s->ver, num_workers);
+				coherence_function(eimage, s->prev_frame_h_seams, s->ver);
 			}
 		}
 
-		minimal_seams = find_seams(eimage, num_found, num_workers);
-		remove_pixels(image, minimal_seams, num_found, num_workers);
+		minimal_seams = find_seams(eimage, num_found);
+		remove_pixels(image, minimal_seams, num_found);
 
 		for (int r = 0; r < H; r++) {
 			for (int i = 0; i < num_found; i++) {

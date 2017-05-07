@@ -1,5 +1,28 @@
 Home PC, Cenerentola (videoplayback.mp4)
 
+1
+seq
+energy: 1151.92 coherence: 0 seam search: 1866.32 pixel removal: 232.23
+
+5
+seq
+energy: 1514.71 coherence: 0 seam search: 2431.38 pixel removal: 316.83
+
+8
+energy: 1186.09 coherence: 0 seam search: 1940.92 pixel removal: 249.818
+
+10
+seq
+energy: 1466.97 coherence: 0 seam search: 2385.88 pixel removal: 304.055
+
+16
+energy: 2250.82 coherence: 0 seam search: 3664.92 pixel removal: 471.651
+
+20
+seq
+energy: 2946.88 coherence: 0 seam search: 4807.27 pixel removal: 618.919
+
+
 32 seams removal (5 % width reduction)
 energy: 5728.74 coherence: 13112.8 seam search: 9028.37 pixel removal: 2260.97
 energy: 3437.18 coherence: 10828.1 seam search: 9088.96 pixel removal: 1615.42
@@ -8,6 +31,9 @@ energy: 2664.74 coherence: 6135.52 seam search: 9628.61 pixel removal: 1573.3
 energy: 3037.06 coherence: 7027.85 seam search: 9723.15 pixel removal: 1670.31
 energy: 2801.61 coherence: 6031.70 seam search: 9399.35 pixel removal: 1588.32
 energy: 2578.27 coherence: 6947.47 seam search: 9475.12 pixel removal: 1455.54
+seq
+energy: 4399.52 coherence: 0 seam search: 7224.14 pixel removal: 914.017
+
 
 160 seams removal (25 % width reduction)
 energy: 27782.4 coherence: 68858.9 seam search: 43435.5 pixel removal: 11618.2
@@ -17,6 +43,8 @@ energy: 12515.9 coherence: 32097.6 seam search: 44602.1 pixel removal: 7780.05
 energy: 14785.2 coherence: 38533.5 seam search: 46146.6 pixel removal: 9202.55
 energy: 13755.1 coherence: 31827.0 seam search: 44863.5 pixel removal: 8041.65
 energy: 12713.2 coherence: 29286.5 seam search: 43944.0 pixel removal: 7663.38
+seq
+energy: 20138.9 coherence: 0 seam search: 33080.8 pixel removal: 4183.43
 
 
 Unipi Workstation, Cenerentola  (videoplayback.mp4)
@@ -38,6 +66,8 @@ energy: 14780.5 coherence: 29436.2 seam search: 34153.9 pixel removal: 10604.7
 energy: 15398.8 coherence: 29760.3 seam search: 34397.8 pixel removal: 10577.8
 energy: 13971.1 coherence: 28084.9 seam search: 33277.4 pixel removal: 10416.5
 energy: 14296.6 coherence: 29612.0 seam search: 32488.2 pixel removal: 10525.6
+
+energy: 15508.9 coherence: 0 seam search: 20631.8 pixel removal: 2792.41
 
 
 Unipi Workstation, Megamind (Megamind.mp4)
@@ -61,6 +91,9 @@ energy: 23622.6 coherence: 50716.1 seam search: 58271.2 pixel removal: 17011.5
 energy: 22181.2 coherence: 46516.5 seam search: 56511.4 pixel removal: 16921.7
 energy: 23256.6 coherence: 47829.2 seam search: 56364.9 pixel removal: 16814.7
 
+seq
+energy: 28150 coherence: 0 seam search: 37040.5 pixel removal: 4953.28
+
 
 Unupi Workstation, Megamind (Megamind.mp4)
 180 seams removal  (25 % width reduction)
@@ -68,4 +101,7 @@ Unupi Workstation, Megamind (Megamind.mp4)
 energy: 265934 coherence: 564827 seam search: 316598 pixel removal: 148347
 energy: 210593 coherence: 604038 seam search: 327464 pixel removal: 127723
 energy: 179506 coherence: 364999 seam search: 320715 pixel removal: 113637
+
+seq
+energy: 150887 coherence: 0 seam search: 200320 pixel removal: 26790.8
 

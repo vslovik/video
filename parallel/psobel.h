@@ -21,6 +21,6 @@ void sobel(Mat &image, Mat &output, int num_workers);
 * Usage: coherence();
 * -------------------
 */
-void coherence(Mat &image, int* seams, int num_seams, int num_workers);
+void coherence(Mat &image, int* seams, int num_seams);
 
 #endif
