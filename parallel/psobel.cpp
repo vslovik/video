@@ -40,8 +40,7 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 	uchar * src = new uchar[rows * cols];
 	uchar * dst = new uchar[rows * cols];
 
-	ff::ParallelFor pf(num_workers, false);
-	pf.parallel_for(0L, rows, [cols, &src, &image](int r) {
+	for(int r = 0; r < rows; r++) {
 		for(int c = 1; c < cols - 1; c++) {
 			cv::Vec3b values = image.at<cv::Vec3b>(r, c);
 			int val = (int) (R * values[0] + G * values[1] + B * values[2]);
@@ -49,25 +48,25 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 				val = 255;
 			src[r * cols + c] = (uchar) val;
 		}
-	});
+	}
 
-    pf.parallel_for(1, rows - 1,[src, cols, &dst](const long y) {
-        for(long x = 1; x < cols - 1; x++){
-            const long gx = xGradient(src, cols, x, y);
-            const long gy = yGradient(src, cols, x, y);
-            // approximation of sqrt(gx*gx+gy*gy)
-            int sum = abs((int)gx) + abs((int)gy);
-            if (sum > 255) sum = 255;
-            else if (sum < 0) sum = 0;
+	for (long y = 1; y < rows - 1; y++) {
+		for (long x = 1; x < cols - 1; x++) {
+			const long gx = xGradient(src, cols, x, y);
+			const long gy = yGradient(src, cols, x, y);
+			// approximation of sqrt(gx*gx+gy*gy)
+			int sum = abs((int) gx) + abs((int) gy);
+			if (sum > 255) sum = 255;
+			else if (sum < 0) sum = 0;
 
-            dst[y*cols+x] = (uchar) sum;
-        }
-    });
+			dst[y * cols + x] = (uchar) sum;
+		}
+	}
 
     output = cv::Mat(rows, cols, CV_8U, dst, cv::Mat::AUTO_STEP);
 
-	delete[] dst;
-	delete[] src;
+//	delete[] dst;
+//	delete[] src;
 }
 
 void coherence(cv::Mat &image, int* seams, int num_seams) {

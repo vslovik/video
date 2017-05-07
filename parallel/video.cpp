@@ -59,7 +59,7 @@ struct State {
 
 State* s;
 
-float metrics[4] = {0,0,0,0};
+float metrics[3] = {0, 0, 0};
 
 void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_workers = 1){
 	if (orientation == 'h') {
@@ -90,27 +90,21 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 						seams[r * limit + i] = s->prev_frame_v_seams[r * s->hor  + s->v_seams_found + i];
 					}
 				}
-				ff::ffTime(ff::START_TIME);
 				coherence_function(eimage, seams, num_found);
-				ff::ffTime(ff::STOP_TIME);
-				metrics[1] += ff::ffTime(ff::GET_TIME);
 			} else {
-				ff::ffTime(ff::START_TIME);
 				coherence_function(eimage, s->prev_frame_v_seams, s->hor);
-				ff::ffTime(ff::STOP_TIME);
-				metrics[1] += ff::ffTime(ff::GET_TIME);
 			}
 		}
 
 		ff::ffTime(ff::START_TIME);
 		minimal_seams = find_seams(eimage, num_found);
 		ff::ffTime(ff::STOP_TIME);
-		metrics[2] += ff::ffTime(ff::GET_TIME);
+		metrics[1] += ff::ffTime(ff::GET_TIME);
 
 		ff::ffTime(ff::START_TIME);
 		remove_pixels(image, minimal_seams, num_found);
 		ff::ffTime(ff::STOP_TIME);
-		metrics[3] += ff::ffTime(ff::GET_TIME);
+		metrics[2] += ff::ffTime(ff::GET_TIME);
 
 		for (int r = 0; r < H; r++) {
 			for (int i = 0; i < num_found; i++) {
@@ -249,8 +243,7 @@ void process_video(std::string source, int ver, int hor, int num_workers = 1)
 	    std::cout << i << "/" << s->numFrames << " " << ff::ffTime(ff::GET_TIME) << " ms " << "avg: " << avg << "\n" << std::endl;
 
 	    if(i % 100 == 0) {
-		    std::cout << " energy: " << metrics[0] << " coherence: " << metrics[1] << " seam search: " << metrics[2]
-		              << " pixel removal: " << metrics[3] << "\n" << std::endl;
+		    std::cout << " energy: " << metrics[0] << " search: " << metrics[1] << " remove: " << metrics[2] << "\n" << std::endl;
 	    }
 
 //	    imshow("mainWin", image);
