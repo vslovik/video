@@ -89,7 +89,7 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 			}
 		}
 
-		minimal_seams = find_seams(eimage, num_found);
+		minimal_seams = find_seams(eimage, num_found, num_workers);
 		remove_pixels(image, minimal_seams, num_found);
 
 		for (int r = 0; r < H; r++) {
@@ -118,7 +118,7 @@ void retarget_frame(Mat& image, int limit, char orientation = 'v', int num_worke
 			}
 		}
 
-		minimal_seams = find_seams(eimage, num_found);
+		minimal_seams = find_seams(eimage, num_found, num_workers);
 		remove_pixels(image, minimal_seams, num_found);
 
 		for (int r = 0; r < H; r++) {
