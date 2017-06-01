@@ -276,15 +276,17 @@ int* find_seams(Mat &image, int &num_found){
 			traces[3 * W + c] = W;
 		}
 
-		for (unsigned int m = 0; m < 3; m++) {
-			for (unsigned int c = 0; c < W; c++) {
-				resolve_seams_conflicts(r, W, H, seams, traces, seam_energies, seam_spans, c);
-			};
+		for (unsigned int c = 0; c < W; c++) {
+			resolve_seams_conflicts(r, W, H, seams, traces, seam_energies, seam_spans, c);
+		};
 
-			for (unsigned int c = 0; c < W; c++) {
-				move_defeated(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
-			};
-		}
+		for (unsigned int c = 0; c < W; c++) {
+			move_defeated(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
+		};
+
+		for (unsigned int c = 0; c < W; c++) {
+			resolve_seams_conflicts(r, W, H, seams, traces, seam_energies, seam_spans, c);
+		};
 
 		// clean traces rows
 		for (unsigned int c = 0; c < W; c++) {
@@ -387,7 +389,7 @@ void remove_seams(Mat& image, char orientation = 'v', int num_workers = 1){
 
 //	print_seams(minimal_seams, num_found, image.rows);
 
-    remove_pixels(image, minimal_seams, num_found);
+    //remove_pixels(image, minimal_seams, num_found);
 
 	if (orientation == 'h') {
 		int flag = CCW;
