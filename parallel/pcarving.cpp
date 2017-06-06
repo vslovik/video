@@ -334,6 +334,9 @@ void remove_pixels(Mat& image, int *seams, int count){
 
 	Mat output(image.rows, image.cols - count, CV_8UC3);
 
+	//ff::ParallelFor pf(4, false);
+
+	//pf.parallel_for(0, H, [W, &seams, &image, &output, count](int r) {
 	for (unsigned int r = 0; r < H; r++) {
 		int *holes = new int[count];
 		for (int k = 0; k < count; k++) {
@@ -359,8 +362,8 @@ void remove_pixels(Mat& image, int *seams, int count){
 }
 
 void energy_function(Mat &image, Mat &output, int num_workers = 1){
-	//sobel(image, output, num_workers);
-	sobel_seq(image, output);
+	sobel(image, output, num_workers);
+	//sobel_seq(image, output);
 }
 
 void coherence_function(Mat &image, int* seams, int count) {
