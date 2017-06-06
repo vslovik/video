@@ -362,8 +362,8 @@ void remove_pixels(Mat& image, int *seams, int count){
 }
 
 void energy_function(Mat &image, Mat &output, int num_workers = 1){
-	sobel(image, output, num_workers);
-	//sobel_seq(image, output);
+	//sobel(image, output, num_workers);
+	sobel_seq(image, output);
 }
 
 void coherence_function(Mat &image, int* seams, int count) {
