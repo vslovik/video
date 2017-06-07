@@ -40,15 +40,17 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 	uchar *src = new uchar[rows * cols];
 	uchar *dst = new uchar[rows * cols];
 
-//	ff::ffTime(ff::START_TIME);
+	ff::ffTime(ff::START_TIME);
 
-	ff::ParallelFor pf(num_workers, false);
 
-//	ff::ffTime(ff::STOP_TIME);
-//	std::cout << "num_workers:::: " << num_workers << " elapsed time =";
-//	std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+	ff::ParallelFor pf(num_workers, true);
 
-//	ff::ffTime(ff::START_TIME);
+	ff::ffTime(ff::STOP_TIME);
+	std::cout << "cols: " << cols <<" rows: " << rows << std::endl;
+	std::cout << "num_workers:::: " << num_workers << " elapsed time =";
+	std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+
+	ff::ffTime(ff::START_TIME);
 
 	pf.parallel_for(0L, rows, [cols, &src, &image](int r) {
 		for (int c = 1; c < cols - 1; c++) {
@@ -73,9 +75,11 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 		}
 	});
 
-//	ff::ffTime(ff::STOP_TIME);
-//	std::cout << "num_workers: " << num_workers << " elapsed time =";
-//	std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+	pf.threadPause();
+
+	ff::ffTime(ff::STOP_TIME);
+	std::cout << "num_workers: " << num_workers << " elapsed time =";
+	std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
 
 	output = cv::Mat(rows, cols, CV_8U, dst, cv::Mat::AUTO_STEP);
 
@@ -91,7 +95,7 @@ void sobel_seq(cv::Mat &image, cv::Mat &output) {
 	uchar * src = new uchar[rows * cols];
 	uchar * dst = new uchar[rows * cols];
 
-//	ff::ffTime(ff::START_TIME);
+	ff::ffTime(ff::START_TIME);
 
 	for (int r = 0; r < rows; r++) {
 		for (int c = 1; c < cols - 1; c++) {
@@ -116,9 +120,9 @@ void sobel_seq(cv::Mat &image, cv::Mat &output) {
 		}
 	};
 
-//	ff::ffTime(ff::STOP_TIME);
-//	std::cout << " elapsed time =";
-//	std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+	ff::ffTime(ff::STOP_TIME);
+	std::cout << " elapsed time =";
+	std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
 
 	output = cv::Mat(rows, cols, CV_8U, dst, cv::Mat::AUTO_STEP);
 
