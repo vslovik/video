@@ -50,9 +50,7 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 	std::cout << "num_workers:::: " << num_workers << " elapsed time =";
 	std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
 
-	ff::ffTime(ff::START_TIME);
-
-	pf.parallel_for(0L, rows, [cols, &src, &image](int r) {
+	for (int r = 0; r < rows; r++) {
 		for (int c = 1; c < cols - 1; c++) {
 			cv::Vec3b values = image.at<cv::Vec3b>(r, c);
 			int val = (int) (R * values[0] + G * values[1] + B * values[2]);
@@ -60,7 +58,9 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 				val = 255;
 			src[r * cols + c] = (uchar) val;
 		}
-	});
+	};
+
+	ff::ffTime(ff::START_TIME);
 
 	pf.parallel_for(1, rows - 1, [src, cols, &dst](const long y) {
 		for (long x = 1; x < cols - 1; x++) {
