@@ -95,7 +95,7 @@ void sobel_seq(cv::Mat &image, cv::Mat &output) {
 	uchar * src = new uchar[rows * cols];
 	uchar * dst = new uchar[rows * cols];
 
-	ff::ffTime(ff::START_TIME);
+
 
 	for (int r = 0; r < rows; r++) {
 		for (int c = 1; c < cols - 1; c++) {
@@ -106,6 +106,8 @@ void sobel_seq(cv::Mat &image, cv::Mat &output) {
 			src[r * cols + c] = (uchar) val;
 		}
 	};
+
+	ff::ffTime(ff::START_TIME);
 
 	for (long y = 1; y < rows - 1; y++) {
 		for (long x = 1; x < cols - 1; x++) {
