@@ -43,7 +43,7 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 	ff::ffTime(ff::START_TIME);
 
 
-	ff::ParallelFor pf(num_workers, true);
+	ff::ParallelFor pf(num_workers, true, true);
 
 	ff::ffTime(ff::STOP_TIME);
 	std::cout << "cols: " << cols <<" rows: " << rows << std::endl;
@@ -73,7 +73,7 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 
 			dst[y * cols + x] = (uchar) sum;
 		}
-	});
+	}, num_workers);
 
 	pf.threadPause();
 
