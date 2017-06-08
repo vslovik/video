@@ -75,7 +75,7 @@ void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
 		}
 	}, num_workers);
 
-//	pf.threadPause();
+	pf.threadPause();
 
 	ff::ffTime(ff::STOP_TIME);
 	std::cout << "num_workers: " << num_workers << " elapsed time =";
