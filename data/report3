@@ -1,3 +1,60 @@
+void sobel(cv::Mat &image, cv::Mat &output, int num_workers) {
+
+	int rows = image.rows;
+	int cols = image.cols;
+
+	uchar *src = new uchar[rows * cols];
+	uchar *dst = new uchar[rows * cols];
+
+	ff::ffTime(ff::START_TIME);
+
+
+	ff::ParallelFor pf(num_workers, true, true);
+
+	ff::ffTime(ff::STOP_TIME);
+	std::cout << "cols: " << cols <<" rows: " << rows << std::endl;
+	std::cout << "num_workers:::: " << num_workers << " elapsed time =";
+	std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+
+	for (int r = 0; r < rows; r++) {
+		for (int c = 1; c < cols - 1; c++) {
+			cv::Vec3b values = image.at<cv::Vec3b>(r, c);
+			int val = (int) (R * values[0] + G * values[1] + B * values[2]);
+			if (val > 255)
+				val = 255;
+			src[r * cols + c] = (uchar) val;
+		}
+	};
+
+	ff::ffTime(ff::START_TIME);
+
+	pf.parallel_for(1, rows - 1, [src, cols, &dst](const long y) {
+		for (long x = 1; x < cols - 1; x++) {
+			const long gx = xGradient(src, cols, x, y);
+			const long gy = yGradient(src, cols, x, y);
+			// approximation of sqrt(gx*gx+gy*gy)
+			int sum = abs((int) gx) + abs((int) gy);
+			if (sum > 255) sum = 255;
+			else if (sum < 0) sum = 0;
+
+			dst[y * cols + x] = (uchar) sum;
+		}
+	}, num_workers);
+
+	pf.threadPause();
+
+	ff::ffTime(ff::STOP_TIME);
+	std::cout << "num_workers: " << num_workers << " elapsed time =";
+	std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+
+	output = cv::Mat(rows, cols, CV_8U, dst, cv::Mat::AUTO_STEP);
+
+//	delete[] dst;
+//	delete[] src;
+}
+
+
+
 valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 1
 cols: 2048 rows: 1536
 num_workers:::: 1 elapsed time =17.06 ms
