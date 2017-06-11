@@ -1,0 +1,312 @@
+Input frame resolution: Width=640  Height=480 of nr#: 11930
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =19.034 ms
+num_workers: 7 elapsed time =1.729 ms
+cols: 619 rows: 480
+num_workers:::: 7 elapsed time =18.321 ms
+num_workers: 7 elapsed time =19.874 ms
+0/11930 132.738 ms avg: 132
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =12.312 ms
+num_workers: 7 elapsed time =13.841 ms
+cols: 618 rows: 480
+num_workers:::: 7 elapsed time =2.462 ms
+num_workers: 7 elapsed time =16.438 ms
+1/11930 164.076 ms avg: 148
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =73.972 ms
+num_workers: 7 elapsed time =20.173 ms
+cols: 624 rows: 480
+num_workers:::: 7 elapsed time =22.04 ms
+num_workers: 7 elapsed time =21.926 ms
+2/11930 257.053 ms avg: 184.333
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =45.096 ms
+num_workers: 7 elapsed time =30.861 ms
+cols: 617 rows: 480
+num_workers:::: 7 elapsed time =18.177 ms
+num_workers: 7 elapsed time =23.822 ms
+3/11930 208.203 ms avg: 190.25
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =40.243 ms
+num_workers: 7 elapsed time =9.611 ms
+cols: 613 rows: 480
+num_workers:::: 7 elapsed time =19.302 ms
+num_workers: 7 elapsed time =14.724 ms
+4/11930 194.208 ms avg: 191
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =12.31 ms
+num_workers: 7 elapsed time =24.895 ms
+cols: 617 rows: 480
+num_workers:::: 7 elapsed time =6.808 ms
+num_workers: 7 elapsed time =37.545 ms
+5/11930 153.439 ms avg: 184.667
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =12.395 ms
+num_workers: 7 elapsed time =30.657 ms
+cols: 617 rows: 480
+num_workers:::: 7 elapsed time =4.309 ms
+num_workers: 7 elapsed time =10.138 ms
+6/11930 134.685 ms avg: 177.429
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =22.054 ms
+num_workers: 7 elapsed time =29.474 ms
+cols: 616 rows: 480
+num_workers:::: 7 elapsed time =13.331 ms
+num_workers: 7 elapsed time =25.651 ms
+7/11930 161.938 ms avg: 175.375
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =17.118 ms
+num_workers: 7 elapsed time =29.824 ms
+cols: 617 rows: 480
+num_workers:::: 7 elapsed time =12.9 ms
+num_workers: 7 elapsed time =37.952 ms
+8/11930 169.582 ms avg: 174.667
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =12.653 ms
+num_workers: 7 elapsed time =15.463 ms
+cols: 619 rows: 480
+num_workers:::: 7 elapsed time =17.444 ms
+num_workers: 7 elapsed time =39.544 ms
+9/11930 157.008 ms avg: 172.9
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =8.918 ms
+num_workers: 7 elapsed time =26.593 ms
+cols: 620 rows: 480
+num_workers:::: 7 elapsed time =13.374 ms
+num_workers: 7 elapsed time =18.87 ms
+10/11930 146.005 ms avg: 170.455
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =35.907 ms
+num_workers: 7 elapsed time =13.158 ms
+cols: 617 rows: 480
+num_workers:::: 7 elapsed time =23.512 ms
+num_workers: 7 elapsed time =12.215 ms
+11/11930 179.402 ms avg: 171.167
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =3.358 ms
+num_workers: 7 elapsed time =9.432 ms
+cols: 620 rows: 480
+num_workers:::: 7 elapsed time =8.423 ms
+num_workers: 7 elapsed time =12.68 ms
+12/11930 102.544 ms avg: 165.846
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =12.415 ms
+num_workers: 7 elapsed time =10.016 ms
+cols: 619 rows: 480
+num_workers:::: 7 elapsed time =3.242 ms
+num_workers: 7 elapsed time =22.444 ms
+13/11930 128.545 ms avg: 163.143
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =12.974 ms
+num_workers: 7 elapsed time =25.875 ms
+cols: 618 rows: 480
+num_workers:::: 7 elapsed time =3.237 ms
+num_workers: 7 elapsed time =10.187 ms
+14/11930 122.493 ms avg: 160.4
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =3.41 ms
+num_workers: 7 elapsed time =38.033 ms
+cols: 618 rows: 480
+num_workers:::: 7 elapsed time =9.567 ms
+num_workers: 7 elapsed time =8.262 ms
+15/11930 127.423 ms avg: 158.312
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =13.191 ms
+num_workers: 7 elapsed time =12.14 ms
+cols: 618 rows: 480
+num_workers:::: 7 elapsed time =12.449 ms
+num_workers: 7 elapsed time =14.801 ms
+16/11930 121.85 ms avg: 156.118
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =12.359 ms
+num_workers: 7 elapsed time =26.072 ms
+cols: 621 rows: 480
+num_workers:::: 7 elapsed time =3.632 ms
+num_workers: 7 elapsed time =2.501 ms
+17/11930 119.965 ms avg: 154.056
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =8.141 ms
+num_workers: 7 elapsed time =29.363 ms
+cols: 622 rows: 480
+num_workers:::: 7 elapsed time =8.097 ms
+num_workers: 7 elapsed time =17.276 ms
+18/11930 137.143 ms avg: 153.158
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =12.297 ms
+num_workers: 7 elapsed time =25.691 ms
+cols: 623 rows: 480
+num_workers:::: 7 elapsed time =15.358 ms
+num_workers: 7 elapsed time =26.792 ms
+cols: 610 rows: 480
+num_workers:::: 7 elapsed time =15.271 ms
+num_workers: 7 elapsed time =14.072 ms
+19/11930 211.601 ms avg: 156.05
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =17.966 ms
+num_workers: 7 elapsed time =12.303 ms
+cols: 621 rows: 480
+num_workers:::: 7 elapsed time =14.072 ms
+num_workers: 7 elapsed time =19.827 ms
+20/11930 138.081 ms avg: 155.19
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =5.082 ms
+num_workers: 7 elapsed time =21.792 ms
+cols: 620 rows: 480
+num_workers:::: 7 elapsed time =19.353 ms
+num_workers: 7 elapsed time =30.128 ms
+21/11930 145.022 ms avg: 154.727
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =13.441 ms
+num_workers: 7 elapsed time =9.672 ms
+cols: 618 rows: 480
+num_workers:::: 7 elapsed time =40.628 ms
+num_workers: 7 elapsed time =28.89 ms
+22/11930 165.275 ms avg: 155.174
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =13.363 ms
+num_workers: 7 elapsed time =25.812 ms
+cols: 624 rows: 480
+num_workers:::: 7 elapsed time =15.032 ms
+num_workers: 7 elapsed time =14.197 ms
+cols: 609 rows: 480
+num_workers:::: 7 elapsed time =16.097 ms
+num_workers: 7 elapsed time =15.428 ms
+23/11930 201.745 ms avg: 157.083
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =16.94 ms
+num_workers: 7 elapsed time =25.539 ms
+cols: 621 rows: 480
+num_workers:::: 7 elapsed time =14.941 ms
+num_workers: 7 elapsed time =17.954 ms
+24/11930 160.434 ms avg: 157.2
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =13.642 ms
+num_workers: 7 elapsed time =14.996 ms
+cols: 619 rows: 480
+num_workers:::: 7 elapsed time =7.992 ms
+num_workers: 7 elapsed time =23.247 ms
+25/11930 130.612 ms avg: 156.154
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =16.284 ms
+num_workers: 7 elapsed time =44.447 ms
+cols: 619 rows: 480
+num_workers:::: 7 elapsed time =15.902 ms
+num_workers: 7 elapsed time =18.887 ms
+26/11930 183.346 ms avg: 157.148
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =4.656 ms
+num_workers: 7 elapsed time =1.786 ms
+cols: 615 rows: 480
+num_workers:::: 7 elapsed time =13.673 ms
+num_workers: 7 elapsed time =15.653 ms
+27/11930 102.597 ms avg: 155.179
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =4.308 ms
+num_workers: 7 elapsed time =1.622 ms
+cols: 620 rows: 480
+num_workers:::: 7 elapsed time =4.422 ms
+num_workers: 7 elapsed time =27.892 ms
+28/11930 104.795 ms avg: 153.414
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =4.7 ms
+num_workers: 7 elapsed time =3.814 ms
+cols: 620 rows: 480
+num_workers:::: 7 elapsed time =4.659 ms
+num_workers: 7 elapsed time =9.686 ms
+29/11930 89.641 ms avg: 151.267
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =5.256 ms
+num_workers: 7 elapsed time =1.718 ms
+cols: 621 rows: 480
+num_workers:::: 7 elapsed time =7.909 ms
+num_workers: 7 elapsed time =17.845 ms
+30/11930 99.983 ms avg: 149.581
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =5.759 ms
+num_workers: 7 elapsed time =6.735 ms
+cols: 624 rows: 480
+num_workers:::: 7 elapsed time =11.267 ms
+num_workers: 7 elapsed time =18.463 ms
+31/11930 110.77 ms avg: 148.344
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =5.834 ms
+num_workers: 7 elapsed time =5.769 ms
+cols: 624 rows: 480
+num_workers:::: 7 elapsed time =5.282 ms
+num_workers: 7 elapsed time =11.274 ms
+cols: 609 rows: 480
+num_workers:::: 7 elapsed time =5.45 ms
+num_workers: 7 elapsed time =18.149 ms
+32/11930 152.363 ms avg: 148.455
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =5.866 ms
+num_workers: 7 elapsed time =32.554 ms
+cols: 623 rows: 480
+num_workers:::: 7 elapsed time =5.938 ms
+num_workers: 7 elapsed time =1.656 ms
+33/11930 115.121 ms avg: 147.471
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =5.779 ms
+num_workers: 7 elapsed time =6.183 ms
+cols: 623 rows: 480
+num_workers:::: 7 elapsed time =5.603 ms
+num_workers: 7 elapsed time =5.639 ms
+34/11930 90.365 ms avg: 145.829
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =5.597 ms
+num_workers: 7 elapsed time =5.452 ms
+cols: 619 rows: 480
+num_workers:::: 7 elapsed time =12.093 ms
+num_workers: 7 elapsed time =14.73 ms
+35/11930 106.108 ms avg: 144.722
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =4.86 ms
+num_workers: 7 elapsed time =21.156 ms
+cols: 621 rows: 480
+num_workers:::: 7 elapsed time =6.085 ms
+num_workers: 7 elapsed time =16.83 ms
+36/11930 115.917 ms avg: 143.919
+
+cols: 640 rows: 480
+num_workers:::: 7 elapsed time =5.034 ms
+num_workers: 7 elapsed time =1.85 ms
+cols: 624 rows: 480
+num_workers:::: 7 elapsed time =5.065 ms
+num_workers: 7 elapsed time =7.326 ms

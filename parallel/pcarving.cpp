@@ -362,8 +362,8 @@ void remove_pixels(Mat& image, int *seams, int count){
 }
 
 void energy_function(Mat &image, Mat &output, int num_workers = 1){
-	sobel(image, output, num_workers);
-	//sobel_seq(image, output);
+	//sobel(image, output, num_workers);
+	sobel_seq(image, output);
 }
 
 void coherence_function(Mat &image, int* seams, int count) {
@@ -423,34 +423,34 @@ void realTime(Mat& image, int num_workers){
 	}
 }
 
-int main(int argc, char **argv)
-{
-	if(argc < 3) {
-		std::cout << "Not enough parameters" << std::endl;
-		return -1;
-	}
-
-	int num_workers = atoi(argv[4]);
-
-	try {
-
-		Mat image = imread(argv[1], IMREAD_COLOR);
-
-		//realTime(image, num_workers);
-
-		ff::ffTime(ff::START_TIME);
-
-		remove_seams(image, 'v', num_workers);
-
-		ff::ffTime(ff::STOP_TIME);
-
-		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
-		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
-
-	} catch(std::string e){
-		std::cout << e << std::endl;
-		return -1;
-	}
-
-	return 0;
-}
+//int main(int argc, char **argv)
+//{
+//	if(argc < 3) {
+//		std::cout << "Not enough parameters" << std::endl;
+//		return -1;
+//	}
+//
+//	int num_workers = atoi(argv[4]);
+//
+//	try {
+//
+//		Mat image = imread(argv[1], IMREAD_COLOR);
+//
+//		//realTime(image, num_workers);
+//
+//		ff::ffTime(ff::START_TIME);
+//
+//		remove_seams(image, 'v', num_workers);
+//
+//		ff::ffTime(ff::STOP_TIME);
+//
+//		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
+//		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
+//
+//	} catch(std::string e){
+//		std::cout << e << std::endl;
+//		return -1;
+//	}
+//
+//	return 0;
+//}

@@ -455,6 +455,12 @@ num_workers:::: 19 elapsed time =17.646 ms
 num_workers: 19 elapsed time =29.241 ms
 19
 num_workers: 19 elapsed time =370.906 ms
+valeria@titanic:~/video/parallel$ ./video ../data/monteverdi_ritratto.jpg 320 0 20
+cols: 960 rows: 960
+num_workers:::: 20 elapsed time =23.594 ms
+num_workers: 20 elapsed time =8.736 ms
+19
+num_workers: 20 elapsed time =353.299 ms
 valeria@titanic:~/video/parallel$ ./video ../data/monteverdi_ritratto.jpg 320 0 21
 cols: 960 rows: 960
 num_workers:::: 21 elapsed time =23.589 ms
@@ -624,6 +630,8 @@ num_workers: 21 elapsed time =97.992 ms
 34
 num_workers: 22 elapsed time =97.279 ms
 
+
+
 valeria@titanic:~/video/parallel$ ./video ../data/monteverdi_ritratto.jpg 320 0 23
  elapsed time =114.042 ms
 19
@@ -647,5 +655,48 @@ valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 12
 55
 num_workers: 12 elapsed time =1248.16 ms
 
+=================================================================================
+duomo home ps
 
+cols: 2048 rows: 1536
+num_workers:::: 1 elapsed time =4.418 ms
+num_workers: 1 elapsed time =64.133 ms
+55
+num_workers: 1 elapsed time =433.434 ms
+
+
+cols: 2048 rows: 1536
+num_workers:::: 2 elapsed time =13.455 ms
+num_workers: 2 elapsed time =39.621 ms
+55
+num_workers: 2 elapsed time =422.38 ms
+
+cols: 2048 rows: 1536
+num_workers:::: 3 elapsed time =4.432 ms
+num_workers: 3 elapsed time =25.082 ms
+55
+num_workers: 3 elapsed time =401.374 ms
+
+cols: 2048 rows: 1536
+num_workers:::: 4 elapsed time =10.484 ms
+num_workers: 4 elapsed time =23.949 ms
+55
+num_workers: 4 elapsed time =418.416 ms
+
+cols: 2048 rows: 1536
+num_workers:::: 5 elapsed time =18.294 ms
+num_workers: 5 elapsed time =23.284 ms
+55
+num_workers: 5 elapsed time =397.998 ms
+
+cols: 2048 rows: 1536
+num_workers:::: 6 elapsed time =13.624 ms
+num_workers: 6 elapsed time =19.782 ms
+55
+num_workers: 6 elapsed time =407.415 ms
+
+seq
+ elapsed time =56.81 ms
+55
+elapsed time =484.675 ms
 
