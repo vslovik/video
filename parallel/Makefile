@@ -6,14 +6,14 @@
 # FF_ROOT     pointing to the FastFlow root directory (i.e.
 #             the one containing the ff directory).
 
-#FF_ROOT	= $(HOME)/fastflow
-FF_ROOT	= $(HOME)/project/fastflow-2.1.0
+FF_ROOT	= $(HOME)/fastflow
+#FF_ROOT	= $(HOME)/project/fastflow-2.1.0
 
 INCS = -I $(FF_ROOT)
 
 OBJS = main.o video.o pcarving.o psobel.o
 
-CXX	= g++ -std=c++11 $(INCS)
+CXX	= g++ -std=c++11 -O3 $(INCS)
 #CXX	= icc -std=c++11 $(INCS)
 CFLAGS 	= -Wall `pkg-config --cflags opencv` #-DTRACE_FASTFLOW  -pg
 OPT     = -O3 -finline-functions -DNDEBUG

@@ -1,0 +1,200 @@
+seq
+ elapsed time =129.528 ms
+55
+num_workers: 1 elapsed time =425.839 ms
+
+1
+cols: 2048 rows: 1536
+num_workers:::: 1 elapsed time =3.594 ms
+num_workers: 1 elapsed time =59.484 ms
+55
+num_workers: 1 elapsed time =525.143 ms
+
+2
+cols: 2048 rows: 1536
+num_workers:::: 2 elapsed time =7.28 ms
+num_workers: 2 elapsed time =32.097 ms
+55
+num_workers: 2 elapsed time =401.658 ms
+
+3
+cols: 2048 rows: 1536
+num_workers:::: 3 elapsed time =4.073 ms
+num_workers: 3 elapsed time =23.643 ms
+55
+num_workers: 3 elapsed time =378.951 ms
+
+4
+cols: 2048 rows: 1536
+num_workers:::: 4 elapsed time =3.465 ms
+num_workers: 4 elapsed time =16.32 ms
+55
+num_workers: 4 elapsed time =375.498 ms
+
+5
+cols: 2048 rows: 1536
+num_workers:::: 5 elapsed time =4.787 ms
+num_workers: 5 elapsed time =25.69 ms
+55
+num_workers: 5 elapsed time =384.974 ms
+
+6
+cols: 2048 rows: 1536
+num_workers:::: 6 elapsed time =3.698 ms
+num_workers: 6 elapsed time =19.334 ms
+55
+num_workers: 6 elapsed time =378.567 ms
+
+7
+cols: 2048 rows: 1536
+num_workers:::: 6 elapsed time =3.619 ms
+num_workers: 6 elapsed time =19.801 ms
+55
+num_workers: 6 elapsed time =383.791 ms
+
+------------------------------------------
+cols: 2048 rows: 1536
+num_workers:::: 1 elapsed time =12.364 ms
+num_workers: 1 elapsed time =199.456 ms
+55
+num_workers: 1 elapsed time =1282.19 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 2
+cols: 2048 rows: 1536
+num_workers:::: 2 elapsed time =14.485 ms
+num_workers: 2 elapsed time =105.466 ms
+55
+num_workers: 2 elapsed time =1175.56 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 3
+cols: 2048 rows: 1536
+num_workers:::: 3 elapsed time =12.819 ms
+num_workers: 3 elapsed time =72.412 ms
+55
+num_workers: 3 elapsed time =1152.37 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 4
+cols: 2048 rows: 1536
+num_workers:::: 4 elapsed time =11.02 ms
+num_workers: 4 elapsed time =151.418 ms
+55
+num_workers: 4 elapsed time =1229.94 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 5
+cols: 2048 rows: 1536
+num_workers:::: 5 elapsed time =14.614 ms
+num_workers: 5 elapsed time =161.81 ms
+55
+num_workers: 5 elapsed time =1238.63 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 6
+cols: 2048 rows: 1536
+num_workers:::: 6 elapsed time =10.994 ms
+num_workers: 6 elapsed time =123.694 ms
+55
+num_workers: 6 elapsed time =1205.58 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 7
+cols: 2048 rows: 1536
+num_workers:::: 7 elapsed time =15.251 ms
+num_workers: 7 elapsed time =135.189 ms
+55
+num_workers: 7 elapsed time =1217.94 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 8
+cols: 2048 rows: 1536
+num_workers:::: 8 elapsed time =13.229 ms
+num_workers: 8 elapsed time =83.26 ms
+55
+num_workers: 8 elapsed time =1159.39 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 9
+cols: 2048 rows: 1536
+num_workers:::: 9 elapsed time =16.501 ms
+num_workers: 9 elapsed time =82.704 ms
+55
+num_workers: 9 elapsed time =1168.76 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 10
+cols: 2048 rows: 1536
+num_workers:::: 10 elapsed time =26.273 ms
+num_workers: 10 elapsed time =89.333 ms
+55
+num_workers: 10 elapsed time =1183.02 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 11
+cols: 2048 rows: 1536
+num_workers:::: 11 elapsed time =17.073 ms
+num_workers: 11 elapsed time =83.911 ms
+55
+num_workers: 11 elapsed time =1181.19 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 12
+cols: 2048 rows: 1536
+num_workers:::: 12 elapsed time =15.896 ms
+num_workers: 12 elapsed time =88.912 ms
+55
+num_workers: 12 elapsed time =1181.63 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 13
+cols: 2048 rows: 1536
+num_workers:::: 13 elapsed time =13.917 ms
+num_workers: 13 elapsed time =53.081 ms
+55
+num_workers: 13 elapsed time =1135.35 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 14
+cols: 2048 rows: 1536
+num_workers:::: 14 elapsed time =25.94 ms
+num_workers: 14 elapsed time =47.704 ms
+55
+num_workers: 14 elapsed time =1146.01 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 15
+cols: 2048 rows: 1536
+num_workers:::: 15 elapsed time =29.477 ms
+num_workers: 15 elapsed time =46.673 ms
+55
+num_workers: 15 elapsed time =1140.03 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 16
+cols: 2048 rows: 1536
+num_workers:::: 16 elapsed time =19.22 ms
+num_workers: 16 elapsed time =51.762 ms
+55
+num_workers: 16 elapsed time =1143.9 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 17
+cols: 2048 rows: 1536
+num_workers:::: 17 elapsed time =16.915 ms
+num_workers: 17 elapsed time =43.923 ms
+55
+num_workers: 17 elapsed time =1132.06 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 18
+cols: 2048 rows: 1536
+num_workers:::: 18 elapsed time =18.762 ms
+num_workers: 18 elapsed time =40.496 ms
+55
+num_workers: 18 elapsed time =1134.53 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 19
+cols: 2048 rows: 1536
+num_workers:::: 19 elapsed time =17.088 ms
+num_workers: 19 elapsed time =48.918 ms
+55
+num_workers: 19 elapsed time =1157.5 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 20
+cols: 2048 rows: 1536
+num_workers:::: 20 elapsed time =20.314 ms
+num_workers: 20 elapsed time =48.255 ms
+55
+num_workers: 20 elapsed time =1141.12 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 21
+cols: 2048 rows: 1536
+num_workers:::: 21 elapsed time =16.59 ms
+num_workers: 21 elapsed time =41.572 ms
+55
+num_workers: 21 elapsed time =1130.12 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 22
+cols: 2048 rows: 1536
+num_workers:::: 22 elapsed time =21.338 ms
+num_workers: 22 elapsed time =40.562 ms
+55
+num_workers: 22 elapsed time =1129.43 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 23
+cols: 2048 rows: 1536
+num_workers:::: 23 elapsed time =20.779 ms
+num_workers: 23 elapsed time =38.811 ms
+55
+num_workers: 23 elapsed time =1127.16 ms
+valeria@titanic:~/video/parallel$ ./video ../data/duomo.jpg 320 0 24
+cols: 2048 rows: 1536
+num_workers:::: 24 elapsed time =19.685 ms
+num_workers: 24 elapsed time =49.313 ms
+55
+num_workers: 24 elapsed time =1135.47 ms
+
+

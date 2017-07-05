@@ -76,148 +76,224 @@ void print_seams(int *seams, int W, int H) {
 }
 
 void advance_seams(uchar *row, int r, int W, int H, int *seams, int *traces, int *seam_energies, int *seam_spans, int c) {
-	int seam_index = traces[3 * W + c]; // take seam
-	uchar left = c > 0 ? row[c - 1] : max_uchar;
-	uchar right = c < W - 1 ? row[c + 1] : max_uchar;
-	uchar middle = row[c];
-	uchar m = std::min({left, middle, right});
+	if (r > 0) {
+		if (traces[3 * W + c] < W) {
+			int seam_index = traces[3 * W + c]; // take seam
+			int sc = seams[(r - 1) * W + seam_index]; // take seam position in prev row
+			if (sc == c) { // if seam have not been discarded before
+				uchar left = c > 0 ? row[c - 1] : max_uchar;
+				uchar right = c < W - 1 ? row[c + 1] : max_uchar;
+				uchar middle = row[c];
+				uchar m = std::min({left, middle, right});
 
-	if (m == left) {
-		seams[r * W + seam_index] = c - 1;
-		traces[c - 1] = seam_index;
-	} else if (m == right) {
-		seams[r * W + seam_index] = c + 1;
-		traces[2 * W + c + 1] = seam_index;
-	} else {
-		seams[r * W + seam_index] = c;
-		traces[W + c] = seam_index;
+				if (m == left) {
+					seams[r * W + seam_index] = c - 1;
+					traces[c - 1] = seam_index;
+				} else if (m == right) {
+					seams[r * W + seam_index] = c + 1;
+					traces[2 * W + c + 1] = seam_index;
+				} else {
+					seams[r * W + seam_index] = c;
+					traces[W + c] = seam_index;
+				}
+				seam_spans[seam_index] += seams[(r - 1) * W + seam_index] != seams[r * W + seam_index] ? 2 : 1;
+				seam_energies[seam_index] = seam_energies[seam_index] + m;
+			}
+		}
 	}
-	seam_spans[seam_index] = cv::max(seam_spans[seam_index],
-	                                 abs(seams[seam_index] - seams[r * W + seam_index]));
-	seam_energies[seam_index] = seam_energies[seam_index] + m;
 }
 
 void resolve_seams_conflicts(int r, int W, int H, int *seams, int *traces, int *seam_energies, int *seam_spans, int c) {
-	int seam_index;
-	int energy;
-	int min_energy = max_int;
-	int min_span = W + 1;
-	int best_seam_index = W;
-	for (int i = 0; i < 3; i++) {
-		if (traces[i * W + c] == W) {
-			continue;
+	if (traces[3 * W + c] == W) {
+		int seam_index;
+		int energy;
+		int min_energy = max_int;
+		int min_span = W + 1;
+		int best_seam_index = W;
+		for (int i = 0; i < 3; i++) {
+			if (traces[i * W + c] == W) {
+				continue;
+			}
+			seam_index = traces[i * W + c];
+			energy = seam_energies[seam_index];
+			int span = seam_spans[seam_index];
+
+			if (min_energy > energy) {
+				min_energy = energy;
+				best_seam_index = seam_index;
+			} else if (min_energy == energy && min_span > span) {
+				min_span = span;
+				best_seam_index = seam_index;
+			}
 		}
-		seam_index = traces[i * W + c];
-		energy = seam_energies[seam_index];
-		int span = seam_spans[seam_index];
-		if (min_energy > energy) {
-			min_energy = energy;
-			best_seam_index = seam_index;
-		} else if (min_span > span) {
-			min_span = span;
-			best_seam_index = seam_index;
+		for (int i = 0; i < 3; i++) {
+			if (traces[i * W + c] == W) {
+				continue;
+			}
+			seam_index = traces[i * W + c];
+			if (seam_index == best_seam_index) {
+				traces[i * W + c] = W;
+			}
 		}
+		traces[3 * W + c] = best_seam_index;
 	}
-	for (int i = 0; i < 3; i++) {
-		if (traces[i * W + c] == W) {
-			continue;
-		}
-		seam_index = traces[i * W + c];
-		if (seam_index != best_seam_index) {
-			seams[r * W + seam_index] = W;
-		}
-	}
-	traces[3 * W + c] = best_seam_index;
 };
 
-int* find_seams(Mat &image, int &num_found, int num_workers){
+void move_defeated(uchar* row, int r, int W, int H, int *seams, int *traces, int *seam_energies, int *seam_spans, int c) {
+	if (traces[3 * W + c] < W) {
+		for (int i = 0; i < 3; i++) {
+			if (traces[i * W + c] < W) {
+				if(i == 0) {
+					if(c - 2 > 0 && traces[3 * W + c - 2] == W && traces[3 * W + c - 1] == W) {
+						if(row[c - 2] < row[c - 1]) {
+							traces[c - 2] = traces[c];
+							seams[r*W + traces[c]] = c - 2;
+							seam_energies[traces[c]] += row[c - 2] - row[c];
+						} else {
+							traces[c - 1] = traces[c];
+							seams[r*W + traces[c]] = c - 1;
+							seam_energies[traces[c]] += row[c - 1] - row[c];
+							seam_spans[traces[c]] -= 1;
+						}
+						traces[c] = W;
+					}
+					else if(c - 2 >= 0 && traces[3 * W + c - 2] < W && traces[3 * W + c - 1] == W || c == 1 && traces[3 * W] == W ) {
+						traces[c - 1] = traces[c];
+						traces[c] = W;
+						seams[r*W + traces[c]] = c - 1;
+						seam_energies[traces[c]] += row[c - 1] - row[c];
+						seam_spans[traces[c]] -= 1;
+					}
+					else if(c - 2 >= 0 && traces[3 * W + c - 2] == W && traces[3 * W + c - 1] < W) {
+						traces[c - 2] = traces[c];
+						traces[c] = W;
+						seams[r*W + traces[c]] = c - 2;
+						seam_energies[traces[c]] += row[c - 2] - row[c];
+					}
+
+				} else if(i == 1) {
+					if(c - 1 >= 0 && traces[3 * W + c - 1] == W && c + 1 < W && traces[3 * W + c + 1] == W) {
+						if(row[c - 1] < row[c + 1]) {
+							traces[W + c - 1] = traces[W + c];
+							seams[r*W + traces[W + c]] = c - 1;
+							seam_energies[traces[W + c]] += row[c - 1] - row[c];
+							seam_spans[traces[W + c]] += 1;
+						} else {
+							traces[W + c + 1] = traces[W + c];
+							seams[r*W + traces[W + c]] = c + 1;
+							seam_energies[traces[W + c]] += row[c + 1] - row[c];
+							seam_spans[traces[W + c]] += 1;
+						}
+						traces[W + c] = W;
+					}
+					else if(c - 1 >= 0 && traces[3 * W + c - 1] < W && traces[3 * W + c + 1] == W || c == 0 && traces[3 * W + c + 1] == W) {
+						traces[W + c + 1] = traces[W + c];
+						seams[r*W + traces[W + c]] = c + 1;
+						seam_energies[traces[W + c]] += row[c + 1] - row[c];
+						seam_spans[traces[W + c]] += 1;
+						traces[W + c] = W;
+					}
+					else if(c - 1 >= 0 && traces[3 * W + c - 1] == W && c + 1 < W && traces[3 * W + c + 1] < W) {
+						traces[W + c - 1] = traces[W + c];
+						seams[r*W + traces[W + c]] = c - 1;
+						seam_energies[traces[W + c]] += row[c - 1] - row[c];
+						seam_spans[traces[W + c]] += 1;
+						traces[W + c] = W;
+					}
+				} else {
+					if(c + 2 < W && traces[3 * W + c + 1] == W && traces[3 * W + c + 2] == W) {
+						if(row[c + 1] < row[c + 2]) {
+							traces[2*W + c + 1] = traces[2*W + c];
+							seams[r*W + traces[2*W + c]] = c + 1;
+							seam_energies[traces[2*W + c]] += row[c + 1] - row[c];
+							seam_spans[traces[2*W + c]] -= 1;
+						} else {
+							traces[2*W + c + 2] = traces[2*W + c];
+							seams[r*W + traces[2*W + c]] = c + 2;
+							seam_energies[traces[2*W + c]] += row[c + 2] - row[c];
+						}
+						traces[2*W + c] = W;
+					}
+					else if(c + 2 < W && traces[3 * W + c + 1] < W && traces[3 * W + c + 2] == W) {
+						traces[2*W + c + 2] = traces[2*W + c];
+						seams[r*W + traces[2*W + c]] = c + 2;
+						seam_energies[traces[2*W + c]] += row[c + 2] - row[c];
+						traces[2*W + c] = W;
+					}
+					else if(c + 2 < W && traces[3 * W + c + 1] == W && traces[3 * W + c + 2] < W || c + 1 < W && traces[3 * W + c + 1] == W) {
+						traces[2*W + c + 1] = traces[2*W + c];
+						seams[r*W + traces[2*W + c]] = c + 1;
+						seam_energies[traces[2*W + c]] += row[c + 1] - row[c];
+						seam_spans[traces[2*W + c]] -= 1;
+						traces[2*W + c] = W;
+					}
+				}
+			}
+		}
+	}
+}
+
+int* find_seams(Mat &image, int &num_found){
+
 	int H = image.rows;
 	int W = image.cols;
-
-	int seams[image.cols * image.rows];
+	int *seams = new int[image.cols * image.rows];
 	int traces[4*image.cols];
 	uchar *row = new uchar[W];
 	uchar *next_row = new uchar[W];
 	int seam_spans[W];
 	int seam_energies[W];
 
-	std::vector<int> traces_index;
-	std::vector<int> conflicts_index;
+	std::fill_n(traces, 4*W, W);
+	std::fill_n(seam_spans, W, 0);
+	std::fill_n(seam_energies, W, 0);
 
-	for (unsigned int i = 0; i < 4*W; i++) {
-		traces[i] = W;
-	};
-
-	ff::ParallelFor pf(num_workers, false);
-
-	for(int r = 0; r < H; r++){
+	for (int r = 0; r < H; r++) {
 
 		// calculate row values
-		if (r == 0) {
-			for (unsigned int c = 0; c < W; c++) {
-				next_row[c] = image.at<uchar>(r, c);
-				seams[r * W + c] = c;
-				seam_spans[c] = 0;
-				seam_energies[c] = 0;
-				if (c % 4 == 0) {
-					traces[W + c] = c;
-					traces_index.push_back(c);
-				}
-			};
-		}
-
-		if (r > 0) {
-			for (unsigned int c = 0; c < W; c++) {
-				uchar next = image.at<uchar>(r, c);
+		for (unsigned int c = 0; c < W; c++) {
+			uchar next = image.at<uchar>(r, c);
+			if (r > 0) {
 				uchar left = c > 0 ? row[c - 1] : max_uchar;
 				uchar right = c < W - 1 ? row[c + 1] : max_uchar;
 				next += std::min({left, row[c], right});
-				next_row[c] = next;
-			};
+			}
+			next_row[c] = next;
 		}
 
 		std::swap(row, next_row);
 
-		//pf.parallel_for(0L, traces_index.size(), [row, r, W, H, &seams, &traces, &seam_energies, &seam_spans, traces_index](unsigned long i) {
-		for (unsigned long i = 0; i < traces_index.size(); i++) {
-			int c = traces_index.at(i);
-			advance_seams(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
-		};
-
-		for (unsigned long i = 0; i < traces_index.size(); i++) {
-			int c = traces_index.at(i);
-			traces[3 * W + c] = W;
+		if (r == 0) {
+			for (unsigned int c = 0; c < W; c++) {
+				seams[c] = c;
+				traces[W + c] = c;
+			};
+		} else {
+			for (unsigned int c = 0; c < W; c++) {
+				advance_seams(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
+			};
 		}
-		traces_index.clear();
 
 		for (unsigned int c = 0; c < W; c++) {
-			if(traces[c] < W)
-				conflicts_index.push_back(c);
-			else if(traces[W + c] < W)
-				conflicts_index.push_back(c);
-			else if(traces[2*W + c] < W)
-				conflicts_index.push_back(c);
-		};
+			traces[3 * W + c] = W;
+		}
 
-		//pf.parallel_for(0L, conflicts_index.size(), [r, W, H, &seams, &traces, &seam_energies, &seam_spans, conflicts_index](unsigned long i) {
-		for (unsigned long i = 0; i < conflicts_index.size(); i++) {
-			int c = conflicts_index.at(i);
+		for (unsigned int c = 0; c < W; c++) {
 			resolve_seams_conflicts(r, W, H, seams, traces, seam_energies, seam_spans, c);
 		};
 
-		for (unsigned long i = 0; i < conflicts_index.size(); i++) {
-			int c = conflicts_index.at(i);
-			for (int k = 0; k < 3; k++) {
-				traces[k * W + c] = W;
-			}
-			if(traces[3 * W + c] < W){
-				traces_index.push_back(c);
-			}
-		}
+		for (unsigned int c = 0; c < W; c++) {
+			move_defeated(row, r, W, H, seams, traces, seam_energies, seam_spans, c);
+		};
 
-		std::cout << r << "------" << traces_index.size() << std::endl;
-		conflicts_index.clear();
+		for (unsigned int c = 0; c < W; c++) {
+			resolve_seams_conflicts(r, W, H, seams, traces, seam_energies, seam_spans, c);
+		};
 
+		// clean traces rows
+		for (unsigned int i = 0; i < 3 * W; i++) {
+			traces[i] = W;
+		};
 	}
 
 	cv::Point *points = new cv::Point[W];
@@ -258,6 +334,9 @@ void remove_pixels(Mat& image, int *seams, int count){
 
 	Mat output(image.rows, image.cols - count, CV_8UC3);
 
+	//ff::ParallelFor pf(4, false);
+
+	//pf.parallel_for(0, H, [W, &seams, &image, &output, count](int r) {
 	for (unsigned int r = 0; r < H; r++) {
 		int *holes = new int[count];
 		for (int k = 0; k < count; k++) {
@@ -284,6 +363,7 @@ void remove_pixels(Mat& image, int *seams, int count){
 
 void energy_function(Mat &image, Mat &output, int num_workers = 1){
 	sobel(image, output, num_workers);
+	//sobel_seq(image, output);
 }
 
 void coherence_function(Mat &image, int* seams, int count) {
@@ -300,18 +380,21 @@ void remove_seams(Mat& image, char orientation = 'v', int num_workers = 1){
 	Mat eimage;
 	energy_function(image, eimage, num_workers);
 
-	int num_found = 10;
-	int* minimal_seams = find_seams(eimage, num_found, num_workers);
+	int num_found = 1000;
 
-	for (int r = 0; r < image.rows; r++){
-		for (int i = 0; i < num_found; i++) {
-			image.at<Vec3b>(r, minimal_seams[r * num_found + i]) = Vec3b(255, 255, 255);
-		}
-	}
-//
+	int* minimal_seams = find_seams(eimage, num_found);
+
+	std::cout << num_found << std::endl;
+
+//	for (int r = 0; r < image.rows; r++){
+//		for (int i = 0; i < num_found; i++) {
+//			image.at<Vec3b>(r, minimal_seams[r * num_found + i]) = Vec3b(255, 255, 255);
+//		}
+//	}
+
 //	print_seams(minimal_seams, num_found, image.rows);
 
-//    remove_pixels(image, minimal_seams, num_found);
+    remove_pixels(image, minimal_seams, num_found);
 
 	if (orientation == 'h') {
 		int flag = CCW;
@@ -340,21 +423,21 @@ void realTime(Mat& image, int num_workers){
 	}
 }
 
-int main(int argc, char **argv)
-{
-	if(argc < 3) {
-		std::cout << "Not enough parameters" << std::endl;
-		return -1;
-	}
-
-	int num_workers = atoi(argv[2]);
-
-	try {
-
-		Mat image = imread(argv[1], IMREAD_COLOR);
-
-		realTime(image, num_workers);
-
+//int main(int argc, char **argv)
+//{
+//	if(argc < 3) {
+//		std::cout << "Not enough parameters" << std::endl;
+//		return -1;
+//	}
+//
+//	int num_workers = atoi(argv[4]);
+//
+//	try {
+//
+//		Mat image = imread(argv[1], IMREAD_COLOR);
+//
+//		//realTime(image, num_workers);
+//
 //		ff::ffTime(ff::START_TIME);
 //
 //		remove_seams(image, 'v', num_workers);
@@ -363,11 +446,11 @@ int main(int argc, char **argv)
 //
 //		std::cout << "num_workers: " << num_workers << " elapsed time =" ;
 //		std::cout << ff::ffTime(ff::GET_TIME) << " ms\n";
-
-	} catch(std::string e){
-		std::cout << e << std::endl;
-		return -1;
-	}
-
-	return 0;
-}
+//
+//	} catch(std::string e){
+//		std::cout << e << std::endl;
+//		return -1;
+//	}
+//
+//	return 0;
+//}
